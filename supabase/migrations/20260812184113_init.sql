@@ -1,0 +1,10 @@
+-- Migration: init (Grundgerüst "Schema als Code", PP-021 E3)
+-- Noch KEINE echten Tabellen. Die kommen ab Tag 18 (Phase 4, Grundlage DATENMODELL.md).
+--
+-- REGEL "RLS von Tag 1" (PP-017 / A-020):
+-- Jede kuenftige Tabelle wird sofort mit Row Level Security angelegt:
+--   alter table <tabelle> enable row level security;
+-- und bekommt passende Policies:
+--   - eingeloggter Hersteller sieht/aendert nur eigene Zeilen
+--   - anonyme Oeffentlichkeit liest nur freigegebene Felder veroeffentlichter Produkte
+-- RLS wird NIE nachgeruestet, sondern von Anfang an mitgebaut.
