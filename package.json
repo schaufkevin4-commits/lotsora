@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "format": "prettier --write ."
+  },
+  "engines": {
+    "node": ">=24"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.112.3",
