@@ -109,12 +109,46 @@ export function zaehleNachStatus(produkte: Pick<Product, "status">[]) {
 
 // --- Datenzugriff (RLS filtert automatisch auf den eigenen Hersteller) -------
 
-// Alle eigenen Produkte, neueste zuerst.
-export async function getMeineProdukte(supabase: DB): Promise<Product[]> {
-  const { data, error } = await supabase
-    .from("products")
-    .select("*")
-    .order("updated_at", { ascending: false });
+// Sortierung der Übersicht (PP-020 E5: Übersicht/Sortierung — Spalte + Richtung).
+export type ProduktSortKey = "name" | "status" | "geaendert";
+export type SortRichtung = "asc" | "desc";
+
+// Auf welche echte Spalte die Sortierung zeigt.
+const SORT_SPALTE: Record<ProduktSortKey, "name" | "status" | "updated_at"> = {
+  name: "name",
+  status: "status",
+  geaendert: "updated_at",
+};
+
+// Sinnvolle Startrichtung je Spalte (Text A→Z, Datum neueste zuerst).
+export function standardRichtung(key: ProduktSortKey): SortRichtung {
+  return key === "geaendert" ? "desc" : "asc";
+}
+
+// Liest Sortier-Spalte und -Richtung robust aus der URL.
+export function parseSort(
+  sort: string | undefined,
+  dir: string | undefined,
+): { key: ProduktSortKey; dir: SortRichtung } {
+  const key: ProduktSortKey = sort === "name" || sort === "status" ? sort : "geaendert";
+  const richtung: SortRichtung =
+    dir === "asc" || dir === "desc" ? dir : standardRichtung(key);
+  return { key, dir: richtung };
+}
+
+// Alle eigenen Produkte, sortiert nach Spalte + Richtung. Standard: neueste zuerst.
+export async function getMeineProdukte(
+  supabase: DB,
+  key: ProduktSortKey = "geaendert",
+  dir: SortRichtung = "desc",
+): Promise<Product[]> {
+  const ascending = dir === "asc";
+  let query = supabase.from("products").select("*").order(SORT_SPALTE[key], { ascending });
+  // Beim Sortieren nach Status zusätzlich stabil nach Datum (neueste zuerst).
+  if (key === "status") {
+    query = query.order("updated_at", { ascending: false });
+  }
+  const { data, error } = await query;
   if (error) throw error;
   return data ?? [];
 }
@@ -165,4 +199,10 @@ export async function updateProdukt(
     .single();
   if (error) throw error;
   return data;
+}
+
+// Ein Produkt löschen (RLS lässt nur eigene zu).
+export async function deleteProdukt(supabase: DB, id: string): Promise<void> {
+  const { error } = await supabase.from("products").delete().eq("id", id);
+  if (error) throw error;
 }
