@@ -1,7 +1,7 @@
 // app/(intern)/produkte/[id]/ProduktFormular.tsx
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { produktSpeichern, type ProduktFormState } from "./actions";
 import { MaterialAbschnitt } from "./MaterialAbschnitt";
 import { ProduktdetailsAbschnitt } from "./ProduktdetailsAbschnitt";
@@ -23,6 +23,9 @@ const initial: ProduktFormState = { ok: false, error: null };
 
 // Markierung für leere Pflichtfelder: roter Rahmen + roter Fokus-Ring.
 const FEHLT_KLASSE = "border-destructive focus-visible:ring-destructive/30";
+
+// Autosave: so lange nach der letzten Änderung warten, bevor gesichert wird.
+const AUTOSAVE_MS = 1200;
 
 export function ProduktFormular({
   produkt,
@@ -50,8 +53,81 @@ export function ProduktFormular({
   const fehltDescription = description.trim() === "";
   const fehltCategory = category.trim() === "";
 
+  // --- Autosave (PP-019 E2): Knopf PLUS automatisches Sichern nach Tipp-Pause,
+  //     beides über dieselbe Server Action `produktSpeichern`. ----------------
+  const formRef = useRef<HTMLFormElement>(null);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const gespeicherterStand = useRef<string | null>(null); // was zuletzt gesichert wurde
+  const pendingRef = useRef(pending);
+  pendingRef.current = pending;
+  const [ungespeichert, setUngespeichert] = useState(false);
+
+  // Momentaufnahme des Formularinhalts – für „hat sich wirklich etwas geändert?".
+  function standJetzt(): string {
+    if (!formRef.current) return "";
+    const fd = new FormData(formRef.current);
+    return [...fd.entries()].map(([k, v]) => `${k}=${String(v)}`).join("&");
+  }
+
+  function sichereWennNoetig() {
+    if (pendingRef.current) return; // läuft schon; der pending-Effekt plant neu
+    if (standJetzt() === gespeicherterStand.current) return; // nichts Neues
+    formRef.current?.requestSubmit();
+  }
+
+  // Ausgangsstand beim Laden merken – gilt als „bereits gespeichert".
+  useEffect(() => {
+    gespeicherterStand.current = standJetzt();
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Wurde während eines Speicherns getippt, nach dem Ende erneut prüfen.
+  useEffect(() => {
+    if (!pending) sichereWennNoetig();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pending]);
+
+  // Erfolgreiches Speichern ⇒ Anzeige „sauber", wenn seither nichts Neues kam.
+  useEffect(() => {
+    if (state.ok && standJetzt() === gespeicherterStand.current) {
+      setUngespeichert(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state]);
+
+  // Nach jeder Änderung eine Sicherung planen (entprellt).
+  function planeAutosave() {
+    setUngespeichert(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(sichereWennNoetig, AUTOSAVE_MS);
+  }
+
+  // Beim Absenden (Knopf ODER Autosave) den gesicherten Stand festhalten.
+  function beimAbsenden() {
+    gespeicherterStand.current = standJetzt();
+  }
+
+  const statusText = pending
+    ? "Speichert …"
+    : state.error
+      ? "Nicht gespeichert"
+      : ungespeichert
+        ? "Nicht gespeicherte Änderungen"
+        : state.ok
+          ? "Automatisch gespeichert"
+          : "";
+
   return (
-    <form action={formAction} className="space-y-5">
+    <form
+      ref={formRef}
+      action={formAction}
+      onChange={planeAutosave}
+      onSubmit={beimAbsenden}
+      className="space-y-5"
+    >
       <section className="space-y-4 rounded-lg border p-5">
         <h2 className="font-medium">Basis</h2>
 
@@ -119,13 +195,11 @@ export function ProduktFormular({
           <AlertDescription>{state.error}</AlertDescription>
         </Alert>
       )}
-      {state.ok && (
-        <Alert className="border-green-200 bg-green-50 text-green-800">
-          <AlertDescription className="text-green-800">Gespeichert.</AlertDescription>
-        </Alert>
-      )}
 
-      <div className="flex justify-end">
+      <div className="flex items-center justify-end gap-3">
+        <span className="text-sm text-muted-foreground" aria-live="polite">
+          {statusText}
+        </span>
         <Button type="submit" disabled={pending}>
           {pending ? "Wird gespeichert …" : "Speichern"}
         </Button>
