@@ -206,3 +206,190 @@ export async function deleteProdukt(supabase: DB, id: string): Promise<void> {
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) throw error;
 }
+
+// --- Materialien: Datenzugriff (product_materials, 1:n) ----------------------
+// RLS (PP-017) stellt sicher, dass nur eigene Produktzeilen sichtbar/änderbar sind.
+
+export type Material = Database["public"]["Tables"]["product_materials"]["Row"];
+
+// Alle Materialien eines Produkts, in Eingabereihenfolge (älteste zuerst).
+export async function getMaterialien(supabase: DB, productId: string): Promise<Material[]> {
+  const { data, error } = await supabase
+    .from("product_materials")
+    .select("*")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data ?? [];
+}
+
+// Materialien eines Produkts speichern.
+// Strategie „replace all": erst alle alten Zeilen löschen, dann die neuen einfügen.
+// Einfach und fürs MVP ausreichend (kleine Mengen, nur eigene Zeilen per RLS).
+// PP-012: Eine Summe über 100 % wird hier serverseitig verhindert (harte Prüfung).
+export async function saveMaterialien(
+  supabase: DB,
+  productId: string,
+  materials: MaterialInput[],
+): Promise<void> {
+  // Leere Zeilen (ohne Namen) verwerfen, Namen säubern.
+  const bereinigt = materials
+    .map((m) => ({ materialName: m.materialName.trim(), percentage: m.percentage }))
+    .filter((m) => m.materialName.length > 0);
+
+  if (checkMaterialShares(bereinigt).isOverLimit) {
+    throw new Error("Die Materialanteile ergeben mehr als 100%.");
+  }
+
+  // Alte Zeilen entfernen …
+  const { error: delError } = await supabase
+    .from("product_materials")
+    .delete()
+    .eq("product_id", productId);
+  if (delError) throw delError;
+
+  // … nichts mehr einzufügen? Dann fertig.
+  if (bereinigt.length === 0) return;
+
+  const { error: insError } = await supabase.from("product_materials").insert(
+    bereinigt.map((m) => ({
+      product_id: productId,
+      material_name: m.materialName,
+      percentage: m.percentage,
+    })),
+  );
+  if (insError) throw insError;
+}
+
+// --- Textildaten: Datenzugriff (product_textile_data, 1:1) -------------------
+// Eine Zeile pro Produkt (product_id ist Primärschlüssel). Sie hält die
+// Produktdetails (Herkunft/Farbe/Größe) UND die Pflegehinweise. RLS (PP-017)
+// sichert den Zugriff ab.
+
+export type Textildaten = Database["public"]["Tables"]["product_textile_data"]["Row"];
+
+export type TextileInput = {
+  originCountry: string | null;
+  color: string | null;
+  size: string | null;
+  careInstructions: string | null;
+  washInstructions: string | null;
+};
+
+// Textildaten eines Produkts lesen (höchstens eine Zeile).
+export async function getTextildaten(
+  supabase: DB,
+  productId: string,
+): Promise<Textildaten | null> {
+  const { data, error } = await supabase
+    .from("product_textile_data")
+    .select("*")
+    .eq("product_id", productId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// Textildaten speichern (Upsert der ganzen 1:1-Zeile).
+// Sind ALLE Felder leer, wird keine leere Zeile angelegt bzw. eine vorhandene
+// entfernt — die Tabelle bleibt sauber.
+export async function saveTextildaten(
+  supabase: DB,
+  productId: string,
+  daten: TextileInput,
+): Promise<void> {
+  const zeile = {
+    product_id: productId,
+    origin_country: daten.originCountry,
+    color: daten.color,
+    size: daten.size,
+    care_instructions: daten.careInstructions,
+    wash_instructions: daten.washInstructions,
+  };
+
+  const allesLeer =
+    !zeile.origin_country &&
+    !zeile.color &&
+    !zeile.size &&
+    !zeile.care_instructions &&
+    !zeile.wash_instructions;
+
+  if (allesLeer) {
+    const { error } = await supabase
+      .from("product_textile_data")
+      .delete()
+      .eq("product_id", productId);
+    if (error) throw error;
+    return;
+  }
+
+  const { error } = await supabase
+    .from("product_textile_data")
+    .upsert(zeile, { onConflict: "product_id" });
+  if (error) throw error;
+}
+
+// --- Nutzung & Kreislauf: Datenzugriff (product_sustainability, 1:1) ---------
+// Eine Zeile pro Produkt (product_id ist Primärschlüssel). RLS (PP-017) sichert
+// den Zugriff ab. Wie bei den Textildaten spiegelt das Formular die ganze Zeile.
+
+export type Nachhaltigkeit =
+  Database["public"]["Tables"]["product_sustainability"]["Row"];
+
+export type NachhaltigkeitInput = {
+  recyclingNotes: string | null;
+  repairNotes: string | null;
+  disposalNotes: string | null;
+  reusableMaterials: string | null;
+};
+
+// Nachhaltigkeitsdaten eines Produkts lesen (höchstens eine Zeile).
+export async function getNachhaltigkeit(
+  supabase: DB,
+  productId: string,
+): Promise<Nachhaltigkeit | null> {
+  const { data, error } = await supabase
+    .from("product_sustainability")
+    .select("*")
+    .eq("product_id", productId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// Nachhaltigkeitsdaten speichern (Upsert der ganzen 1:1-Zeile).
+// Sind ALLE Felder leer, wird keine leere Zeile angelegt bzw. eine vorhandene
+// entfernt — die Tabelle bleibt sauber.
+export async function saveNachhaltigkeit(
+  supabase: DB,
+  productId: string,
+  daten: NachhaltigkeitInput,
+): Promise<void> {
+  const zeile = {
+    product_id: productId,
+    recycling_notes: daten.recyclingNotes,
+    repair_notes: daten.repairNotes,
+    disposal_notes: daten.disposalNotes,
+    reusable_materials: daten.reusableMaterials,
+  };
+
+  const allesLeer =
+    !zeile.recycling_notes &&
+    !zeile.repair_notes &&
+    !zeile.disposal_notes &&
+    !zeile.reusable_materials;
+
+  if (allesLeer) {
+    const { error } = await supabase
+      .from("product_sustainability")
+      .delete()
+      .eq("product_id", productId);
+    if (error) throw error;
+    return;
+  }
+
+  const { error } = await supabase
+    .from("product_sustainability")
+    .upsert(zeile, { onConflict: "product_id" });
+  if (error) throw error;
+}

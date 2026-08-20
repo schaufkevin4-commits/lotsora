@@ -1,7 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getProdukt } from "@/lib/services/products";
+import {
+  getProdukt,
+  getMaterialien,
+  getTextildaten,
+  getNachhaltigkeit,
+} from "@/lib/services/products";
 import { ProduktFormular } from "./ProduktFormular";
 import { LoeschenButton } from "./LoeschenButton";
 import { StatusBadge } from "@/components/produkte/status-badge";
@@ -13,8 +18,15 @@ export default async function ProduktEditorSeite({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+
   const produkt = await getProdukt(supabase, id);
   if (!produkt) notFound();
+
+  const [materialien, textildaten, nachhaltigkeit] = await Promise.all([
+    getMaterialien(supabase, id),
+    getTextildaten(supabase, id),
+    getNachhaltigkeit(supabase, id),
+  ]);
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -32,7 +44,12 @@ export default async function ProduktEditorSeite({
         </div>
       </div>
 
-      <ProduktFormular produkt={produkt} />
+      <ProduktFormular
+        produkt={produkt}
+        materialien={materialien}
+        textildaten={textildaten}
+        nachhaltigkeit={nachhaltigkeit}
+      />
     </div>
   );
 }
