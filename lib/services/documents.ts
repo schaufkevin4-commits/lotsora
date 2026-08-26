@@ -11,6 +11,12 @@ import type { Database } from "@/lib/types/database.types";
 type DB = SupabaseClient<Database>;
 
 export type Dokument = Database["public"]["Tables"]["documents"]["Row"];
+export type DokumentSichtbarkeit = Dokument["visibility"];
+
+// Wortlaut aus PP-013 E7. Als gemeinsame Konstante bleibt die Fachregel an
+// einer Stelle und kann von Dialog und Tests verwendet werden.
+export const FREIGABE_WARNUNG =
+  "Bitte prüfen Sie das Dokument vor der Freigabe auf personenbezogene Daten – zum Beispiel Ansprechpartner-Namen, Unterschriften und E-Mail-Adressen (häufig in Zertifikaten und Prüfberichten). Öffentlich freigegebene Dokumente sind für jeden über den QR-Code sichtbar.";
 
 // Privater Storage-Bucket (siehe Migration dokumente_storage). Nicht öffentlich.
 export const DOKUMENTE_BUCKET = "produkt-dokumente";
@@ -32,6 +38,14 @@ export const DOKUMENT_TYPEN = [
 export const MAX_DATEI_BYTES = 10 * 1024 * 1024; // 10 MB
 
 // --- Pure Helfer (testbar, ohne Server-Abhängigkeiten) -----------------------
+
+// FormData ist nicht vertrauenswürdig. Nur die zwei im Datenmodell erlaubten
+// Werte werden akzeptiert; alles andere wird als ungültig verworfen.
+export function parseDokumentSichtbarkeit(
+  wert: unknown,
+): DokumentSichtbarkeit | null {
+  return wert === "intern" || wert === "oeffentlich" ? wert : null;
+}
 
 // Dateinamen für einen Storage-Key säubern: nur a–z, 0–9, . _ - bleiben,
 // alles andere wird zu "-". Mehrfach-"-" werden zusammengefasst.
@@ -83,6 +97,41 @@ export async function getDokumenteMitUrl(
   const dokumente = await getDokumente(supabase, productId);
   return Promise.all(
     dokumente.map(async (d) => ({
+      ...d,
+      signedUrl: d.file_path
+        ? await erzeugeSignierteUrl(supabase, d.file_path)
+        : null,
+    })),
+  );
+}
+
+// Freigegebene Dokumente für die spätere öffentliche Produktpass-Seite.
+// Der Status wird hier zusätzlich zur RLS geprüft, damit auch ein eingeloggter
+// Hersteller über diesen öffentlichen Lesepfad nichts Unveröffentlichtes erhält.
+export async function getOeffentlicheDokumenteMitUrl(
+  supabase: DB,
+  productId: string,
+): Promise<DokumentMitUrl[]> {
+  const { data: produkt, error: produktError } = await supabase
+    .from("products")
+    .select("status")
+    .eq("id", productId)
+    .maybeSingle();
+
+  if (produktError) throw produktError;
+  if (produkt?.status !== "veroeffentlicht") return [];
+
+  const { data, error } = await supabase
+    .from("documents")
+    .select("*")
+    .eq("product_id", productId)
+    .eq("visibility", "oeffentlich")
+    .order("uploaded_at", { ascending: false });
+
+  if (error) throw error;
+
+  return Promise.all(
+    (data ?? []).map(async (d) => ({
       ...d,
       signedUrl: d.file_path
         ? await erzeugeSignierteUrl(supabase, d.file_path)
@@ -145,6 +194,24 @@ export async function ladeDokumentHoch(
     await supabase.storage.from(DOKUMENTE_BUCKET).remove([pfad]);
     throw error;
   }
+  return data;
+}
+
+// Sichtbarkeit eines eigenen Dokuments ändern. Die documents-RLS prüft dabei
+// weiterhin serverseitig, ob das Dokument zu einem Produkt des Nutzers gehört.
+export async function setzeDokumentSichtbarkeit(
+  supabase: DB,
+  id: string,
+  visibility: DokumentSichtbarkeit,
+): Promise<Dokument> {
+  const { data, error } = await supabase
+    .from("documents")
+    .update({ visibility })
+    .eq("id", id)
+    .select()
+    .single();
+
+  if (error) throw error;
   return data;
 }
 

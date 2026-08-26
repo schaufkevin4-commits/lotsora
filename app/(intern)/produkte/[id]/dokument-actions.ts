@@ -6,9 +6,12 @@ import {
   ladeDokumentHoch,
   loescheDokument,
   MAX_DATEI_BYTES,
+  parseDokumentSichtbarkeit,
+  setzeDokumentSichtbarkeit,
 } from "@/lib/services/documents";
 
 export type DokumentFormState = { ok: boolean; error: string | null };
+export type SichtbarkeitFormState = DokumentFormState;
 
 // Leerer/whitespace Text ⇒ null, sonst getrimmter Text (für optionale Felder).
 function textOderNull(wert: FormDataEntryValue | null): string | null {
@@ -44,6 +47,40 @@ export async function dokumentHochladen(
 } catch (e) {
     console.error("Upload-Fehler:", e);
     return { ok: false, error: "Upload fehlgeschlagen. Bitte erneut versuchen." };
+  }
+
+  revalidatePath(`/produkte/${productId}`);
+  return { ok: true, error: null };
+}
+
+// Sichtbarkeit bewusst umschalten. Auch gebundene Argumente kommen letztlich
+// vom Client und werden deshalb zur Laufzeit validiert. Die Eigentumsprüfung
+// übernimmt zusätzlich die RLS-Policy der documents-Tabelle.
+export async function dokumentSichtbarkeitAendern(
+  id: string,
+  productId: string,
+  ziel: unknown,
+  _prev: SichtbarkeitFormState,
+  _formData: FormData,
+): Promise<SichtbarkeitFormState> {
+  void _prev;
+  void _formData;
+
+  const visibility = parseDokumentSichtbarkeit(ziel);
+  if (!visibility) {
+    return { ok: false, error: "Ungültige Sichtbarkeit." };
+  }
+
+  const supabase = await createClient();
+  try {
+    await setzeDokumentSichtbarkeit(supabase, id, visibility);
+  } catch (e) {
+    console.error("Sichtbarkeits-Fehler:", e);
+    return {
+      ok: false,
+      error:
+        "Sichtbarkeit konnte nicht geändert werden. Bitte erneut versuchen.",
+    };
   }
 
   revalidatePath(`/produkte/${productId}`);

@@ -4,9 +4,16 @@ import { useActionState, useEffect, useRef } from "react";
 import {
   dokumentHochladen,
   dokumentLoeschen,
+  dokumentSichtbarkeitAendern,
   type DokumentFormState,
+  type SichtbarkeitFormState,
 } from "./dokument-actions";
-import { DOKUMENT_TYPEN, type DokumentMitUrl } from "@/lib/services/documents";
+import {
+  DOKUMENT_TYPEN,
+  FREIGABE_WARNUNG,
+  type DokumentMitUrl,
+  type DokumentSichtbarkeit,
+} from "@/lib/services/documents";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,6 +32,71 @@ import {
 } from "@/components/ui/dialog";
 
 const initial: DokumentFormState = { ok: false, error: null };
+
+function SichtbarkeitButton({
+  id,
+  productId,
+  sichtbarkeit,
+}: {
+  id: string;
+  productId: string;
+  sichtbarkeit: DokumentSichtbarkeit;
+}) {
+  const ziel = sichtbarkeit === "intern" ? "oeffentlich" : "intern";
+  const [state, formAction, pending] = useActionState(
+    dokumentSichtbarkeitAendern.bind(null, id, productId, ziel),
+    initial satisfies SichtbarkeitFormState,
+  );
+
+  // Zurück auf „intern" ist reversibel und braucht keine Datenschutz-Warnung.
+  if (ziel === "intern") {
+    return (
+      <div className="text-right">
+        <form action={formAction}>
+          <Button type="submit" variant="outline" size="sm" disabled={pending}>
+            {pending ? "Wird geändert …" : "Freigabe aufheben"}
+          </Button>
+        </form>
+        {state.error && (
+          <p className="mt-1 max-w-56 text-xs text-destructive">{state.error}</p>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          Freigeben
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Dokument öffentlich freigeben?</DialogTitle>
+          <DialogDescription>{FREIGABE_WARNUNG}</DialogDescription>
+        </DialogHeader>
+        {state.error && (
+          <Alert variant="destructive">
+            <AlertDescription>{state.error}</AlertDescription>
+          </Alert>
+        )}
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline" disabled={pending}>
+              Abbrechen
+            </Button>
+          </DialogClose>
+          <form action={formAction}>
+            <Button type="submit" disabled={pending}>
+              {pending ? "Wird freigegeben …" : "Öffentlich freigeben"}
+            </Button>
+          </form>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
 
 // Lösch-Knopf mit echtem Bestätigungs-Dialog (shadcn) – funktioniert in jedem
 // Browser, auch im eingebetteten. Gleicher Stil wie das Produkt-Löschen.
@@ -90,8 +162,8 @@ export function DokumenteAbschnitt({
       <div>
         <h2 className="font-medium">Dokumente</h2>
         <p className="text-sm text-muted-foreground">
-          Zertifikate, Prüfberichte, Datenblätter … Alle Dokumente sind zunächst
-          nur intern sichtbar. Das öffentliche Freigeben kommt später.
+          Zertifikate, Prüfberichte, Datenblätter … Neue Dokumente sind zunächst
+          nur intern sichtbar und können bewusst freigegeben werden.
         </p>
       </div>
 
@@ -166,7 +238,11 @@ export function DokumenteAbschnitt({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="truncate font-medium">{d.name}</span>
-                  <Badge variant="secondary">intern</Badge>
+                  <Badge
+                    variant={d.visibility === "oeffentlich" ? "default" : "secondary"}
+                  >
+                    {d.visibility === "oeffentlich" ? "öffentlich" : "intern"}
+                  </Badge>
                 </div>
                 <p className="truncate text-sm text-muted-foreground">
                   {d.doc_type ? `${d.doc_type} · ` : ""}
@@ -184,6 +260,12 @@ export function DokumenteAbschnitt({
                     Öffnen
                   </a>
                 )}
+                <SichtbarkeitButton
+                  key={`${d.id}-${d.visibility}`}
+                  id={d.id}
+                  productId={productId}
+                  sichtbarkeit={d.visibility}
+                />
                 <EntfernenButton id={d.id} productId={productId} name={d.name} />
               </div>
             </li>
