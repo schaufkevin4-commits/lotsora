@@ -7,7 +7,9 @@ import {
   getTextildaten,
   getNachhaltigkeit,
 } from "@/lib/services/products";
+import { getDokumenteMitUrl } from "@/lib/services/documents";
 import { ProduktFormular } from "./ProduktFormular";
+import { DokumenteAbschnitt } from "./DokumenteAbschnitt";
 import { LoeschenButton } from "./LoeschenButton";
 import { StatusBadge } from "@/components/produkte/status-badge";
 
@@ -22,10 +24,11 @@ export default async function ProduktEditorSeite({
   const produkt = await getProdukt(supabase, id);
   if (!produkt) notFound();
 
-  const [materialien, textildaten, nachhaltigkeit] = await Promise.all([
+  const [materialien, textildaten, nachhaltigkeit, dokumente] = await Promise.all([
     getMaterialien(supabase, id),
     getTextildaten(supabase, id),
     getNachhaltigkeit(supabase, id),
+    getDokumenteMitUrl(supabase, id),
   ]);
 
   return (
@@ -50,6 +53,8 @@ export default async function ProduktEditorSeite({
         textildaten={textildaten}
         nachhaltigkeit={nachhaltigkeit}
       />
+
+      <DokumenteAbschnitt productId={id} dokumente={dokumente} />
     </div>
   );
 }
