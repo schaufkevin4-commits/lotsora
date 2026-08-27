@@ -8,10 +8,13 @@ import {
   updateProdukt,
   deleteProdukt,
   leiteStatusAb,
+  canPublish,
   checkMaterialShares,
   saveMaterialien,
   saveTextildaten,
   saveNachhaltigkeit,
+  veroeffentlicheProdukt,
+  zieheProduktZurueck,
   type MaterialInput,
 } from "@/lib/services/products";
 
@@ -81,7 +84,24 @@ export async function produktSpeichern(
 
   try {
     const aktuell = await getProdukt(supabase, id);
-    const status = leiteStatusAb(basis, aktuell?.status ?? "entwurf");
+    if (!aktuell) {
+      return { ok: false, error: "Produkt nicht gefunden." };
+    }
+
+    // PP-011: Veröffentlichte Produkte dürfen beim späteren Bearbeiten keine
+    // Pflichtfelder verlieren. Dasselbe zentrale Gate wie beim Veröffentlichen
+    // verhindert damit einen inkonsistenten öffentlich sichtbaren Zustand.
+    if (aktuell.status === "veroeffentlicht") {
+      const publishCheck = canPublish(basis, materialien);
+      if (!publishCheck.ok) {
+        return {
+          ok: false,
+          error: `Veröffentlichtes Produkt kann so nicht gespeichert werden: ${publishCheck.reasons.join(" ")}`,
+        };
+      }
+    }
+
+    const status = leiteStatusAb(basis, aktuell.status);
     await updateProdukt(supabase, id, { ...basis, status });
     await saveMaterialien(supabase, id, materialien);
     await saveTextildaten(supabase, id, textildaten);
@@ -102,4 +122,39 @@ export async function produktLoeschen(id: string) {
   revalidatePath("/produkte");
   revalidatePath("/dashboard");
   redirect("/produkte");
+}
+
+export type VeroeffentlichenState = { ok: boolean; reasons: string[] };
+
+export async function produktVeroeffentlichen(
+  id: string,
+  _prev: VeroeffentlichenState,
+  _formData: FormData,
+): Promise<VeroeffentlichenState> {
+  void _prev;
+  void _formData;
+
+  const supabase = await createClient();
+  try {
+    const ergebnis = await veroeffentlicheProdukt(supabase, id);
+    if (!ergebnis.ok) return ergebnis;
+  } catch {
+    return {
+      ok: false,
+      reasons: ["Veröffentlichen fehlgeschlagen. Bitte erneut versuchen."],
+    };
+  }
+
+  revalidatePath(`/produkte/${id}`);
+  revalidatePath("/produkte");
+  revalidatePath("/dashboard");
+  return { ok: true, reasons: [] };
+}
+
+export async function produktZurueckziehen(id: string): Promise<void> {
+  const supabase = await createClient();
+  await zieheProduktZurueck(supabase, id);
+  revalidatePath(`/produkte/${id}`);
+  revalidatePath("/produkte");
+  revalidatePath("/dashboard");
 }

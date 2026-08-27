@@ -6,12 +6,15 @@ import {
   getMaterialien,
   getTextildaten,
   getNachhaltigkeit,
+  getMissingRequiredFields,
+  checkMaterialShares,
 } from "@/lib/services/products";
 import { getDokumenteMitUrl } from "@/lib/services/documents";
 import { ProduktFormular } from "./ProduktFormular";
 import { DokumenteAbschnitt } from "./DokumenteAbschnitt";
 import { LoeschenButton } from "./LoeschenButton";
 import { StatusBadge } from "@/components/produkte/status-badge";
+import { VeroeffentlichenAbschnitt } from "./VeroeffentlichenAbschnitt";
 
 export default async function ProduktEditorSeite({
   params,
@@ -30,6 +33,12 @@ export default async function ProduktEditorSeite({
     getNachhaltigkeit(supabase, id),
     getDokumenteMitUrl(supabase, id),
   ]);
+  const materialInputs = materialien.map((material) => ({
+    materialName: material.material_name,
+    percentage: Number(material.percentage),
+  }));
+  const fehlendePflichtfelder = getMissingRequiredFields(produkt);
+  const materialSumme = checkMaterialShares(materialInputs).sum;
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -55,6 +64,14 @@ export default async function ProduktEditorSeite({
       />
 
       <DokumenteAbschnitt productId={id} dokumente={dokumente} />
+
+      <VeroeffentlichenAbschnitt
+        key={produkt.status}
+        productId={produkt.id}
+        status={produkt.status}
+        fehlendePflichtfelder={fehlendePflichtfelder}
+        materialSumme={materialSumme}
+      />
     </div>
   );
 }

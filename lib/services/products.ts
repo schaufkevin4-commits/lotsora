@@ -96,6 +96,8 @@ export function canPublish(
   return { ok: reasons.length === 0, reasons };
 }
 
+export type VeroeffentlichenErgebnis = { ok: boolean; reasons: string[] };
+
 // Zählt Produkte nach Status für die Dashboard-Kacheln (PP-011).
 export function zaehleNachStatus(produkte: Pick<Product, "status">[]) {
   return {
@@ -199,6 +201,41 @@ export async function updateProdukt(
     .single();
   if (error) throw error;
   return data;
+}
+
+// Produkt aktiv veröffentlichen. Der zentrale canPublish-Check läuft direkt
+// vor dem Statuswechsel erneut auf dem Server (PP-011 + PP-012).
+export async function veroeffentlicheProdukt(
+  supabase: DB,
+  id: string,
+): Promise<VeroeffentlichenErgebnis> {
+  const [produkt, materialien] = await Promise.all([
+    getProdukt(supabase, id),
+    getMaterialien(supabase, id),
+  ]);
+  if (!produkt) return { ok: false, reasons: ["Produkt nicht gefunden."] };
+
+  const check = canPublish(
+    produkt,
+    materialien.map((material) => ({
+      materialName: material.material_name,
+      percentage: Number(material.percentage),
+    })),
+  );
+  if (!check.ok) return check;
+
+  await updateProdukt(supabase, id, { status: "veroeffentlicht" });
+  return { ok: true, reasons: [] };
+}
+
+// Veröffentlichung aufheben und den internen Status neu aus den Pflichtfeldern
+// ableiten. Der Startwert „entwurf" erzwingt die Neuberechnung (PP-011).
+export async function zieheProduktZurueck(supabase: DB, id: string): Promise<Product> {
+  const produkt = await getProdukt(supabase, id);
+  if (!produkt) throw new Error("Produkt nicht gefunden.");
+
+  const status = leiteStatusAb(produkt, "entwurf");
+  return updateProdukt(supabase, id, { status });
 }
 
 // Ein Produkt löschen (RLS lässt nur eigene zu).

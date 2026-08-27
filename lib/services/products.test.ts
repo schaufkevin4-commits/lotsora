@@ -103,6 +103,21 @@ describe("canPublish (PP-011 + PP-012)", () => {
     expect(r.ok).toBe(true);
     expect(r.reasons).toEqual([]);
   });
+  it("erlaubt weniger als 100 % Material als weichen Hinweis", () => {
+    const r = canPublish({ name: "T", description: "D", category: "C" }, [
+      { materialName: "Baumwolle", percentage: 80 },
+    ]);
+    expect(r.ok).toBe(true);
+    expect(r.reasons).toEqual([]);
+  });
+  it("sperrt mehr als 100 % trotz vollständiger Pflichtfelder", () => {
+    const r = canPublish({ name: "T", description: "D", category: "C" }, [
+      { materialName: "Baumwolle", percentage: 80 },
+      { materialName: "Polyester", percentage: 30 },
+    ]);
+    expect(r.ok).toBe(false);
+    expect(r.reasons).toContain("Die Materialanteile ergeben mehr als 100%.");
+  });
 });
 
 describe("parseSort / standardRichtung (PP-020 E5)", () => {
