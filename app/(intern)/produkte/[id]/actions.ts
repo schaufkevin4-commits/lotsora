@@ -9,7 +9,7 @@ import {
   deleteProdukt,
   leiteStatusAb,
   canPublish,
-  checkMaterialShares,
+  validateMaterialShares,
   saveMaterialien,
   saveTextildaten,
   saveNachhaltigkeit,
@@ -20,10 +20,10 @@ import {
 
 export type ProduktFormState = { ok: boolean; error: string | null };
 
-// "80" oder "80,5" ⇒ Zahl. Ungültiges ⇒ 0.
+// "80" oder "80,5" ⇒ Zahl. Ungültiges wird von der Materialprüfung abgewiesen.
 function zuProzent(wert: FormDataEntryValue | undefined): number {
   const n = Number(String(wert ?? "").replace(",", "."));
-  return Number.isFinite(n) ? n : 0;
+  return Number.isFinite(n) ? n : Number.NaN;
 }
 
 // Leerer/whitespace Text ⇒ null, sonst getrimmter Text (für optionale Felder).
@@ -76,10 +76,10 @@ export async function produktSpeichern(
     reusableMaterials: textOderNull(formData.get("reusable_materials")),
   };
 
-  // PP-012 hart: über 100 % wird gar nicht gespeichert (klare Rückmeldung).
-  const check = checkMaterialShares(materialien);
-  if (check.isOverLimit) {
-    return { ok: false, error: check.message };
+  // PP-012 hart: alle Materialwerte prüfen, bevor eine DB-Operation startet.
+  const materialFehler = validateMaterialShares(materialien);
+  if (materialFehler) {
+    return { ok: false, error: materialFehler };
   }
 
   try {

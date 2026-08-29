@@ -59,7 +59,6 @@ export function ProduktFormular({
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const gespeicherterStand = useRef<string | null>(null); // was zuletzt gesichert wurde
   const pendingRef = useRef(pending);
-  pendingRef.current = pending;
   const [ungespeichert, setUngespeichert] = useState(false);
 
   // Momentaufnahme des Formularinhalts – für „hat sich wirklich etwas geändert?".
@@ -81,8 +80,11 @@ export function ProduktFormular({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    pendingRef.current = pending;
+  }, [pending]);
 
   // Wurde während eines Speicherns getippt, nach dem Ende erneut prüfen.
   useEffect(() => {
@@ -95,7 +97,6 @@ export function ProduktFormular({
     if (state.ok && standJetzt() === gespeicherterStand.current) {
       setUngespeichert(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   // Nach jeder Änderung eine Sicherung planen (entprellt).

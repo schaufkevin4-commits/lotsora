@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import {
   checkMaterialShares,
+  validateMaterialShares,
   leiteStatusAb,
   getMissingRequiredFields,
   canPublish,
@@ -117,6 +118,35 @@ describe("canPublish (PP-011 + PP-012)", () => {
     ]);
     expect(r.ok).toBe(false);
     expect(r.reasons).toContain("Die Materialanteile ergeben mehr als 100%.");
+  });
+});
+
+describe("validateMaterialShares (PP-012)", () => {
+  it("weist negative und nicht endliche Einzelwerte ab", () => {
+    expect(
+      validateMaterialShares([{ materialName: "A", percentage: -1 }]),
+    ).toContain("0% und 100%");
+    expect(
+      validateMaterialShares([{ materialName: "A", percentage: Number.NaN }]),
+    ).toContain("0% und 100%");
+  });
+
+  it("weist Einzelwerte über 100 auch bei ausgeglichener Summe ab", () => {
+    expect(
+      validateMaterialShares([
+        { materialName: "A", percentage: 110 },
+        { materialName: "B", percentage: -10 },
+      ]),
+    ).toContain("0% und 100%");
+  });
+
+  it("wendet die bestehende Summenregel an", () => {
+    expect(
+      validateMaterialShares([
+        { materialName: "A", percentage: 60 },
+        { materialName: "B", percentage: 50 },
+      ]),
+    ).toContain("mehr als 100%");
   });
 });
 
