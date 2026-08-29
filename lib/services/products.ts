@@ -52,6 +52,21 @@ export function checkMaterialShares(materials: MaterialInput[]): MaterialCheck {
   return { sum, isOverLimit: false, isUnderLimit: false, message: null };
 }
 
+export function validateMaterialShares(materials: MaterialInput[]): string | null {
+  const hatUngueltigenAnteil = materials.some(
+    (material) =>
+      !Number.isFinite(material.percentage) ||
+      material.percentage < 0 ||
+      material.percentage > 100,
+  );
+  if (hatUngueltigenAnteil) {
+    return "Jeder Materialanteil muss zwischen 0% und 100% liegen.";
+  }
+
+  const check = checkMaterialShares(materials);
+  return check.isOverLimit ? check.message : null;
+}
+
 // --- PP-010/PP-011: Pflichtfelder, Status & Veröffentlichung -----------------
 
 export type ProductDraft = {
@@ -260,10 +275,8 @@ export async function getMaterialien(supabase: DB, productId: string): Promise<M
   return data ?? [];
 }
 
-// Materialien eines Produkts speichern.
-// Strategie „replace all": erst alle alten Zeilen löschen, dann die neuen einfügen.
-// Einfach und fürs MVP ausreichend (kleine Mengen, nur eigene Zeilen per RLS).
-// PP-012: Eine Summe über 100 % wird hier serverseitig verhindert (harte Prüfung).
+// Materialien eines Produkts atomar ersetzen. Die RPC-Funktion validiert zusätzlich
+// in der DB und führt Löschen + Einfügen als eine Transaktion unter RLS aus.
 export async function saveMaterialien(
   supabase: DB,
   productId: string,
@@ -274,28 +287,19 @@ export async function saveMaterialien(
     .map((m) => ({ materialName: m.materialName.trim(), percentage: m.percentage }))
     .filter((m) => m.materialName.length > 0);
 
-  if (checkMaterialShares(bereinigt).isOverLimit) {
-    throw new Error("Die Materialanteile ergeben mehr als 100%.");
+  const validierungsfehler = validateMaterialShares(bereinigt);
+  if (validierungsfehler) {
+    throw new Error(validierungsfehler);
   }
 
-  // Alte Zeilen entfernen …
-  const { error: delError } = await supabase
-    .from("product_materials")
-    .delete()
-    .eq("product_id", productId);
-  if (delError) throw delError;
-
-  // … nichts mehr einzufügen? Dann fertig.
-  if (bereinigt.length === 0) return;
-
-  const { error: insError } = await supabase.from("product_materials").insert(
-    bereinigt.map((m) => ({
-      product_id: productId,
+  const { error } = await supabase.rpc("replace_product_materials", {
+    p_product_id: productId,
+    p_materials: bereinigt.map((m) => ({
       material_name: m.materialName,
       percentage: m.percentage,
     })),
-  );
-  if (insError) throw insError;
+  });
+  if (error) throw error;
 }
 
 // --- Textildaten: Datenzugriff (product_textile_data, 1:1) -------------------
