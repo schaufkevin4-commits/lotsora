@@ -434,3 +434,57 @@ export async function saveNachhaltigkeit(
     .upsert(zeile, { onConflict: "product_id" });
   if (error) throw error;
 }
+
+// Das vollständige Produktformular in genau einer DB-Transaktion speichern.
+// Fachregeln bleiben in TypeScript; die RPC kapselt ausschließlich die Writes.
+export async function saveProdukt(
+  supabase: DB,
+  productId: string,
+  produkt: {
+    name: string;
+    description: string;
+    category: string;
+    brand: string | null;
+    status: ProductStatus;
+  },
+  materials: MaterialInput[],
+  textildaten: TextileInput,
+  nachhaltigkeit: NachhaltigkeitInput,
+): Promise<void> {
+  const bereinigt = materials
+    .map((material) => ({
+      materialName: material.materialName.trim(),
+      percentage: material.percentage,
+    }))
+    .filter((material) => material.materialName.length > 0);
+
+  const validierungsfehler = validateMaterialShares(bereinigt);
+  if (validierungsfehler) throw new Error(validierungsfehler);
+
+  const { error } = await supabase.rpc("save_product", {
+    p_product_id: productId,
+    p_name: produkt.name,
+    p_description: produkt.description,
+    p_category: produkt.category,
+    p_brand: produkt.brand ?? "",
+    p_status: produkt.status,
+    p_materials: bereinigt.map((material) => ({
+      material_name: material.materialName,
+      percentage: material.percentage,
+    })),
+    p_textile_data: {
+      origin_country: textildaten.originCountry,
+      color: textildaten.color,
+      size: textildaten.size,
+      care_instructions: textildaten.careInstructions,
+      wash_instructions: textildaten.washInstructions,
+    },
+    p_sustainability: {
+      recycling_notes: nachhaltigkeit.recyclingNotes,
+      repair_notes: nachhaltigkeit.repairNotes,
+      disposal_notes: nachhaltigkeit.disposalNotes,
+      reusable_materials: nachhaltigkeit.reusableMaterials,
+    },
+  });
+  if (error) throw error;
+}
