@@ -291,6 +291,20 @@ export type Database = {
         Args: { p_materials: Json; p_product_id: string }
         Returns: undefined
       }
+      save_product: {
+        Args: {
+          p_brand: string
+          p_category: string
+          p_description: string
+          p_materials: Json
+          p_name: string
+          p_product_id: string
+          p_status: Database["public"]["Enums"]["product_status"]
+          p_sustainability: Json
+          p_textile_data: Json
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       document_visibility: "intern" | "oeffentlich"

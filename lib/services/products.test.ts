@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   checkMaterialShares,
   validateMaterialShares,
@@ -8,6 +8,7 @@ import {
   parseSort,
   standardRichtung,
   zaehleNachStatus,
+  saveProdukt,
   type ProductStatus,
 } from "@/lib/services/products";
 
@@ -175,5 +176,62 @@ describe("zaehleNachStatus (Dashboard-Kacheln)", () => {
     expect(z.gesamt).toBe(4);
     expect(z.veroeffentlicht).toBe(2);
     expect(z.entwuerfe).toBe(2);
+  });
+});
+
+describe("saveProdukt (W1)", () => {
+  it("speichert alle Formularbereiche über genau einen RPC-Aufruf", async () => {
+    const rpc = vi.fn().mockResolvedValue({ error: null });
+    const supabase = { rpc } as unknown as Parameters<typeof saveProdukt>[0];
+
+    await saveProdukt(
+      supabase,
+      "produkt-1",
+      {
+        name: "Hemd",
+        description: "Leinenhemd",
+        category: "Oberteil",
+        brand: null,
+        status: "entwurf",
+      },
+      [{ materialName: " Leinen ", percentage: 100 }],
+      {
+        originCountry: "DE",
+        color: "Blau",
+        size: "M",
+        careInstructions: null,
+        washInstructions: "30 Grad",
+      },
+      {
+        recyclingNotes: "Sortenrein",
+        repairNotes: null,
+        disposalNotes: null,
+        reusableMaterials: "Knöpfe",
+      },
+    );
+
+    expect(rpc).toHaveBeenCalledOnce();
+    expect(rpc).toHaveBeenCalledWith("save_product", {
+      p_product_id: "produkt-1",
+      p_name: "Hemd",
+      p_description: "Leinenhemd",
+      p_category: "Oberteil",
+      p_brand: "",
+      p_status: "entwurf",
+      p_materials: [{ material_name: "Leinen", percentage: 100 }],
+      p_textile_data: {
+        origin_country: "DE",
+        color: "Blau",
+        size: "M",
+        care_instructions: null,
+        wash_instructions: "30 Grad",
+      },
+      p_sustainability: {
+        recycling_notes: "Sortenrein",
+        repair_notes: null,
+        disposal_notes: null,
+        reusable_materials: "Knöpfe",
+      },
+    });
   });
 });

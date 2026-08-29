@@ -5,14 +5,11 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   getProdukt,
-  updateProdukt,
   deleteProdukt,
   leiteStatusAb,
   canPublish,
   validateMaterialShares,
-  saveMaterialien,
-  saveTextildaten,
-  saveNachhaltigkeit,
+  saveProdukt,
   veroeffentlicheProdukt,
   zieheProduktZurueck,
   type MaterialInput,
@@ -102,10 +99,14 @@ export async function produktSpeichern(
     }
 
     const status = leiteStatusAb(basis, aktuell.status);
-    await updateProdukt(supabase, id, { ...basis, status });
-    await saveMaterialien(supabase, id, materialien);
-    await saveTextildaten(supabase, id, textildaten);
-    await saveNachhaltigkeit(supabase, id, nachhaltigkeit);
+    await saveProdukt(
+      supabase,
+      id,
+      { ...basis, status },
+      materialien,
+      textildaten,
+      nachhaltigkeit,
+    );
   } catch {
     return { ok: false, error: "Speichern fehlgeschlagen. Bitte erneut versuchen." };
   }
