@@ -15,6 +15,8 @@ import { DokumenteAbschnitt } from "./DokumenteAbschnitt";
 import { LoeschenButton } from "./LoeschenButton";
 import { StatusBadge } from "@/components/produkte/status-badge";
 import { VeroeffentlichenAbschnitt } from "./VeroeffentlichenAbschnitt";
+import { buildPassUrl, generateQrSvg } from "@/lib/qr";
+import { QrCodeAbschnitt } from "./QrCodeAbschnitt";
 
 export default async function ProduktEditorSeite({
   params,
@@ -39,6 +41,12 @@ export default async function ProduktEditorSeite({
   }));
   const fehlendePflichtfelder = getMissingRequiredFields(produkt);
   const materialSumme = checkMaterialShares(materialInputs).sum;
+
+  // QR-Code: für veröffentlichte Produkte (PP-016) dauerhafte, ID-basierte
+  // Pass-URL bauen und serverseitig als SVG erzeugen. Entwurf ⇒ null ⇒ Platzhalter.
+  const istVeroeffentlicht = produkt.status === "veroeffentlicht";
+  const passUrl = istVeroeffentlicht ? buildPassUrl(produkt.id) : null;
+  const qrSvg = passUrl ? await generateQrSvg(passUrl) : null;
 
   return (
     <div className="max-w-2xl space-y-6">
@@ -72,6 +80,8 @@ export default async function ProduktEditorSeite({
         fehlendePflichtfelder={fehlendePflichtfelder}
         materialSumme={materialSumme}
       />
+
+      <QrCodeAbschnitt svg={qrSvg} passUrl={passUrl} />
     </div>
   );
 }
