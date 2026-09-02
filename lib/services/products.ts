@@ -7,6 +7,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database.types";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
+import {
+  getDokumenteMitUrl,
+  getOeffentlicheDokumenteMitUrl,
+  type DokumentMitUrl,
+} from "@/lib/services/documents";
 
 type DB = SupabaseClient<Database>;
 
@@ -487,4 +492,133 @@ export async function saveProdukt(
     },
   });
   if (error) throw error;
+}
+// --- Öffentlicher Produktpass (Tag 27, PP-013) -------------------------------
+// Lesepfad für die öffentliche Seite /p/<id> UND die Editor-Vorschau. Läuft auch
+// für anonyme Besucher: RLS (Migration produktpass_oeffentlich) gibt nur die
+// öffentlichen Felder VERÖFFENTLICHTER Produkte frei. Bei products/manufacturers
+// lesen wir nur die erlaubten Spalten einzeln – kein select *, sonst Rechte-Fehler.
+
+export type OeffentlicherHersteller = {
+  company_name: string;
+  country: string | null;
+  website: string | null;
+};
+
+export type OeffentlicherPass = {
+  produkt: {
+    id: string;
+    name: string;
+    description: string;
+    category: string;
+    brand: string | null;
+    image_url: string | null;
+    updated_at: string;
+  };
+  hersteller: OeffentlicherHersteller | null;
+  materialien: Material[];
+  textildaten: Textildaten | null;
+  nachhaltigkeit: Nachhaltigkeit | null;
+  dokumente: DokumentMitUrl[];
+};
+
+// Öffentliche Herstellerfelder (nur Firmenname/Land/Website, PP-013 E1).
+export async function getOeffentlicherHersteller(
+  supabase: DB,
+  manufacturerId: string,
+): Promise<OeffentlicherHersteller | null> {
+  const { data, error } = await supabase
+    .from("manufacturers")
+    .select("company_name, country, website")
+    .eq("id", manufacturerId)
+    .maybeSingle();
+  if (error) throw error;
+  return data;
+}
+
+// Kompletten öffentlichen Pass eines veröffentlichten Produkts holen.
+// Nicht veröffentlicht oder unbekannt ⇒ null (die Seite zeigt dann den neutralen
+// Hinweis statt 404, PP-013 E3).
+export async function getOeffentlicherPass(
+  supabase: DB,
+  id: string,
+): Promise<OeffentlicherPass | null> {
+  const { data: produkt, error } = await supabase
+    .from("products")
+    .select(
+      "id, name, description, category, brand, image_url, updated_at, manufacturer_id, status",
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw error;
+  if (!produkt || produkt.status !== "veroeffentlicht") return null;
+
+  const [hersteller, materialien, textildaten, nachhaltigkeit, dokumente] =
+    await Promise.all([
+      getOeffentlicherHersteller(supabase, produkt.manufacturer_id),
+      getMaterialien(supabase, id),
+      getTextildaten(supabase, id),
+      getNachhaltigkeit(supabase, id),
+      getOeffentlicheDokumenteMitUrl(supabase, id),
+    ]);
+
+  return {
+    produkt: {
+      id: produkt.id,
+      name: produkt.name,
+      description: produkt.description,
+      category: produkt.category,
+      brand: produkt.brand,
+      image_url: produkt.image_url,
+      updated_at: produkt.updated_at,
+    },
+    hersteller,
+    materialien,
+    textildaten,
+    nachhaltigkeit,
+    dokumente,
+  };
+}
+// Vorschau-Pass für den eingeloggten Hersteller (PP-019 E4): zeigt, wie die
+// öffentliche Seite aussieht – auch im Entwurf. Nutzt die Eigentümer-Lesepfade
+// (RLS: nur Eigenes). Dokumente = die als 'oeffentlich' markierten, unabhängig
+// vom Veröffentlichungsstatus (damit die Vorschau auch im Entwurf stimmt).
+export async function getVorschauPass(
+  supabase: DB,
+  id: string,
+): Promise<OeffentlicherPass | null> {
+  const produkt = await getProdukt(supabase, id);
+  if (!produkt) return null;
+
+  const [hersteller, materialien, textildaten, nachhaltigkeit, alleDokumente] =
+    await Promise.all([
+      getMeinHersteller(supabase),
+      getMaterialien(supabase, id),
+      getTextildaten(supabase, id),
+      getNachhaltigkeit(supabase, id),
+      getDokumenteMitUrl(supabase, id),
+    ]);
+
+  return {
+    produkt: {
+      id: produkt.id,
+      name: produkt.name,
+      description: produkt.description,
+      category: produkt.category,
+      brand: produkt.brand,
+      image_url: produkt.image_url,
+      updated_at: produkt.updated_at,
+    },
+    hersteller: hersteller
+      ? {
+          company_name: hersteller.company_name,
+          country: hersteller.country,
+          website: hersteller.website,
+        }
+      : null,
+    materialien,
+    textildaten,
+    nachhaltigkeit,
+    dokumente: alleDokumente.filter((d) => d.visibility === "oeffentlich"),
+  };
 }

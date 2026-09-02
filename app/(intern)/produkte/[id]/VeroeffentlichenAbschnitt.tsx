@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import Link from "next/link";
 
 const initial: VeroeffentlichenState = { ok: false, reasons: [] };
 
@@ -80,6 +81,8 @@ export function VeroeffentlichenAbschnitt({
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
+
+            
                 <DialogTitle>Produkt veröffentlichen?</DialogTitle>
                 <DialogDescription>
                   Das Produkt wird öffentlich über seinen dauerhaften Link und später
@@ -110,12 +113,21 @@ export function VeroeffentlichenAbschnitt({
                 </Alert>
               )}
 
-              <DialogFooter>
+                            <DialogFooter>
                 <DialogClose asChild>
                   <Button variant="outline" disabled={pending}>
                     Abbrechen
                   </Button>
                 </DialogClose>
+                <Button asChild variant="ghost">
+                  <Link
+                    href={`/produkte/${productId}/vorschau`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Vorschau
+                  </Link>
+                </Button>
                 <form action={formAction}>
                   <Button type="submit" disabled={pending}>
                     {pending ? "Wird veröffentlicht …" : "Jetzt veröffentlichen"}
