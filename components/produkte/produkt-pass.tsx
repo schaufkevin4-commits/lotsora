@@ -4,6 +4,7 @@
 // Genutzt von der öffentlichen Seite /p/<id> UND der Editor-Vorschau.
 // Feste Sektionsreihenfolge (E4); leere Felder/Sektionen werden ausgeblendet (E2).
 
+import Link from "next/link";
 import type { ReactNode } from "react";
 import type { OeffentlicherPass } from "@/lib/services/products";
 
@@ -224,7 +225,12 @@ export function ProduktPass({
             <p>Pass-ID: {produkt.public_id}</p>
           </div>
           <p>{DISCLAIMER}</p>
-          <p className="font-medium">Bereitgestellt über lotsora</p>
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="font-medium">Bereitgestellt über lotsora</p>
+            <Link href="/datenschutz" className="underline underline-offset-4">
+              Datenschutz
+            </Link>
+          </div>
         </footer>
       </div>
     </div>

@@ -1,45 +1,24 @@
-import { createClient } from "@supabase/supabase-js";
+import { OeffentlicherSeitenrahmen } from "@/components/oeffentlich/seitenrahmen";
 
-export const dynamic = "force-dynamic";
-
-export default async function Home() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-  let status: string;
-
-  if (!url || !key) {
-    status = "❌ ENV-Variablen fehlen — .env.local prüfen.";
-  } else {
-    try {
-      const supabase = createClient(url, key);
-      const { error } = await supabase
-        .from("_verbindungstest")
-        .select("*")
-        .limit(1);
-      if (!error) {
-        status = "✅ Supabase-Verbindung steht.";
-      } else if (
-        error.message.includes("Invalid API key") ||
-        error.message.includes("JWT")
-      ) {
-        status = "❌ Falscher Schlüssel — anon key in .env.local prüfen.";
-      } else {
-        status =
-          "✅ Supabase erreichbar — Verbindung steht! (Noch keine Tabellen — normal für Tag 17.)";
-      }
-    } catch {
-      status = "❌ Keine Verbindung — URL in .env.local prüfen.";
-    }
-  }
-
+export default function Startseite() {
   return (
-    <main style={{ padding: 40, fontFamily: "system-ui, sans-serif" }}>
-      <h1>Lotsora</h1>
-      <p style={{ fontSize: 18 }}>{status}</p>
-      <p style={{ color: "#888", marginTop: 24 }}>
-        Walking-Skeleton-Test · Tag 17
-      </p>
-    </main>
+    <OeffentlicherSeitenrahmen>
+      <main className="mx-auto flex w-full max-w-3xl flex-1 items-center px-6 py-20 sm:py-28">
+        <section className="max-w-2xl space-y-6" aria-labelledby="seitentitel">
+          <p className="text-sm font-medium tracking-wide text-muted-foreground uppercase">
+            Website im Aufbau
+          </p>
+          <h1
+            id="seitentitel"
+            className="text-4xl font-semibold tracking-tight text-balance sm:text-6xl"
+          >
+            Diese Website befindet sich im Aufbau.
+          </h1>
+          <p className="max-w-xl text-lg leading-8 text-muted-foreground">
+            Der öffentliche Internetauftritt von lotsora wird derzeit vorbereitet.
+          </p>
+        </section>
+      </main>
+    </OeffentlicherSeitenrahmen>
   );
 }
