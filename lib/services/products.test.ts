@@ -9,6 +9,7 @@ import {
   standardRichtung,
   zaehleNachStatus,
   saveProdukt,
+  getOeffentlicherPass,
   type ProductStatus,
 } from "@/lib/services/products";
 
@@ -233,5 +234,29 @@ describe("saveProdukt (W1)", () => {
         reusable_materials: "Knöpfe",
       },
     });
+  });
+});
+
+describe("getOeffentlicherPass (N1)", () => {
+  it("beendet alte UUID-Links neutral, ohne die Datenbank abzufragen", async () => {
+    const from = vi.fn();
+    const supabase = { from } as unknown as Parameters<typeof getOeffentlicherPass>[0];
+
+    await expect(
+      getOeffentlicherPass(supabase, "550e8400-e29b-41d4-a716-446655440000"),
+    ).resolves.toBeNull();
+    expect(from).not.toHaveBeenCalled();
+  });
+
+  it("sucht gültige Links über public_id statt über die interne UUID", async () => {
+    const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
+    const eq = vi.fn().mockReturnValue({ maybeSingle });
+    const select = vi.fn().mockReturnValue({ eq });
+    const from = vi.fn().mockReturnValue({ select });
+    const supabase = { from } as unknown as Parameters<typeof getOeffentlicherPass>[0];
+
+    await expect(getOeffentlicherPass(supabase, "7Kf3mQ9xT2Wp")).resolves.toBeNull();
+    expect(from).toHaveBeenCalledWith("products");
+    expect(eq).toHaveBeenCalledWith("public_id", "7Kf3mQ9xT2Wp");
   });
 });

@@ -221,7 +221,7 @@ export function ProduktPass({
         <footer className="space-y-3 border-t pt-6 text-xs text-muted-foreground">
           <div className="space-y-0.5">
             <p>Zuletzt aktualisiert: {datum}</p>
-            <p>Produkt-ID: {produkt.id}</p>
+            <p>Pass-ID: {produkt.public_id}</p>
           </div>
           <p>{DISCLAIMER}</p>
           <p className="font-medium">Bereitgestellt über lotsora</p>

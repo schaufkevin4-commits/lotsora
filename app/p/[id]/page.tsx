@@ -14,9 +14,9 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { id: publicId } = await params;
   const supabase = await createClient();
-  const pass = await getOeffentlicherPass(supabase, id);
+  const pass = await getOeffentlicherPass(supabase, publicId);
   if (!pass) return { title: "Produktpass" };
   return {
     title: `${pass.produkt.name} – Produktpass`,
@@ -29,9 +29,9 @@ export default async function OeffentlicherPassSeite({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const { id: publicId } = await params;
   const supabase = await createClient();
-  const pass = await getOeffentlicherPass(supabase, id);
+  const pass = await getOeffentlicherPass(supabase, publicId);
 
   if (!pass) {
     return (

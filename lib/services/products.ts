@@ -6,6 +6,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database.types";
+import { isValidPublicId } from "@/lib/public-id";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
 import {
   getDokumenteMitUrl,
@@ -507,7 +508,7 @@ export type OeffentlicherHersteller = {
 
 export type OeffentlicherPass = {
   produkt: {
-    id: string;
+    public_id: string;
     name: string;
     description: string;
     category: string;
@@ -541,14 +542,18 @@ export async function getOeffentlicherHersteller(
 // Hinweis statt 404, PP-013 E3).
 export async function getOeffentlicherPass(
   supabase: DB,
-  id: string,
+  publicId: string,
 ): Promise<OeffentlicherPass | null> {
+  // Alte UUID-Links und sonstige ungültige Eingaben enden neutral, ohne dass
+  // PostgreSQL sie erst als UUID interpretieren und mit 22P02 abbrechen kann.
+  if (!isValidPublicId(publicId)) return null;
+
   const { data: produkt, error } = await supabase
     .from("products")
     .select(
-      "id, name, description, category, brand, image_url, updated_at, manufacturer_id, status",
+      "id, public_id, name, description, category, brand, image_url, updated_at, manufacturer_id, status",
     )
-    .eq("id", id)
+    .eq("public_id", publicId)
     .maybeSingle();
   if (error) throw error;
   if (!produkt || produkt.status !== "veroeffentlicht") return null;
@@ -556,15 +561,15 @@ export async function getOeffentlicherPass(
   const [hersteller, materialien, textildaten, nachhaltigkeit, dokumente] =
     await Promise.all([
       getOeffentlicherHersteller(supabase, produkt.manufacturer_id),
-      getMaterialien(supabase, id),
-      getTextildaten(supabase, id),
-      getNachhaltigkeit(supabase, id),
-      getOeffentlicheDokumenteMitUrl(supabase, id),
+      getMaterialien(supabase, produkt.id),
+      getTextildaten(supabase, produkt.id),
+      getNachhaltigkeit(supabase, produkt.id),
+      getOeffentlicheDokumenteMitUrl(supabase, produkt.id),
     ]);
 
   return {
     produkt: {
-      id: produkt.id,
+      public_id: produkt.public_id,
       name: produkt.name,
       description: produkt.description,
       category: produkt.category,
@@ -601,7 +606,7 @@ export async function getVorschauPass(
 
   return {
     produkt: {
-      id: produkt.id,
+      public_id: produkt.public_id,
       name: produkt.name,
       description: produkt.description,
       category: produkt.category,

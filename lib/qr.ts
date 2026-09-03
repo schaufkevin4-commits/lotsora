@@ -6,9 +6,9 @@ const PASS_BASE_URL = process.env.PASS_BASE_URL ?? "https://lotsora.de";
 
 export type FehlerKorrektur = "L" | "M" | "Q" | "H";
 
-/** Baut die dauerhafte, ID-basierte öffentliche Pass-URL (PP-016). */
-export function buildPassUrl(produktId: string): string {
-  return `${PASS_BASE_URL}/p/${produktId}`;
+/** Baut die dauerhafte öffentliche Pass-URL aus der unveränderlichen Pass-ID. */
+export function buildPassUrl(publicId: string): string {
+  return `${PASS_BASE_URL}/p/${publicId}`;
 }
 
 /** Erzeugt den QR-Code als SVG-String (vektorbasiert, druckperfekt). */

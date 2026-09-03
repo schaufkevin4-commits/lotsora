@@ -237,6 +237,7 @@ export type Database = {
           image_url: string | null
           manufacturer_id: string
           name: string
+          public_id: string
           sku: string | null
           status: Database["public"]["Enums"]["product_status"]
           updated_at: string
@@ -252,6 +253,7 @@ export type Database = {
           image_url?: string | null
           manufacturer_id: string
           name: string
+          public_id?: string
           sku?: string | null
           status?: Database["public"]["Enums"]["product_status"]
           updated_at?: string
@@ -267,6 +269,7 @@ export type Database = {
           image_url?: string | null
           manufacturer_id?: string
           name?: string
+          public_id?: string
           sku?: string | null
           status?: Database["public"]["Enums"]["product_status"]
           updated_at?: string
@@ -286,6 +289,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_product_public_id: { Args: never; Returns: string }
       owns_product: { Args: { p_product: string }; Returns: boolean }
       replace_product_materials: {
         Args: { p_materials: Json; p_product_id: string }

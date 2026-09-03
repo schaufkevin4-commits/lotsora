@@ -42,10 +42,10 @@ export default async function ProduktEditorSeite({
   const fehlendePflichtfelder = getMissingRequiredFields(produkt);
   const materialSumme = checkMaterialShares(materialInputs).sum;
 
-  // QR-Code: für veröffentlichte Produkte (PP-016) dauerhafte, ID-basierte
-  // Pass-URL bauen und serverseitig als SVG erzeugen. Entwurf ⇒ null ⇒ Platzhalter.
+  // QR-Code: für veröffentlichte Produkte (PP-016) dauerhafte, öffentliche
+  // Pass-ID verwenden. Interne Relationen und Editor-URLs behalten die UUID.
   const istVeroeffentlicht = produkt.status === "veroeffentlicht";
-  const passUrl = istVeroeffentlicht ? buildPassUrl(produkt.id) : null;
+  const passUrl = istVeroeffentlicht ? buildPassUrl(produkt.public_id) : null;
   const qrSvg = passUrl ? await generateQrSvg(passUrl) : null;
 
   return (

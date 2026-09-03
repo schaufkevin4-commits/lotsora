@@ -17,7 +17,7 @@ type QrAktionenProps = {
 export function QrAktionen({ svg, passUrl }: QrAktionenProps) {
   const [kopiert, setKopiert] = useState(false);
 
-  // Produkt-ID aus der URL → im Dateinamen für Rückverfolgbarkeit.
+  // Pass-ID aus der URL → im Dateinamen für Rückverfolgbarkeit.
   const dateiname = `produktpass-${passUrl.split("/").pop() ?? "code"}`;
 
   async function linkKopieren() {
