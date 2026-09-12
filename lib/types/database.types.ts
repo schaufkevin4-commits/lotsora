@@ -290,7 +290,15 @@ export type Database = {
     }
     Functions: {
       generate_product_public_id: { Args: never; Returns: string }
+      hersteller_hat_veroeffentlichtes_produkt: {
+        Args: { p_manufacturer: string }
+        Returns: boolean
+      }
       owns_product: { Args: { p_product: string }; Returns: boolean }
+      produkt_ist_veroeffentlicht: {
+        Args: { p_product: string }
+        Returns: boolean
+      }
       replace_product_materials: {
         Args: { p_materials: Json; p_product_id: string }
         Returns: undefined

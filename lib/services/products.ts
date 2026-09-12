@@ -11,7 +11,7 @@ import { getMeinHersteller } from "@/lib/services/manufacturers";
 import {
   getDokumenteMitUrl,
   getOeffentlicheDokumenteMitUrl,
-  type DokumentMitUrl,
+  type OeffentlichesDokument,
 } from "@/lib/services/documents";
 
 type DB = SupabaseClient<Database>;
@@ -517,10 +517,10 @@ export type OeffentlicherPass = {
     updated_at: string;
   };
   hersteller: OeffentlicherHersteller | null;
-  materialien: Material[];
-  textildaten: Textildaten | null;
-  nachhaltigkeit: Nachhaltigkeit | null;
-  dokumente: DokumentMitUrl[];
+  materialien: Pick<Material, "id" | "material_name" | "percentage">[];
+  textildaten: Pick<Textildaten, "origin_country" | "color" | "size" | "care_instructions" | "wash_instructions"> | null;
+  nachhaltigkeit: Pick<Nachhaltigkeit, "recycling_notes" | "repair_notes" | "disposal_notes" | "reusable_materials"> | null;
+  dokumente: OeffentlichesDokument[];
 };
 
 // Öffentliche Herstellerfelder (nur Firmenname/Land/Website, PP-013 E1).
@@ -561,9 +561,14 @@ export async function getOeffentlicherPass(
   const [hersteller, materialien, textildaten, nachhaltigkeit, dokumente] =
     await Promise.all([
       getOeffentlicherHersteller(supabase, produkt.manufacturer_id),
-      getMaterialien(supabase, produkt.id),
-      getTextildaten(supabase, produkt.id),
-      getNachhaltigkeit(supabase, produkt.id),
+      supabase.from("product_materials").select("id, material_name, percentage")
+        .eq("product_id", produkt.id).order("created_at", { ascending: true }).throwOnError(),
+      supabase.from("product_textile_data")
+        .select("origin_country, color, size, care_instructions, wash_instructions")
+        .eq("product_id", produkt.id).maybeSingle().throwOnError(),
+      supabase.from("product_sustainability")
+        .select("recycling_notes, repair_notes, disposal_notes, reusable_materials")
+        .eq("product_id", produkt.id).maybeSingle().throwOnError(),
       getOeffentlicheDokumenteMitUrl(supabase, produkt.id),
     ]);
 
@@ -578,9 +583,9 @@ export async function getOeffentlicherPass(
       updated_at: produkt.updated_at,
     },
     hersteller,
-    materialien,
-    textildaten,
-    nachhaltigkeit,
+    materialien: materialien.data ?? [],
+    textildaten: textildaten.data,
+    nachhaltigkeit: nachhaltigkeit.data,
     dokumente,
   };
 }

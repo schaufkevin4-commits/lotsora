@@ -5,7 +5,8 @@
 // ⇒ neutrale Hinweisseite statt 404 (PP-013 E3).
 
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { connection } from "next/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { getOeffentlicherPass } from "@/lib/services/products";
 import { ProduktPass } from "@/components/produkte/produkt-pass";
 
@@ -15,7 +16,8 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
   const { id: publicId } = await params;
-  const supabase = await createClient();
+  await connection();
+  const supabase = createPublicClient();
   const pass = await getOeffentlicherPass(supabase, publicId);
   if (!pass) return { title: "Produktpass" };
   return {
@@ -30,7 +32,8 @@ export default async function OeffentlicherPassSeite({
   params: Promise<{ id: string }>;
 }) {
   const { id: publicId } = await params;
-  const supabase = await createClient();
+  await connection();
+  const supabase = createPublicClient();
   const pass = await getOeffentlicherPass(supabase, publicId);
 
   if (!pass) {

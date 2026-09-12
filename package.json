@@ -9,7 +9,11 @@
     "lint": "eslint",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:integration:start": "node scripts/integration.mjs start",
+    "test:integration": "node scripts/integration.mjs test",
+    "test:integration:migrate": "node scripts/integration.mjs migrate",
+    "test:integration:stop": "node scripts/integration.mjs stop"
   },
   "engines": {
     "node": ">=24"

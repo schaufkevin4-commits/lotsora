@@ -72,6 +72,9 @@ export function baueDateipfad(
 // --- Datenzugriff (RLS filtert automatisch auf eigene Produkte) --------------
 
 export type DokumentMitUrl = Dokument & { signedUrl: string | null };
+export type OeffentlichesDokument = Pick<Dokument, "id" | "name" | "doc_type"> & {
+  signedUrl: string | null;
+};
 
 // Alle Dokumente eines Produkts, neueste zuerst.
 export async function getDokumente(
@@ -111,7 +114,7 @@ export async function getDokumenteMitUrl(
 export async function getOeffentlicheDokumenteMitUrl(
   supabase: DB,
   productId: string,
-): Promise<DokumentMitUrl[]> {
+): Promise<OeffentlichesDokument[]> {
   const { data: produkt, error: produktError } = await supabase
     .from("products")
     .select("status")
@@ -123,7 +126,7 @@ export async function getOeffentlicheDokumenteMitUrl(
 
   const { data, error } = await supabase
     .from("documents")
-    .select("*")
+    .select("id, name, doc_type, file_path")
     .eq("product_id", productId)
     .eq("visibility", "oeffentlich")
     .order("uploaded_at", { ascending: false });
@@ -132,7 +135,9 @@ export async function getOeffentlicheDokumenteMitUrl(
 
   return Promise.all(
     (data ?? []).map(async (d) => ({
-      ...d,
+      id: d.id,
+      name: d.name,
+      doc_type: d.doc_type,
       signedUrl: d.file_path
         ? await erzeugeSignierteUrl(supabase, d.file_path)
         : null,
