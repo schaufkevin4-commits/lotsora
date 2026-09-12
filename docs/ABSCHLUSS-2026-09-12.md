@@ -2,6 +2,8 @@
 
 Stand: 12.09.2026. Umfang: die bereits begonnene Testbasis und Zugriffshärtung sauber abschließen; weitere Roadmap-Arbeit erst beim nächsten Termin. Ausgangscommit: 4c2075537e14771f627f054e14e5e8bb5a77d673 auf codex/n2-startseite-datenschutz. N1/N2 bleiben darin erhalten. Der Abschluss wird lokal im selben Branch gesichert; kein Push, Merge nach main oder Deployment gehört zu diesem Block.
 
+**Nachtrag auf ausdrücklichen Folgeauftrag „push main“:** Der Sicherheitsblock wurde als a4af125 gesichert und anschließend zusammen mit N1/N2 ohne Merge-Konflikte nach main übernommen. Der Folgeauftrag autorisiert den Push nach GitHub. Vercel ist mit dem Repository verknüpft; dessen Buildstatus ist getrennt vom geprüften lokalen Build zu betrachten. Die Migration bleibt bis zu ihrer gesonderten Übernahme ausschließlich in der Testinstanz angewendet.
+
 ## Ergebnis
 
 | Punkt | Änderung | Nachweis |
@@ -39,7 +41,7 @@ npm run test:integration:stop
 
 `migrate` ergänzt ausschließlich die Testinstanz; `stop` erhält deren Volumes. Die Testinstanz wurde nach den Abschlussprüfungen erfolgreich gestoppt. Das bestehende Entwicklungsprojekt bleibt unberührt.
 
-Integrationsweg: den geprüften lokalen Commit einschließlich der neuen Migration später im bisherigen N1/N2-Branch weiterführen. Vor Merge/Push den dann aktuellen Remote- und Deploymentzustand prüfen, vor DB-Übernahme vorhandene Dokumentpfade kontrollieren. Keine automatische Cloud-Migration und kein Push als Nebenwirkung dieser Sitzung.
+Integrationsstand nach dem Folgeauftrag: Remote-main wurde geprüft; der geprüfte Commit einschließlich N1/N2 und neuer Migration ließ sich per Fast-forward übernehmen. Die nächste Arbeit beginnt auf main. Vor einer DB-Übernahme vorhandene Dokumentpfade kontrollieren; der Git-Push führt keine Cloud-Migration aus.
 
 ## Nächster begrenzter Bauauftrag: B4 / F03
 

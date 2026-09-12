@@ -6,6 +6,8 @@ Plan erstellt am 10.09.2026; Fortschritt ergänzt am 12.09.2026. **Einstieg frei
 
 Die isolierte Testbasis läuft reproduzierbar. F01 (Dokument-/Dateizuordnung), F02 (öffentlicher Leser) und F04 (Auth-Redirect) sind implementiert; interne Dokumentnotizen und öffentliche Rückgabetypen sind im Zuge dessen begrenzt. Die Prüfungen und verbleibenden Grenzen stehen im [Abschluss vom 12.09.2026](ABSCHLUSS-2026-09-12.md). Damit sind die technischen Arbeiten der Einstiegssitzungen 1–4 und der Redirect-Anteil von Sitzung 5 abgedeckt; eine Browser-/Gesamt-MVP-Abnahme wird daraus nicht abgeleitet.
 
+Auf den ausdrücklichen Folgeauftrag „push main“ wurde der geprüfte Sicherheitscommit a4af125 einschließlich N1/N2 nach main übernommen. Die nächste Sitzung setzt dort an. Datenbankübernahme, Gate und öffentlicher Betrieb bleiben davon getrennt.
+
 Beim nächsten Termin folgt **B4/F03: Veröffentlichungsregeln und Datenintegrität in allen DB-Schreibwegen**. Heute werden keine weiteren Roadmap-Blöcke begonnen. Größere Template-/Versions-/Importänderungen und der Livegang sind durch diesen Abschluss nicht freigegeben.
 
 ## Rahmen und Reihenfolge

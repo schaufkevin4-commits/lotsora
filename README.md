@@ -4,7 +4,7 @@ Textil-/Apparel-first-Anwendung für Produktdaten, Dokumente und öffentliche di
 
 ## Stand und Planung
 
-Analyse vom 10.09.2026 auf Commit 4c20755: Produkteditor, Dokumentverwaltung, öffentliche Passansicht, Vorschau und dauerhafte QR-IDs sind implementiert. Das lokale Gate „MVP funktional vollständig“ bleibt offen. N1/N2 liegen im Entwicklungsbranch, noch nicht in main. Der öffentliche Betrieb bleibt gemäß bestehender Offline-Entscheidung separat freizugeben.
+Stand 12.09.2026: Produkteditor, Dokumentverwaltung, öffentliche Passansicht, Vorschau und dauerhafte QR-IDs sind implementiert. N1/N2 und der geprüfte Sicherheitsblock sind in main integriert. Das lokale Gate „MVP funktional vollständig“ bleibt offen. Cloud-Datenbankmigrationen und die Freigabe des öffentlichen Betriebs bleiben separate Schritte; ein Git-Push ersetzt sie nicht.
 
 - [Analysebericht: Architektur, Gate, Befunde und Empfehlungen](docs/ANALYSE-2026-09-10.md)
 - [Arbeitsplan: nächste Sitzungen, Abnahmekriterien und spätere Erweiterungen](docs/ROADMAP.md)
