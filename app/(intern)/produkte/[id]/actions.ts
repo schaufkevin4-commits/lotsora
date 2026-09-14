@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/server";
 import {
   getProdukt,
   deleteProdukt,
-  leiteStatusAb,
   canPublish,
   validateMaterialShares,
   saveProdukt,
@@ -98,16 +97,22 @@ export async function produktSpeichern(
       }
     }
 
-    const status = leiteStatusAb(basis, aktuell.status);
     await saveProdukt(
       supabase,
       id,
-      { ...basis, status },
+      { ...basis, expectedStatus: aktuell.status },
       materialien,
       textildaten,
       nachhaltigkeit,
     );
-  } catch {
+  } catch (error) {
+    const code = error && typeof error === "object" && "code" in error ? error.code : null;
+    if (code === "40001" || code === "40P01") {
+      return { ok: false, error: "Das Produkt wurde gleichzeitig geändert. Bitte neu laden und erneut speichern." };
+    }
+    if (code === "23514" || code === "23502" || code === "22023") {
+      return { ok: false, error: "Speichern abgelehnt. Bitte Pflichtfelder und Materialanteile prüfen." };
+    }
     return { ok: false, error: "Speichern fehlgeschlagen. Bitte erneut versuchen." };
   }
 

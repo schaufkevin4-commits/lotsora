@@ -37,8 +37,13 @@ export type MaterialCheck = {
 };
 
 export function checkMaterialShares(materials: MaterialInput[]): MaterialCheck {
-  const raw = materials.reduce((acc, m) => acc + (m.percentage ?? 0), 0);
-  const sum = Math.round(raw * 100) / 100; // Rundungsfehler vermeiden
+  // PostgreSQL numeric(5,2) rundet jede Zeile vor der Summe. Dezimalverschiebung
+  // vermeidet dabei JS-Grenzfehler wie Math.round(1.005 * 100).
+  const hundredths = materials.reduce((acc, m) => {
+    const [coefficient, exponent = "0"] = String(m.percentage ?? 0).split("e");
+    return acc + Math.round(Number(`${coefficient}e${Number(exponent) + 2}`));
+  }, 0);
+  const sum = hundredths / 100;
   if (sum > 100) {
     return {
       sum,
@@ -224,39 +229,21 @@ export async function updateProdukt(
   return data;
 }
 
-// Produkt aktiv veröffentlichen. Der zentrale canPublish-Check läuft direkt
-// vor dem Statuswechsel erneut auf dem Server (PP-011 + PP-012).
+// Prüfung und Statuswechsel erfolgen unter derselben DB-Produktsperre.
 export async function veroeffentlicheProdukt(
   supabase: DB,
   id: string,
 ): Promise<VeroeffentlichenErgebnis> {
-  const [produkt, materialien] = await Promise.all([
-    getProdukt(supabase, id),
-    getMaterialien(supabase, id),
-  ]);
-  if (!produkt) return { ok: false, reasons: ["Produkt nicht gefunden."] };
-
-  const check = canPublish(
-    produkt,
-    materialien.map((material) => ({
-      materialName: material.material_name,
-      percentage: Number(material.percentage),
-    })),
-  );
-  if (!check.ok) return check;
-
-  await updateProdukt(supabase, id, { status: "veroeffentlicht" });
-  return { ok: true, reasons: [] };
+  const { error } = await supabase.rpc("publish_product", { p_product_id: id });
+  if (!error) return { ok: true, reasons: [] };
+  if (error.code === "42501") return { ok: false, reasons: ["Produkt nicht gefunden oder Zugriff verweigert."] };
+  if (error.code === "23514") return { ok: false, reasons: ["Bitte Pflichtfelder und Materialanteile prüfen."] };
+  throw error;
 }
 
-// Veröffentlichung aufheben und den internen Status neu aus den Pflichtfeldern
-// ableiten. Der Startwert „entwurf" erzwingt die Neuberechnung (PP-011).
-export async function zieheProduktZurueck(supabase: DB, id: string): Promise<Product> {
-  const produkt = await getProdukt(supabase, id);
-  if (!produkt) throw new Error("Produkt nicht gefunden.");
-
-  const status = leiteStatusAb(produkt, "entwurf");
-  return updateProdukt(supabase, id, { status });
+export async function zieheProduktZurueck(supabase: DB, id: string): Promise<void> {
+  const { error } = await supabase.rpc("withdraw_product", { p_product_id: id });
+  if (error) throw error;
 }
 
 // Ein Produkt löschen (RLS lässt nur eigene zu).
@@ -442,7 +429,7 @@ export async function saveNachhaltigkeit(
 }
 
 // Das vollständige Produktformular in genau einer DB-Transaktion speichern.
-// Fachregeln bleiben in TypeScript; die RPC kapselt ausschließlich die Writes.
+// Die DB erzwingt die Fachregeln; expectedStatus schützt vor konkurrierenden Statuswechseln.
 export async function saveProdukt(
   supabase: DB,
   productId: string,
@@ -451,7 +438,7 @@ export async function saveProdukt(
     description: string;
     category: string;
     brand: string | null;
-    status: ProductStatus;
+    expectedStatus: ProductStatus;
   },
   materials: MaterialInput[],
   textildaten: TextileInput,
@@ -473,7 +460,7 @@ export async function saveProdukt(
     p_description: produkt.description,
     p_category: produkt.category,
     p_brand: produkt.brand ?? "",
-    p_status: produkt.status,
+    p_expected_status: produkt.expectedStatus,
     p_materials: bereinigt.map((material) => ({
       material_name: material.materialName,
       percentage: material.percentage,

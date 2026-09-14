@@ -131,21 +131,21 @@ export type Database = {
           created_at: string
           id: string
           material_name: string
-          percentage: number | null
+          percentage: number
           product_id: string
         }
         Insert: {
           created_at?: string
           id?: string
           material_name: string
-          percentage?: number | null
+          percentage: number
           product_id: string
         }
         Update: {
           created_at?: string
           id?: string
           material_name?: string
-          percentage?: number | null
+          percentage?: number
           product_id?: string
         }
         Relationships: [
@@ -299,6 +299,7 @@ export type Database = {
         Args: { p_product: string }
         Returns: boolean
       }
+      publish_product: { Args: { p_product_id: string }; Returns: undefined }
       replace_product_materials: {
         Args: { p_materials: Json; p_product_id: string }
         Returns: undefined
@@ -308,15 +309,16 @@ export type Database = {
           p_brand: string
           p_category: string
           p_description: string
+          p_expected_status: Database["public"]["Enums"]["product_status"]
           p_materials: Json
           p_name: string
           p_product_id: string
-          p_status: Database["public"]["Enums"]["product_status"]
           p_sustainability: Json
           p_textile_data: Json
         }
         Returns: undefined
       }
+      withdraw_product: { Args: { p_product_id: string }; Returns: undefined }
     }
     Enums: {
       document_visibility: "intern" | "oeffentlich"

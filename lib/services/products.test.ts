@@ -58,6 +58,18 @@ describe("checkMaterialShares (PP-012)", () => {
     expect(r.isOverLimit).toBe(false);
     expect(r.isUnderLimit).toBe(true);
   });
+
+  it("prüft gespeicherte Einzelrundungen statt erst die Rohsumme", () => {
+    const materials = [33.335, 33.335, 33.33].map((percentage, i) => ({ materialName: String(i), percentage }));
+    expect(checkMaterialShares(materials).sum).toBe(100.01);
+    expect(validateMaterialShares(materials)).toContain("mehr als 100%");
+  });
+
+  it("rundet Dezimalgrenzen wie PostgreSQL und verarbeitet kleine Exponenten", () => {
+    expect(checkMaterialShares([{ materialName: "A", percentage: 1.005 }]).sum).toBe(1.01);
+    expect(checkMaterialShares([{ materialName: "A", percentage: 10.075 }]).sum).toBe(10.08);
+    expect(checkMaterialShares([{ materialName: "A", percentage: 1e-7 }]).sum).toBe(0);
+  });
 });
 
 describe("getMissingRequiredFields (PP-010)", () => {
@@ -193,7 +205,7 @@ describe("saveProdukt (W1)", () => {
         description: "Leinenhemd",
         category: "Oberteil",
         brand: null,
-        status: "entwurf",
+        expectedStatus: "entwurf",
       },
       [{ materialName: " Leinen ", percentage: 100 }],
       {
@@ -218,7 +230,7 @@ describe("saveProdukt (W1)", () => {
       p_description: "Leinenhemd",
       p_category: "Oberteil",
       p_brand: "",
-      p_status: "entwurf",
+      p_expected_status: "entwurf",
       p_materials: [{ material_name: "Leinen", percentage: 100 }],
       p_textile_data: {
         origin_country: "DE",
