@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import {
   ladeDokumentHoch,
+  DokumentUploadFehler,
   loescheDokument,
   MAX_DATEI_BYTES,
   parseDokumentSichtbarkeit,
@@ -44,9 +45,10 @@ export async function dokumentHochladen(
   const supabase = await createClient();
   try {
     await ladeDokumentHoch(supabase, productId, datei, meta);
-} catch (e) {
-    console.error("Upload-Fehler:", e);
-    return { ok: false, error: "Upload fehlgeschlagen. Bitte erneut versuchen." };
+  } catch (e) {
+    revalidatePath(`/produkte/${productId}`);
+    revalidatePath("/produkte");
+    return { ok: false, error: e instanceof DokumentUploadFehler ? e.message : "Upload fehlgeschlagen. Bitte erneut versuchen." };
   }
 
   revalidatePath(`/produkte/${productId}`);
@@ -88,8 +90,15 @@ export async function dokumentSichtbarkeitAendern(
 }
 
 // Ein Dokument löschen (Datei + Zeile). Wird aus der Liste je Zeile aufgerufen.
-export async function dokumentLoeschen(id: string, productId: string): Promise<void> {
+export async function dokumentLoeschen(id: string, productId: string, _previous: DokumentFormState, _formData: FormData): Promise<DokumentFormState> {
+  void _previous; void _formData;
   const supabase = await createClient();
-  await loescheDokument(supabase, id);
-  revalidatePath(`/produkte/${productId}`);
+  try {
+    const result = await loescheDokument(supabase, id);
+    revalidatePath(`/produkte/${productId}`);
+    revalidatePath("/produkte");
+    return { ok: result.complete, error: result.complete ? null : "Dokument entfernt. Die Dateilöschung bleibt unter den offenen Dateivorgängen gespeichert." };
+  } catch {
+    return { ok: false, error: "Löschung konnte nicht bestätigt werden. Bitte neu laden und erneut versuchen." };
+  }
 }

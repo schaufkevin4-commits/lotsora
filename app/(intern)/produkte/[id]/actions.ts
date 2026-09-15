@@ -122,9 +122,11 @@ export async function produktSpeichern(
   return { ok: true, error: null };
 }
 
-export async function produktLoeschen(id: string) {
+export async function produktLoeschen(id: string, _previous: ProduktFormState, _formData: FormData): Promise<ProduktFormState> {
+  void _previous; void _formData;
   const supabase = await createClient();
-  await deleteProdukt(supabase, id);
+  try { await deleteProdukt(supabase, id); }
+  catch { return { ok: false, error: "Löschung konnte nicht bestätigt werden. Bitte neu laden und erneut versuchen." }; }
   revalidatePath("/produkte");
   revalidatePath("/dashboard");
   redirect("/produkte");

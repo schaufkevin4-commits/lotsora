@@ -36,6 +36,10 @@ export async function createFixtures() {
       const { error } = await admin.auth.admin.deleteUser(id);
       if (error) errors.push(`Testkonto konnte nicht gelöscht werden: ${error.message}`);
     }
+    if (users.length) {
+      const { error } = await admin.from("file_operations").delete().in("owner_id", users);
+      if (error) errors.push(`Test-Dateivorgänge konnten nicht entfernt werden: ${error.message}`);
+    }
     if (errors.length) throw new Error(errors.join("\n"));
   }
 

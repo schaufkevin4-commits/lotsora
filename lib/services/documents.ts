@@ -7,6 +7,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database.types";
+import { bereinigeDatei, type LoeschErgebnis } from "@/lib/services/file-cleanup";
 
 type DB = SupabaseClient<Database>;
 
@@ -158,48 +159,51 @@ export async function erzeugeSignierteUrl(
   return data.signedUrl;
 }
 
-// Dokument hochladen: erst Datei in den Storage, dann Metadaten-Zeile.
-// Schlägt der Insert fehl, wird die eben hochgeladene Datei wieder entfernt
-// (keine verwaisten Objekte). visibility bleibt Default 'intern' (A-020).
+export class DokumentUploadFehler extends Error {}
+
+// Dauerhafter Uploadbezug vor der ersten Storage-Operation. Ein Abbruch
+// zwischen Storage und DB bleibt so auffindbar und gezielt bereinigbar.
 export async function ladeDokumentHoch(
   supabase: DB,
   productId: string,
   datei: File,
   meta: { name: string | null; docType: string | null; description: string | null },
 ): Promise<Dokument> {
-  const pfad = baueDateipfad(productId, datei.name);
   const bytes = await datei.arrayBuffer();
-
-  const { error: uploadError } = await supabase.storage
-    .from(DOKUMENTE_BUCKET)
-    .upload(pfad, bytes, {
-      contentType: datei.type || undefined,
-      upsert: false,
+  const reserved = await supabase.rpc("reserve_document_upload", {
+    p_product_id: productId,
+    p_file_name: bereinigeDateiname(datei.name).slice(0, 180),
+  });
+  if (reserved.error) throw reserved.error;
+  const operation = reserved.data;
+  try {
+    const uploaded = await supabase.storage.from(DOKUMENTE_BUCKET).upload(operation.file_path, bytes, {
+      contentType: datei.type || undefined, upsert: false,
     });
-  if (uploadError) throw uploadError;
-
-  // Dokumentname ist Pflicht (NOT NULL) – leer ⇒ Dateiname als Fallback.
-  const dokName = meta.name?.trim() || datei.name;
-
-  const { data, error } = await supabase
-    .from("documents")
-    .insert({
-      product_id: productId,
-      name: dokName,
-      doc_type: meta.docType,
-      description: meta.description,
-      file_name: datei.name,
-      file_path: pfad,
-    })
-    .select()
-    .single();
-
-  if (error) {
-    // Aufräumen: hochgeladene Datei best-effort wieder löschen.
-    await supabase.storage.from(DOKUMENTE_BUCKET).remove([pfad]);
-    throw error;
+    if (uploaded.error) throw uploaded.error;
+    const inserted = await supabase.from("documents").insert({
+      product_id: productId, name: meta.name?.trim() || datei.name,
+      doc_type: meta.docType, description: meta.description,
+      file_name: datei.name, file_path: operation.file_path,
+    }).select().single();
+    if (inserted.error) throw inserted.error;
+    return inserted.data;
+  } catch {
+    // Antwortverlust kann einen erfolgreichen Insert verdecken. Ein bereits
+    // angehängtes Dokument niemals durch die Uploadkompensation beschädigen.
+    const existing = await supabase.from("documents").select().eq("file_path", operation.file_path).maybeSingle();
+    if (existing.data) return existing.data;
+    if (!existing.error) {
+      try {
+        if ((await bereinigeDatei(supabase, operation.id)).complete) {
+          throw new DokumentUploadFehler("Upload fehlgeschlagen. Die Datei wurde bereinigt; bitte erneut versuchen.");
+        }
+      } catch (error) {
+        if (error instanceof DokumentUploadFehler) throw error;
+      }
+    }
+    throw new DokumentUploadFehler("Upload nicht bestätigt. Der Dateivorgang bleibt gespeichert und kann unter den offenen Dateivorgängen bereinigt werden; unbestätigte Uploads erscheinen dort nach 15 Minuten.");
   }
-  return data;
 }
 
 // Sichtbarkeit eines eigenen Dokuments ändern. Die documents-RLS prüft dabei
@@ -220,19 +224,21 @@ export async function setzeDokumentSichtbarkeit(
   return data;
 }
 
-// Dokument löschen: DB-Zeile (maßgeblich, RLS-geschützt) entfernen, danach die
-// Storage-Datei best-effort. Ein Fehler beim Datei-Löschen ist unkritisch.
-export async function loescheDokument(supabase: DB, id: string): Promise<void> {
-  const { data: zeile } = await supabase
-    .from("documents")
-    .select("file_path")
-    .eq("id", id)
-    .maybeSingle();
-
-  const { error } = await supabase.from("documents").delete().eq("id", id);
-  if (error) throw error;
-
-  if (zeile?.file_path) {
-    await supabase.storage.from(DOKUMENTE_BUCKET).remove([zeile.file_path]);
-  }
+// DB-Trigger sichern den Dateibezug atomar beim Entfernen des Dokuments.
+// Ein wiederholter Aufruf findet offene Vorgänge auch ohne Dokumentzeile.
+export async function loescheDokument(supabase: DB, id: string): Promise<LoeschErgebnis> {
+  const removed = await supabase.from("documents").delete().eq("id", id);
+  if (removed.error) throw removed.error;
+  try {
+    const operations = await supabase.from("file_operations").select("id").eq("document_id", id).eq("state", "cleanup");
+    if (operations.error) throw operations.error;
+    let complete = true;
+    for (const operation of operations.data ?? []) {
+      try { if (!(await bereinigeDatei(supabase, operation.id)).complete) complete = false; }
+      catch { complete = false; }
+    }
+    const remaining = await supabase.from("file_operations").select("id", { count: "exact", head: true })
+      .eq("document_id", id).eq("state", "cleanup");
+    return { complete: complete && !remaining.error && remaining.count === 0 };
+  } catch { return { complete: false }; }
 }

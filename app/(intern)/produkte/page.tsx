@@ -1,3 +1,5 @@
+import { getOffeneDateivorgaenge } from "@/lib/services/file-cleanup";
+import { FileCleanupPanel } from "@/components/produkte/file-cleanup-panel";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -49,6 +51,7 @@ export default async function ProdukteSeite({
   const { key: aktivKey, dir: aktivDir } = parseSort(sp.sort, sp.dir);
 
   const supabase = await createClient();
+  const offeneDateivorgaenge = await getOffeneDateivorgaenge(supabase);
   const produkte = await getMeineProdukte(supabase, aktivKey, aktivDir);
 
   return (
@@ -67,6 +70,7 @@ export default async function ProdukteSeite({
         </form>
       </div>
 
+      <FileCleanupPanel operations={offeneDateivorgaenge} />
       {produkte.length === 0 ? (
         <div className="rounded-lg border border-dashed p-10 text-center">
           <p className="text-muted-foreground">

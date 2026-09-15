@@ -78,6 +78,48 @@ export type Database = {
           },
         ]
       }
+      file_operations: {
+        Row: {
+          attempts: number
+          created_at: string
+          document_id: string | null
+          file_name: string
+          file_path: string
+          id: string
+          last_error: string | null
+          owner_id: string
+          product_id: string
+          reason: string
+          state: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          document_id?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          last_error?: string | null
+          owner_id: string
+          product_id: string
+          reason: string
+          state: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          document_id?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          last_error?: string | null
+          owner_id?: string
+          product_id?: string
+          reason?: string
+          state?: string
+        }
+        Relationships: []
+      }
       manufacturers: {
         Row: {
           city: string | null
@@ -289,6 +331,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      begin_file_cleanup: {
+        Args: { p_operation_id: string }
+        Returns: {
+          attempts: number
+          created_at: string
+          document_id: string | null
+          file_name: string
+          file_path: string
+          id: string
+          last_error: string | null
+          owner_id: string
+          product_id: string
+          reason: string
+          state: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "file_operations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      can_write_product_file: { Args: { p_path: string }; Returns: boolean }
+      finish_file_cleanup: {
+        Args: { p_error_code?: string; p_operation_id: string }
+        Returns: boolean
+      }
       generate_product_public_id: { Args: never; Returns: string }
       hersteller_hat_veroeffentlichtes_produkt: {
         Args: { p_manufacturer: string }
@@ -303,6 +372,28 @@ export type Database = {
       replace_product_materials: {
         Args: { p_materials: Json; p_product_id: string }
         Returns: undefined
+      }
+      reserve_document_upload: {
+        Args: { p_file_name: string; p_product_id: string }
+        Returns: {
+          attempts: number
+          created_at: string
+          document_id: string | null
+          file_name: string
+          file_path: string
+          id: string
+          last_error: string | null
+          owner_id: string
+          product_id: string
+          reason: string
+          state: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "file_operations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       save_product: {
         Args: {

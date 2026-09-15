@@ -6,6 +6,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database.types";
+import { bereinigeProduktdateien, type LoeschErgebnis } from "@/lib/services/file-cleanup";
 import { isValidPublicId } from "@/lib/public-id";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
 import {
@@ -247,9 +248,10 @@ export async function zieheProduktZurueck(supabase: DB, id: string): Promise<voi
 }
 
 // Ein Produkt löschen (RLS lässt nur eigene zu).
-export async function deleteProdukt(supabase: DB, id: string): Promise<void> {
+export async function deleteProdukt(supabase: DB, id: string): Promise<LoeschErgebnis> {
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) throw error;
+  return bereinigeProduktdateien(supabase, id);
 }
 
 // --- Materialien: Datenzugriff (product_materials, 1:n) ----------------------

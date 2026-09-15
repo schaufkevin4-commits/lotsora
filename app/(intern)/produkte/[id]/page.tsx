@@ -1,3 +1,5 @@
+import { getOffeneDateivorgaenge } from "@/lib/services/file-cleanup";
+import { FileCleanupPanel } from "@/components/produkte/file-cleanup-panel";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -25,6 +27,7 @@ export default async function ProduktEditorSeite({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const offeneDateivorgaenge = await getOffeneDateivorgaenge(supabase, id);
 
   const produkt = await getProdukt(supabase, id);
   if (!produkt) notFound();
@@ -71,6 +74,7 @@ export default async function ProduktEditorSeite({
         nachhaltigkeit={nachhaltigkeit}
       />
 
+      <FileCleanupPanel operations={offeneDateivorgaenge} />
       <DokumenteAbschnitt productId={id} dokumente={dokumente} />
 
       <VeroeffentlichenAbschnitt

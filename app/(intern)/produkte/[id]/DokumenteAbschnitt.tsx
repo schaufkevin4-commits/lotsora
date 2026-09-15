@@ -109,6 +109,7 @@ function EntfernenButton({
   productId: string;
   name: string;
 }) {
+  const [state, action, pending] = useActionState(dokumentLoeschen.bind(null, id, productId), initial);
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -124,13 +125,14 @@ function EntfernenButton({
             gelöscht. Das lässt sich nicht rückgängig machen.
           </DialogDescription>
         </DialogHeader>
+        {state.error && <p role="alert" className="text-sm text-destructive">{state.error}</p>}
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Abbrechen</Button>
+            <Button variant="outline" disabled={pending}>Abbrechen</Button>
           </DialogClose>
-          <form action={dokumentLoeschen.bind(null, id, productId)}>
-            <Button type="submit" variant="destructive">
-              Endgültig löschen
+          <form action={action}>
+            <Button type="submit" variant="destructive" disabled={pending}>
+              {pending ? "Wird gelöscht …" : "Endgültig löschen"}
             </Button>
           </form>
         </DialogFooter>

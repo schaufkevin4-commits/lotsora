@@ -4,13 +4,14 @@ Textil-/Apparel-first-Anwendung für Produktdaten, Dokumente und öffentliche di
 
 ## Stand und Planung
 
-Stand 14.09.2026: Produkteditor, Dokumentverwaltung, öffentliche Passansicht, Vorschau und dauerhafte QR-IDs sind implementiert. N1/N2 und der geprüfte Sicherheitsblock sind in main integriert. B4 (Veröffentlichungsregeln und Datenintegrität) ist zusätzlich im lokalen Branch `codex/b4-veroeffentlichungsregeln` umgesetzt und gegen die isolierte Testdatenbank geprüft. Das lokale Gate „MVP funktional vollständig“ bleibt offen. Cloud-Datenbankmigrationen und die Freigabe des öffentlichen Betriebs bleiben separate Schritte; ein Git-Push ersetzt sie nicht.
+Stand 15.09.2026: Produkteditor, Dokumentverwaltung, öffentliche Passansicht, Vorschau und dauerhafte QR-IDs sind implementiert. N1/N2 und der geprüfte Sicherheitsblock sind in main integriert. Der lokale Branch `codex/b3-dateiloeschung` enthält zusätzlich B4 (Veröffentlichungsregeln und Datenintegrität) und B3 (fortsetzbare Datei-/Produktlöschung und Uploadkompensation), geprüft gegen die isolierte Testdatenbank. Das lokale Gate „MVP funktional vollständig“ bleibt offen. Cloud-Datenbankmigrationen und die Freigabe des öffentlichen Betriebs bleiben separate Schritte; ein Git-Push ersetzt sie nicht.
 
 - [Analysebericht: Architektur, Gate, Befunde und Empfehlungen](docs/ANALYSE-2026-09-10.md)
 - [Arbeitsplan: nächste Sitzungen, Abnahmekriterien und spätere Erweiterungen](docs/ROADMAP.md)
 - [Produktrichtung: Entscheidungen, Learnings, Backlog, Annahmen und offene Fragen](docs/PRODUKTVISION.md)
 - [Abschluss Sicherheitsblock vom 12.09.2026](docs/ABSCHLUSS-2026-09-12.md)
 - [B4-Abschluss vom 14.09.2026 und nächster Einstieg](docs/ABSCHLUSS-2026-09-14-B4.md)
+- [B3-Abschluss vom 15.09.2026 und nächster Einstieg](docs/ABSCHLUSS-2026-09-15-B3.md)
 
 Der Einstieg in die Umsetzung wurde am 10.09. freigegeben; der erste Sicherheitsblock ist am 12.09. lokal implementiert und geprüft. Größere Architekturvorschläge bleiben gesondert zu entscheiden. Die ursprüngliche PP-Entscheidungshistorie und der Lernplan liegen im privaten [Brain-KI-Projektordner PassPilot](https://github.com/schaufkevin4-commits/Brain-KI/tree/main/PassPilot) und im [LP-002-Plan](https://github.com/schaufkevin4-commits/Brain-KI/blob/main/KI_Lernen/LERNPL%C3%84NE/LP-002/PLAN.md). Der Analysebericht nennt die konkret gelesenen Versionsstände. „PassPilot“ bleibt der interne Codename.
 
@@ -35,7 +36,7 @@ npx tsc --noEmit
 npm run build
 ```
 
-Am 14.09.2026 auf dem B4-Branch: 53 Unit-/Regressionstests sowie 40 Integrationstests gegen echtes lokales Supabase bestanden. Lint, Typprüfung und Produktionsbuild bestanden. Der Build benötigt Zugriff auf Google Fonts; die bekannte middleware-Deprecation bleibt im späteren N9-Paket. Browser-/Restoretests und die vollständige Gate-Abnahme stehen noch aus.
+Am 15.09.2026 auf dem B3-Branch: 53 Unit-/Regressionstests sowie 59 Integrationstests gegen echtes lokales Supabase bestanden. Lint, Typprüfung und Produktionsbuild bestanden. Der Build benötigt Zugriff auf Google Fonts; die bekannte middleware-Deprecation bleibt im späteren N9-Paket. B3 wurde gezielt im Browser geprüft; vollständige Browser-/Restoretests und die Gate-Abnahme stehen noch aus.
 
 Die isolierte Testinstanz verwendet `lotsora-integration`, API-Port 55321 und DB-Port 55322. Das normale Entwicklungsprojekt `lotsora` bleibt getrennt. Voraussetzung ist ein laufendes Docker Desktop; eine Installation im Benutzerprofil wird vom Testskript gefunden.
 
@@ -47,6 +48,8 @@ npm run test:integration:stop
 ```
 
 Migrationen werden aus `supabase/migrations` kopiert. `migrate` wendet sie ausschließlich auf die Testinstanz an. Tests erzeugen synthetische A/B-Konten und Dateien und räumen sie wieder auf; öffentliche Prüfungen laufen mit anon, Herstellerprüfungen mit den jeweiligen Sessions. Der Teststarter liest keine `.env.local` und übergibt lokale Testschlüssel nur an den Testprozess. `stop` erhält die Testvolumes. Die generierte Umgebung unter `.local-tests` wird nicht versioniert. B4 ergänzt deterministische Parallel-/Rollbacktests über psql im festen Testcontainer. Die fachlichen SQL-Sessions laufen als authenticated mit synthetischer Nutzer-ID. Details und Aussagegrenzen stehen im B4-Abschlussprotokoll.
+
+B3 reserviert Dateipfade vor dem Upload und erhält offene Löschvorgänge nach der Dokument-/Produktlöschung. Eigentümer können sie unter „Offene Dateivorgänge“ fortsetzen. Unbestätigte Uploads werden nach 15 Minuten beim erneuten Laden zur bewussten Bereinigung angeboten. App und B3-Migration müssen gemeinsam übernommen werden; der frühere direkte Upload ohne Reservierung wird abgewiesen. Nächster Baublock: B5 + N7 (Uploadvertrag, Produktbild und optionale Artikelnummer).
 
 ## Projektstruktur
 
