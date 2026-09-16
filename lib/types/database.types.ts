@@ -283,6 +283,7 @@ export type Database = {
           category: string
           created_at: string
           description: string
+          editor_version: number
           gtin_ean: string | null
           id: string
           image_url: string | null
@@ -299,6 +300,7 @@ export type Database = {
           category: string
           created_at?: string
           description: string
+          editor_version?: number
           gtin_ean?: string | null
           id?: string
           image_url?: string | null
@@ -315,6 +317,7 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string
+          editor_version?: number
           gtin_ean?: string | null
           id?: string
           image_url?: string | null
@@ -504,6 +507,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      save_product_checked: {
+        Args: {
+          p_article_number: string
+          p_brand: string
+          p_category: string
+          p_description: string
+          p_expected_status: Database["public"]["Enums"]["product_status"]
+          p_expected_version: number
+          p_materials: Json
+          p_name: string
+          p_product_id: string
+          p_sustainability: Json
+          p_textile_data: Json
+        }
+        Returns: number
+      }
       save_product_with_article: {
         Args: {
           p_article_number: string
@@ -526,6 +545,14 @@ export type Database = {
           p_product_id: string
         }
         Returns: undefined
+      }
+      set_product_publication_checked: {
+        Args: {
+          p_expected_version: number
+          p_product_id: string
+          p_publish: boolean
+        }
+        Returns: number
       }
       withdraw_product: { Args: { p_product_id: string }; Returns: undefined }
     }

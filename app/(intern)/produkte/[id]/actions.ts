@@ -9,12 +9,11 @@ import {
   canPublish,
   validateMaterialShares,
   saveProdukt,
-  veroeffentlicheProdukt,
-  zieheProduktZurueck,
+  setzeProduktVeroeffentlichung,
   type MaterialInput,
 } from "@/lib/services/products";
 
-export type ProduktFormState = { ok: boolean; error: string | null };
+export type ProduktFormState = { ok: boolean; error: string | null; version?: number; conflict?: boolean };
 
 // "80" oder "80,5" ⇒ Zahl. Ungültiges wird von der Materialprüfung abgewiesen.
 function zuProzent(wert: FormDataEntryValue | undefined): number {
@@ -40,7 +39,7 @@ function leseMaterialien(formData: FormData): MaterialInput[] {
 
 export async function produktSpeichern(
   id: string,
-  _prev: ProduktFormState,
+  expectedVersion: number,
   formData: FormData,
 ): Promise<ProduktFormState> {
   const supabase = await createClient();
@@ -79,7 +78,9 @@ export async function produktSpeichern(
     return { ok: false, error: materialFehler };
   }
 
+  let version: number;
   try {
+    if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0) return { ok: false, error: "Ungültiger Speicherstand. Bitte neu laden.", conflict: true };
     const aktuell = await getProdukt(supabase, id);
     if (!aktuell) {
       return { ok: false, error: "Produkt nicht gefunden." };
@@ -98,10 +99,10 @@ export async function produktSpeichern(
       }
     }
 
-    await saveProdukt(
+    version = await saveProdukt(
       supabase,
       id,
-      { ...basis, expectedStatus: aktuell.status },
+      { ...basis, expectedStatus: aktuell.status, expectedVersion },
       materialien,
       textildaten,
       nachhaltigkeit,
@@ -109,7 +110,7 @@ export async function produktSpeichern(
   } catch (error) {
     const code = error && typeof error === "object" && "code" in error ? error.code : null;
     if (code === "40001" || code === "40P01") {
-      return { ok: false, error: "Das Produkt wurde gleichzeitig geändert. Bitte neu laden und erneut speichern." };
+      return { ok: false, conflict: true, error: "Ein anderer Stand wurde gespeichert. Ihre Eingaben bleiben hier erhalten. Sichern Sie benötigte Texte, laden Sie das Produkt neu und gleichen Sie die Änderungen ab." };
     }
     if (code === "23514" || code === "23502" || code === "22023") {
       return { ok: false, error: "Speichern abgelehnt. Bitte Pflichtfelder und Materialanteile prüfen." };
@@ -120,7 +121,7 @@ export async function produktSpeichern(
   revalidatePath(`/produkte/${id}`);
   revalidatePath("/produkte");
   revalidatePath("/dashboard");
-  return { ok: true, error: null };
+  return { ok: true, error: null, version };
 }
 
 export async function produktLoeschen(id: string, _previous: ProduktFormState, _formData: FormData): Promise<ProduktFormState> {
@@ -133,37 +134,21 @@ export async function produktLoeschen(id: string, _previous: ProduktFormState, _
   redirect("/produkte");
 }
 
-export type VeroeffentlichenState = { ok: boolean; reasons: string[] };
-
-export async function produktVeroeffentlichen(
-  id: string,
-  _prev: VeroeffentlichenState,
-  _formData: FormData,
-): Promise<VeroeffentlichenState> {
-  void _prev;
-  void _formData;
-
+export async function produktVeroeffentlichung(id: string, expectedVersion: number, publish: boolean): Promise<ProduktFormState> {
   const supabase = await createClient();
+  let version: number;
   try {
-    const ergebnis = await veroeffentlicheProdukt(supabase, id);
-    if (!ergebnis.ok) return ergebnis;
-  } catch {
-    return {
-      ok: false,
-      reasons: ["Veröffentlichen fehlgeschlagen. Bitte erneut versuchen."],
-    };
+    if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0) return { ok: false, error: "Ungültiger Speicherstand. Bitte neu laden.", conflict: true };
+    version = await setzeProduktVeroeffentlichung(supabase, id, expectedVersion, publish);
+  } catch (error) {
+    const code = error && typeof error === "object" && "code" in error ? error.code : null;
+    if (code === "40001" || code === "40P01") return { ok: false, conflict: true, error: "Das Produkt wurde inzwischen geändert. Bitte neu laden und vor der Veröffentlichung erneut prüfen." };
+    if (code === "23514") return { ok: false, error: "Statuswechsel abgelehnt. Bitte Pflichtfelder und Materialanteile prüfen." };
+    return { ok: false, error: "Statuswechsel konnte nicht bestätigt werden. Bitte neu laden und den Status prüfen." };
   }
 
   revalidatePath(`/produkte/${id}`);
   revalidatePath("/produkte");
   revalidatePath("/dashboard");
-  return { ok: true, reasons: [] };
-}
-
-export async function produktZurueckziehen(id: string): Promise<void> {
-  const supabase = await createClient();
-  await zieheProduktZurueck(supabase, id);
-  revalidatePath(`/produkte/${id}`);
-  revalidatePath("/produkte");
-  revalidatePath("/dashboard");
+  return { ok: true, error: null, version };
 }

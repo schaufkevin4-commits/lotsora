@@ -194,6 +194,21 @@ export async function getProdukt(supabase: DB, id: string): Promise<Product | nu
   return data;
 }
 
+// Die Formularabfragen müssen zu demselben Bearbeitungstoken gehören.
+// Ein Write nach der letzten Kontrollabfrage wird beim späteren Save abgewiesen.
+export async function getEditorStand(supabase: DB, id: string) {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const produkt = await getProdukt(supabase, id);
+    if (!produkt) return null;
+    const [materialien, textildaten, nachhaltigkeit] = await Promise.all([
+      getMaterialien(supabase, id), getTextildaten(supabase, id), getNachhaltigkeit(supabase, id),
+    ]);
+    const check = await getProdukt(supabase, id);
+    if (check?.editor_version === produkt.editor_version) return { produkt, materialien, textildaten, nachhaltigkeit };
+  }
+  throw new Error("Das Produkt wird gerade geändert. Bitte erneut laden.");
+}
+
 // Neues, leeres Produkt anlegen — hängt am eigenen Hersteller.
 // Status wird abgeleitet: leer ⇒ „Unvollständig" (PP-011).
 export async function createProdukt(supabase: DB): Promise<Product> {
@@ -246,6 +261,14 @@ export async function veroeffentlicheProdukt(
 export async function zieheProduktZurueck(supabase: DB, id: string): Promise<void> {
   const { error } = await supabase.rpc("withdraw_product", { p_product_id: id });
   if (error) throw error;
+}
+
+export async function setzeProduktVeroeffentlichung(supabase: DB, id: string, expectedVersion: number, publish: boolean): Promise<number> {
+  const { data, error } = await supabase.rpc("set_product_publication_checked", {
+    p_product_id: id, p_expected_version: expectedVersion, p_publish: publish,
+  });
+  if (error) throw error;
+  return data;
 }
 
 // Ein Produkt löschen (RLS lässt nur eigene zu).
@@ -442,12 +465,13 @@ export async function saveProdukt(
     category: string;
     brand: string | null;
     expectedStatus: ProductStatus;
+    expectedVersion: number;
     articleNumber?: string | null;
   },
   materials: MaterialInput[],
   textildaten: TextileInput,
   nachhaltigkeit: NachhaltigkeitInput,
-): Promise<void> {
+): Promise<number> {
   const bereinigt = materials
     .map((material) => ({
       materialName: material.materialName.trim(),
@@ -458,7 +482,8 @@ export async function saveProdukt(
   const validierungsfehler = validateMaterialShares(bereinigt);
   if (validierungsfehler) throw new Error(validierungsfehler);
 
-  const { error } = await supabase.rpc("save_product_with_article", {
+  const { data, error } = await supabase.rpc("save_product_checked", {
+    p_expected_version: produkt.expectedVersion,
     p_article_number: produkt.articleNumber ?? "",
     p_product_id: productId,
     p_name: produkt.name,
@@ -485,6 +510,7 @@ export async function saveProdukt(
     },
   });
   if (error) throw error;
+  return data;
 }
 // --- Öffentlicher Produktpass (Tag 27, PP-013) -------------------------------
 // Lesepfad für die öffentliche Seite /p/<id> UND die Editor-Vorschau. Läuft auch

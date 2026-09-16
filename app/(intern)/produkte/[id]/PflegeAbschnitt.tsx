@@ -7,9 +7,9 @@ import type { Textildaten } from "@/lib/services/products";
 // Unkontrollierte Felder mit defaultValue; Service + Action stehen bereits.
 export function PflegeAbschnitt({ textildaten }: { textildaten: Textildaten | null }) {
   return (
-    <section className="space-y-4 rounded-lg border p-5">
+    <details open className="space-y-4 rounded-lg border p-5">
+      <summary className="cursor-pointer font-medium">Pflege</summary>
       <div>
-        <h2 className="font-medium">Pflege</h2>
         <p className="text-sm text-muted-foreground">
           Pflege- und Waschhinweise – optional.
         </p>
@@ -34,6 +34,6 @@ export function PflegeAbschnitt({ textildaten }: { textildaten: Textildaten | nu
           placeholder="z. B. Waschbar bei 30 °C, Feinwaschgang"
         />
       </div>
-    </section>
+    </details>
   );
 }

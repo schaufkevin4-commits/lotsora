@@ -10,9 +10,9 @@ export function ProduktdetailsAbschnitt({
   textildaten: Textildaten | null;
 }) {
   return (
-    <section className="space-y-4 rounded-lg border p-5">
+    <details open className="space-y-4 rounded-lg border p-5">
+      <summary className="cursor-pointer font-medium">Herkunft &amp; Produktdetails</summary>
       <div>
-        <h2 className="font-medium">Herkunft &amp; Produktdetails</h2>
         <p className="text-sm text-muted-foreground">
           Herkunftsland, Farbe und Größe – alle optional.
         </p>
@@ -48,6 +48,6 @@ export function ProduktdetailsAbschnitt({
           />
         </div>
       </div>
-    </section>
+    </details>
   );
 }

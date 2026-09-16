@@ -2,6 +2,7 @@
 "use client";
 
 import { useActionState } from "react";
+import { useEditor } from "./EditorProvider";
 import { produktLoeschen } from "./actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 
 export function LoeschenButton({ id, name }: { id: string; name: string }) {
+  const { editor } = useEditor();
   const [state, action, pending] = useActionState(produktLoeschen.bind(null, id), { ok: false, error: null });
   return (
     <Dialog>
@@ -35,8 +37,9 @@ export function LoeschenButton({ id, name }: { id: string; name: string }) {
           <DialogClose asChild>
             <Button variant="outline" disabled={pending}>Abbrechen</Button>
           </DialogClose>
-          <form action={action}>
-            <Button type="submit" variant="destructive" disabled={pending}>{pending ? "Wird gelöscht …" : "Endgültig löschen"}</Button>
+          <form action={action} onSubmit={(event) => { if (editor.isBlocked()) event.preventDefault(); }}>
+            {editor.isBlocked() && <p className="text-sm">Bitte Änderungen zuerst speichern und laufende Vorgänge abwarten.</p>}
+            <Button type="submit" variant="destructive" disabled={pending || editor.isBlocked()}>{pending ? "Wird gelöscht …" : "Endgültig löschen"}</Button>
           </form>
         </DialogFooter>
       </DialogContent>

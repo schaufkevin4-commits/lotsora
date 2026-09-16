@@ -1,7 +1,7 @@
 // app/(intern)/produkte/[id]/MaterialAbschnitt.tsx
 "use client";
 
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { checkMaterialShares, type Material } from "@/lib/services/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +28,9 @@ function zuProzent(wert: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-export function MaterialAbschnitt({ materialien }: { materialien: Material[] }) {
+export function MaterialAbschnitt({ materialien, onStructureChange }: { materialien: Material[]; onStructureChange: () => void }) {
+  const [structure, setStructure] = useState(0);
+  useLayoutEffect(() => { if (structure > 0) onStructureChange(); }, [structure, onStructureChange]);
   const [zeilen, setZeilen] = useState<Zeile[]>(() => startZeilen(materialien));
   const naechsteId = useRef(0); // fortlaufende IDs für neu hinzugefügte Zeilen
 
@@ -36,9 +38,11 @@ export function MaterialAbschnitt({ materialien }: { materialien: Material[] }) 
     setZeilen((z) => z.map((r) => (r.id === id ? { ...r, name: v } : r)));
   const setPct = (id: string, v: string) =>
     setZeilen((z) => z.map((r) => (r.id === id ? { ...r, pct: v } : r)));
-  const hinzufuegen = () =>
+  const hinzufuegen = () => {
     setZeilen((z) => [...z, { id: `neu-${naechsteId.current++}`, name: "", pct: "" }]);
-  const entfernen = (id: string) => setZeilen((z) => z.filter((r) => r.id !== id));
+    setStructure((n) => n + 1);
+  };
+  const entfernen = (id: string) => { setZeilen((z) => z.filter((r) => r.id !== id)); setStructure((n) => n + 1); };
 
   // Live-Summe (PP-012). Nur Zeilen mit Namen zählen — genau wie beim Speichern.
   const check = checkMaterialShares(
@@ -54,9 +58,9 @@ export function MaterialAbschnitt({ materialien }: { materialien: Material[] }) 
       : "text-sm text-muted-foreground";
 
   return (
-    <section className="space-y-4 rounded-lg border p-5">
+    <details open className="space-y-4 rounded-lg border p-5">
+      <summary className="cursor-pointer font-medium">Material</summary>
       <div>
-        <h2 className="font-medium">Material</h2>
         <p className="text-sm text-muted-foreground">
           Faserzusammensetzung – z. B. Baumwolle 80 %, Polyester 20 %.
         </p>
@@ -93,7 +97,7 @@ export function MaterialAbschnitt({ materialien }: { materialien: Material[] }) 
               type="button"
               variant="ghost"
               onClick={() => entfernen(r.id)}
-              disabled={zeilen.length === 1}
+              aria-label={`Material ${r.name || "ohne Namen"} entfernen`}
             >
               Entfernen
             </Button>
@@ -114,6 +118,6 @@ export function MaterialAbschnitt({ materialien }: { materialien: Material[] }) 
               : ""}
         </p>
       </div>
-    </section>
+    </details>
   );
 }

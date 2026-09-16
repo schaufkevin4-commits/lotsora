@@ -4,10 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
-  getProdukt,
-  getMaterialien,
-  getTextildaten,
-  getNachhaltigkeit,
+  getEditorStand,
   getMissingRequiredFields,
   checkMaterialShares,
 } from "@/lib/services/products";
@@ -20,31 +17,31 @@ import { StatusBadge } from "@/components/produkte/status-badge";
 import { VeroeffentlichenAbschnitt } from "./VeroeffentlichenAbschnitt";
 import { buildPassUrl, generateQrSvg } from "@/lib/qr";
 import { QrCodeAbschnitt } from "./QrCodeAbschnitt";
+import { EditorProvider } from "./EditorProvider";
+import { datenluecken } from "@/lib/services/completeness";
 
 export default async function ProduktEditorSeite({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ neu?: string }>;
 }) {
   const { id } = await params;
   const supabase = await createClient();
   const offeneDateivorgaenge = await getOffeneDateivorgaenge(supabase, id);
 
-  const produkt = await getProdukt(supabase, id);
-  if (!produkt) notFound();
-
-  const [materialien, textildaten, nachhaltigkeit, dokumente] = await Promise.all([
-    getMaterialien(supabase, id),
-    getTextildaten(supabase, id),
-    getNachhaltigkeit(supabase, id),
-    getDokumenteMitUrl(supabase, id),
-  ]);
+  const stand = await getEditorStand(supabase, id);
+  if (!stand) notFound();
+  const { produkt, materialien, textildaten, nachhaltigkeit } = stand;
+  const dokumente = await getDokumenteMitUrl(supabase, id);
   const materialInputs = materialien.map((material) => ({
     materialName: material.material_name,
     percentage: Number(material.percentage),
   }));
   const fehlendePflichtfelder = getMissingRequiredFields(produkt);
   const materialSumme = checkMaterialShares(materialInputs).sum;
+  const luecken = datenluecken(produkt, materialien, textildaten, nachhaltigkeit);
 
   // QR-Code: für veröffentlichte Produkte (PP-016) dauerhafte, öffentliche
   // Pass-ID verwenden. Interne Relationen und Editor-URLs behalten die UUID.
@@ -53,6 +50,7 @@ export default async function ProduktEditorSeite({
   const qrSvg = passUrl ? await generateQrSvg(passUrl) : null;
 
   return (
+    <EditorProvider key={id} id={id} version={produkt.editor_version}>
     <div className="max-w-2xl space-y-6">
       <div>
         <Link href="/produkte" className="text-sm text-muted-foreground hover:underline">
@@ -68,7 +66,15 @@ export default async function ProduktEditorSeite({
         </div>
       </div>
 
+      <aside className="space-y-1 rounded-lg border p-4 text-sm" aria-label="Datenvollständigkeit">
+        <p className="font-medium">Gespeicherte Angaben: {luecken.label}</p>
+        {luecken.required.length > 0 && <p>Pflichtangaben fehlen: {luecken.required.join(", ")}.</p>}
+        {luecken.optional.length > 0 && <p>Optional ergänzen: {luecken.optional.join(", ")}.</p>}
+        <p className="text-muted-foreground">Orientierung zu Pflichtangaben, Material, Herkunft, Pflege und Kreislauf. Keine fachliche Prüfung. Optionale Lücken verhindern die Veröffentlichung nicht.</p>
+      </aside>
+
       <ProduktFormular
+        guided={(await searchParams).neu === "1"}
         produkt={produkt}
         materialien={materialien}
         textildaten={textildaten}
@@ -77,10 +83,9 @@ export default async function ProduktEditorSeite({
 
       <FileCleanupPanel operations={offeneDateivorgaenge} />
       <ProductImage productId={id} path={produkt.image_url} url={produkt.image_url ? await erzeugeSignierteUrl(supabase, produkt.image_url) : null} />
-      <DokumenteAbschnitt productId={id} dokumente={dokumente} />
+      <div id="dokumente"><DokumenteAbschnitt productId={id} dokumente={dokumente} /></div>
 
       <VeroeffentlichenAbschnitt
-        key={produkt.status}
         productId={produkt.id}
         status={produkt.status}
         fehlendePflichtfelder={fehlendePflichtfelder}
@@ -89,5 +94,6 @@ export default async function ProduktEditorSeite({
 
       <QrCodeAbschnitt svg={qrSvg} passUrl={passUrl} />
     </div>
+    </EditorProvider>
   );
 }

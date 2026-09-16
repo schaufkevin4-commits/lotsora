@@ -206,6 +206,7 @@ describe("saveProdukt (W1)", () => {
         category: "Oberteil",
         brand: null,
         expectedStatus: "entwurf",
+        expectedVersion: 7,
       },
       [{ materialName: " Leinen ", percentage: 100 }],
       {
@@ -224,7 +225,8 @@ describe("saveProdukt (W1)", () => {
     );
 
     expect(rpc).toHaveBeenCalledOnce();
-    expect(rpc).toHaveBeenCalledWith("save_product_with_article", {
+    expect(rpc).toHaveBeenCalledWith("save_product_checked", {
+      p_expected_version: 7,
       p_article_number: "",
       p_product_id: "produkt-1",
       p_name: "Hemd",

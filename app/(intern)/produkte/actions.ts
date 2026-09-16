@@ -7,5 +7,5 @@ import { createProdukt } from "@/lib/services/products";
 export async function neuesProduktAnlegen() {
   const supabase = await createClient();
   const produkt = await createProdukt(supabase);
-  redirect(`/produkte/${produkt.id}`);
+  redirect(`/produkte/${produkt.id}?neu=1`);
 }

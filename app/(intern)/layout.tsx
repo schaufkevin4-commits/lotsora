@@ -22,7 +22,7 @@ export default async function InternLayout({ children }: { children: React.React
           <Link href="/produkte" className="hover:underline">Produkte</Link>
           <Link href="/profil" className="hover:underline">Profil</Link>
         </nav>
-        <form action={abmelden}>
+        <form action={abmelden} data-leaves-editor>
           <Button type="submit" variant="ghost" size="sm">Abmelden</Button>
         </form>
       </header>

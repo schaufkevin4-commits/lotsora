@@ -17,6 +17,8 @@ Stand 16.09.2026: Produkteditor, Dokumentverwaltung, öffentliche Passansicht, V
 
 Der Einstieg in die Umsetzung wurde am 10.09. freigegeben; der erste Sicherheitsblock ist am 12.09. lokal implementiert und geprüft. Größere Architekturvorschläge bleiben gesondert zu entscheiden. Die ursprüngliche PP-Entscheidungshistorie und der Lernplan liegen im privaten [Brain-KI-Projektordner PassPilot](https://github.com/schaufkevin4-commits/Brain-KI/tree/main/PassPilot) und im [LP-002-Plan](https://github.com/schaufkevin4-commits/Brain-KI/blob/main/KI_Lernen/LERNPL%C3%84NE/LP-002/PLAN.md). Der Analysebericht nennt die konkret gelesenen Versionsstände. „PassPilot“ bleibt der interne Codename.
 
+N9/F07 ist danach lokal umgesetzt und geprüft: 75 Unit-/Regressionstests, 78 Integrationstests, Lint, Typen, Build und sichtbare Browserprüfungen. Autosave/Materialentfernung/Navigationsschutz und Veröffentlichung sind koordiniert; `editor_version` schützt gegen veraltete Tabs. Die neue Migration gilt nur in `lotsora-integration` (jetzt 20 Migrationen). Details und Grenzen: [N9-Abschluss](docs/ABSCHLUSS-2026-09-16-N9.md). Kein N9-Push; nach diesem Block Pause.
+
 ## Lokal entwickeln
 
 Voraussetzungen: Node 24 gemäß .nvmrc, npm und für die lokale Supabase-Umgebung Docker. Die Entwicklung erfolgt gemäß PP-022 lokal, getrennt vom Cloud-Projekt.
@@ -53,7 +55,7 @@ Migrationen werden aus `supabase/migrations` kopiert. `migrate` wendet sie aussc
 
 B3 reserviert Dateipfade vor dem Upload und erhält offene Löschvorgänge nach der Dokument-/Produktlöschung. Eigentümer können sie unter „Offene Dateivorgänge“ fortsetzen. Unbestätigte Uploads werden nach 15 Minuten beim erneuten Laden zur bewussten Bereinigung angeboten.
 
-B5 erlaubt PDF, JPEG, PNG und WebP bis 10 MiB, für Produktbilder nur die drei Bildformate. Dateien gehen authentifiziert direkt an Storage; der Server prüft den tatsächlichen Inhalt vor der Dokument-/Bildbindung. `products.image_url` enthält jetzt einen verwalteten Storage-Pfad; die Anzeige erhält einen signierten Link. App, Serverkonfiguration und alle Migrationen müssen zusammenpassen. Vorhandene Dateien werden nicht rückwirkend inhaltlich geprüft; die Übernahmevoraussetzungen stehen im B5-Abschluss. Nächster Baublock: N9/F07 und UX-Abgleich (Autosave, ungespeicherte Änderungen, Veröffentlichung).
+B5 erlaubt PDF, JPEG, PNG und WebP bis 10 MiB, für Produktbilder nur die drei Bildformate. Dateien gehen authentifiziert direkt an Storage; der Server prüft den tatsächlichen Inhalt vor der Dokument-/Bildbindung. `products.image_url` enthält jetzt einen verwalteten Storage-Pfad; die Anzeige erhält einen signierten Link. App, Serverkonfiguration und alle Migrationen müssen zusammenpassen. Vorhandene Dateien werden nicht rückwirkend inhaltlich geprüft; die Übernahmevoraussetzungen stehen im B5-Abschluss. N9/F07 ist lokal abgeschlossen. Nächster Baublock nach neuem Auftrag: N3; getrennte Veröffentlichungsstände bleiben offen.
 
 ## Projektstruktur
 

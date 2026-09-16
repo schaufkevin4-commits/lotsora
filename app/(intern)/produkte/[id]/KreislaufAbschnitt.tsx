@@ -10,9 +10,9 @@ export function KreislaufAbschnitt({
   nachhaltigkeit: Nachhaltigkeit | null;
 }) {
   return (
-    <section className="space-y-4 rounded-lg border p-5">
+    <details open className="space-y-4 rounded-lg border p-5">
+      <summary className="cursor-pointer font-medium">Nutzung &amp; Kreislauf</summary>
       <div>
-        <h2 className="font-medium">Nutzung &amp; Kreislauf</h2>
         <p className="text-sm text-muted-foreground">
           Recycling, Reparatur, Entsorgung und wiederverwendbare Materialien – optional.
         </p>
@@ -57,6 +57,6 @@ export function KreislaufAbschnitt({
           placeholder="z. B. Reißverschluss und Knöpfe wiederverwendbar"
         />
       </div>
-    </section>
+    </details>
   );
 }

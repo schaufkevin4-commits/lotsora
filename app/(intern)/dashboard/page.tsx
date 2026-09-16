@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
 import { getMeineProdukte, zaehleNachStatus } from "@/lib/services/products";
+import { getDatenluecken } from "@/lib/services/completeness";
 import { neuesProduktAnlegen } from "../produkte/actions";
 import { StatusBadge } from "@/components/produkte/status-badge";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,8 @@ export default async function DashboardPage() {
   // --- Befüllt (Screen 8): Kacheln + kurze Produktliste ----------------------
   const zahlen = zaehleNachStatus(produkte);
   const letzte = produkte.slice(0, 5);
+  const luecken = await getDatenluecken(supabase, produkte);
+  const naechstesProdukt = luecken.find((p) => p.required.length === 0) ?? luecken[0];
 
   return (
     <div className="flex flex-col gap-6">
@@ -80,6 +83,32 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
+      {zahlen.veroeffentlicht === 0 && <Card>
+        <CardHeader><CardTitle>Erste Schritte zum Produktpass</CardTitle></CardHeader>
+        <CardContent className="space-y-3">
+          <ol className="list-decimal space-y-1 pl-5 text-sm">
+            <li>Produkt angelegt ✓</li>
+            <li>{naechstesProdukt.required.length ? "Pflichtangaben ergänzen" : "Pflichtangaben ausgefüllt ✓"}</li>
+            <li>Angaben und Vorschau prüfen, dann veröffentlichen</li>
+            <li>QR-Code teilen</li>
+          </ol>
+          <Button asChild><Link href={`/produkte/${naechstesProdukt.id}`}>Mit Produkt fortfahren</Link></Button>
+        </CardContent>
+      </Card>}
+
+      <Card>
+        <CardHeader><CardTitle>Datenlücken</CardTitle></CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <p className="text-muted-foreground">Orientierung zu Pflichtangaben, Material, Herkunft, Pflege und Kreislauf. Optionale Angaben bleiben freiwillig.</p>
+          {luecken.slice(0, 5).map((p) => <div key={p.id}>
+            <Link href={`/produkte/${p.id}`} className="font-medium underline">{p.name || "(ohne Namen)"}: {p.label}</Link>
+            {p.required.length > 0 && <p>Pflichtangaben fehlen: {p.required.join(", ")}.</p>}
+            {p.optional.length > 0 && <p>Optional ergänzen: {p.optional.join(", ")}.</p>}
+          </div>)}
+          {luecken.length > 5 && <Link href="/produkte" className="underline">Weitere Produkte prüfen</Link>}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Letzte Produkte</CardTitle>
@@ -94,7 +123,7 @@ export default async function DashboardPage() {
               href={`/produkte/${p.id}`}
               className="flex items-center justify-between py-2 hover:underline"
             >
-              <span className="font-medium">{p.name?.trim() ? p.name : "(ohne Namen)"}</span>
+              <span><span className="font-medium">{p.name?.trim() ? p.name : "(ohne Namen)"}</span><span className="block text-xs text-muted-foreground">Zuletzt geändert: {new Date(p.updated_at).toLocaleString("de-DE", { timeZone: "Europe/Berlin" })}</span></span>
               <StatusBadge status={p.status} />
             </Link>
           ))}

@@ -1,8 +1,8 @@
 // app/(intern)/produkte/[id]/ProduktFormular.tsx
 "use client";
 
-import { useActionState, useEffect, useRef, useState } from "react";
-import { produktSpeichern, type ProduktFormState } from "./actions";
+import { startTransition, useState } from "react";
+import { useEditor } from "./EditorProvider";
 import { MaterialAbschnitt } from "./MaterialAbschnitt";
 import { ProduktdetailsAbschnitt } from "./ProduktdetailsAbschnitt";
 import { PflegeAbschnitt } from "./PflegeAbschnitt";
@@ -18,30 +18,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import Link from "next/link";
 
-const initial: ProduktFormState = { ok: false, error: null };
 
 // Markierung für leere Pflichtfelder: roter Rahmen + roter Fokus-Ring.
 const FEHLT_KLASSE = "border-destructive focus-visible:ring-destructive/30";
 
-// Autosave: so lange nach der letzten Änderung warten, bevor gesichert wird.
-const AUTOSAVE_MS = 1200;
 
 export function ProduktFormular({
   produkt,
   materialien,
   textildaten,
   nachhaltigkeit,
+  guided = false,
 }: {
+  guided?: boolean;
   produkt: Product;
   materialien: Material[];
   textildaten: Textildaten | null;
   nachhaltigkeit: Nachhaltigkeit | null;
 }) {
-  const [state, formAction, pending] = useActionState(
-    produktSpeichern.bind(null, produkt.id),
-    initial,
-  );
+  const { editor, formRef, state } = useEditor();
+  const pending = state.pending;
+  const [step, setStep] = useState<number | null>(guided ? 0 : null);
+  const steps = ["Basis", "Material", "Herkunft & Produktdetails", "Pflege", "Nutzung & Kreislauf"];
 
   // Pflichtfelder (PP-010) kontrolliert halten, damit wir live sehen, was fehlt.
   // Kein natives `required` → Entwurf bleibt trotz Lücke speicherbar (PP-011).
@@ -53,84 +53,26 @@ export function ProduktFormular({
   const fehltDescription = description.trim() === "";
   const fehltCategory = category.trim() === "";
 
-  // --- Autosave (PP-019 E2): Knopf PLUS automatisches Sichern nach Tipp-Pause,
-  //     beides über dieselbe Server Action `produktSpeichern`. ----------------
-  const formRef = useRef<HTMLFormElement>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const gespeicherterStand = useRef<string | null>(null); // was zuletzt gesichert wurde
-  const pendingRef = useRef(pending);
-  const [ungespeichert, setUngespeichert] = useState(false);
-
-  // Momentaufnahme des Formularinhalts – für „hat sich wirklich etwas geändert?".
-  function standJetzt(): string {
-    if (!formRef.current) return "";
-    const fd = new FormData(formRef.current);
-    return [...fd.entries()].map(([k, v]) => `${k}=${String(v)}`).join("&");
-  }
-
-  function sichereWennNoetig() {
-    if (pendingRef.current) return; // läuft schon; der pending-Effekt plant neu
-    if (standJetzt() === gespeicherterStand.current) return; // nichts Neues
-    formRef.current?.requestSubmit();
-  }
-
-  // Ausgangsstand beim Laden merken – gilt als „bereits gespeichert".
-  useEffect(() => {
-    gespeicherterStand.current = standJetzt();
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
-  useEffect(() => {
-    pendingRef.current = pending;
-  }, [pending]);
-
-  // Wurde während eines Speicherns getippt, nach dem Ende erneut prüfen.
-  useEffect(() => {
-    if (!pending) sichereWennNoetig();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pending]);
-
-  // Erfolgreiches Speichern ⇒ Anzeige „sauber", wenn seither nichts Neues kam.
-  useEffect(() => {
-    if (state.ok && standJetzt() === gespeicherterStand.current) {
-      setUngespeichert(false);
-    }
-  }, [state]);
-
-  // Nach jeder Änderung eine Sicherung planen (entprellt).
-  function planeAutosave() {
-    setUngespeichert(true);
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(sichereWennNoetig, AUTOSAVE_MS);
-  }
-
-  // Beim Absenden (Knopf ODER Autosave) den gesicherten Stand festhalten.
-  function beimAbsenden() {
-    gespeicherterStand.current = standJetzt();
-  }
-
-  const statusText = pending
-    ? "Speichert …"
-    : state.error
-      ? "Nicht gespeichert"
-      : ungespeichert
-        ? "Nicht gespeicherte Änderungen"
-        : state.ok
-          ? "Automatisch gespeichert"
-          : "";
+  const statusText = pending ? "Speichert …" : state.error ? "Nicht gespeichert" : state.dirty ? "Nicht gespeicherte Änderungen" : state.saved ? "Gespeichert" : "";
 
   return (
     <form
       ref={formRef}
-      action={formAction}
-      onChange={planeAutosave}
-      onSubmit={beimAbsenden}
+      noValidate
+      onChange={editor.change}
+      onSubmit={(event) => { event.preventDefault(); startTransition(() => editor.save()); }}
       className="space-y-5"
     >
-      <section className="space-y-4 rounded-lg border p-5">
-        <h2 className="font-medium">Basis</h2>
+      {produkt.status === "veroeffentlicht" && <Alert><AlertDescription>Dieses Produkt ist öffentlich. Änderungen werden automatisch gespeichert und können dadurch im öffentlichen Pass erscheinen.</AlertDescription></Alert>}
+      {step !== null && <div className="space-y-3 rounded-lg border p-4">
+        <p className="font-medium">Schritt {step + 1} von {steps.length}: {steps[step]}</p>
+        <p className="text-sm text-muted-foreground">Zuerst die Basis ausfüllen, danach optionale Angaben ergänzen. Am Ende Dokumente und Vorschau prüfen.</p>
+        <Button type="button" variant="ghost" onClick={() => setStep(null)}>Alle Abschnitte anzeigen</Button>
+      </div>}
+      <fieldset inert={state.publishing} className="space-y-5">
+      <div hidden={step !== null && step !== 0}>
+      <details open className="space-y-4 rounded-lg border p-5">
+        <summary className="cursor-pointer font-medium">Basis</summary>
         <div className="space-y-1.5">
           <Label htmlFor="article_number">Artikelnummer (optional, nur intern)</Label>
           <Input id="article_number" name="article_number" maxLength={120} defaultValue={produkt.article_number ?? ""} />
@@ -185,19 +127,30 @@ export function ProduktFormular({
           <Label htmlFor="brand">Marke</Label>
           <Input id="brand" name="brand" defaultValue={produkt.brand ?? ""} />
         </div>
-      </section>
+      </details>
+      </div>
 
-      <MaterialAbschnitt materialien={materialien} />
+      <div hidden={step !== null && step !== 1}><MaterialAbschnitt materialien={materialien} onStructureChange={editor.change} /></div>
 
-      <ProduktdetailsAbschnitt textildaten={textildaten} />
+      <div hidden={step !== null && step !== 2}><ProduktdetailsAbschnitt textildaten={textildaten} /></div>
 
-      <PflegeAbschnitt textildaten={textildaten} />
+      <div hidden={step !== null && step !== 3}><PflegeAbschnitt textildaten={textildaten} /></div>
 
-      <KreislaufAbschnitt nachhaltigkeit={nachhaltigkeit} />
+      <div hidden={step !== null && step !== 4}><KreislaufAbschnitt nachhaltigkeit={nachhaltigkeit} /></div>
+
+      {step !== null && <div className="flex justify-between gap-3">
+        <Button type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>Zurück</Button>
+        <Button type="button" variant="outline" onClick={() => {
+          if (step < steps.length - 1) setStep(step + 1);
+          else { setStep(null); document.getElementById("dokumente")?.scrollIntoView({ behavior: "smooth" }); }
+        }}>{step < steps.length - 1 ? "Weiter" : "Weiter zu Dokumenten und Vorschau"}</Button>
+      </div>}
+      </fieldset>
 
       {state.error && (
         <Alert variant="destructive">
           <AlertDescription>{state.error}</AlertDescription>
+          {state.conflict && <Link href={`/produkte/${produkt.id}`} target="_blank" rel="noopener noreferrer" className="text-sm underline">Aktuellen Serverstand zum Vergleichen in neuem Tab öffnen</Link>}
         </Alert>
       )}
 
@@ -205,8 +158,8 @@ export function ProduktFormular({
         <span className="text-sm text-muted-foreground" aria-live="polite">
           {statusText}
         </span>
-        <Button type="submit" disabled={pending}>
-          {pending ? "Wird gespeichert …" : "Speichern"}
+        <Button type="submit" disabled={pending || state.publishing || state.conflict}>
+          {pending ? "Wird gespeichert …" : state.conflict ? "Konflikt – neu laden" : state.error ? "Erneut speichern" : "Speichern"}
         </Button>
       </div>
     </form>
