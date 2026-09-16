@@ -4,10 +4,11 @@ Textil-/Apparel-first-Anwendung für Produktdaten, Dokumente und öffentliche di
 
 ## Stand und Planung
 
-Stand 16.09.2026: Produkteditor, Dokumentverwaltung, öffentliche Passansicht, Vorschau und dauerhafte QR-IDs sind implementiert. N1/N2 und der geprüfte Sicherheitsblock sind in main integriert. Der lokale Branch `codex/b5-uploads-produktbild` enthält zusätzlich B4 (Veröffentlichungsregeln und Datenintegrität), B3 (fortsetzbare Datei-/Produktlöschung) und B5/N7 (geprüfte Uploads, Produktbild und optionale interne Artikelnummer). Das lokale Gate „MVP funktional vollständig“ bleibt offen. Cloud-Datenbankmigrationen und die Freigabe des öffentlichen Betriebs bleiben separate Schritte; ein Git-Push ersetzt sie nicht.
+Stand 16.09.2026: Produkteditor, Dokumentverwaltung, öffentliche Passansicht, Vorschau und dauerhafte QR-IDs sind implementiert. Dieser Integrationsstand umfasst N1/N2, den geprüften Sicherheitsblock, B4 (Veröffentlichungsregeln und Datenintegrität), B3 (fortsetzbare Datei-/Produktlöschung) und B5/N7 (geprüfte Uploads, Produktbild und optionale interne Artikelnummer). Kevin hat die Übernahme und den Push nach main am 16.09. beauftragt. Das lokale Gate „MVP funktional vollständig“ bleibt offen. Cloud-Datenbankmigrationen und die Freigabe des öffentlichen Betriebs bleiben separate Schritte; ein Git-Push ersetzt sie nicht.
 
 - [Analysebericht: Architektur, Gate, Befunde und Empfehlungen](docs/ANALYSE-2026-09-10.md)
 - [Arbeitsplan: nächste Sitzungen, Abnahmekriterien und spätere Erweiterungen](docs/ROADMAP.md)
+- [Noch offene Punkte bis zur lokalen Gate-Freigabe, Stand 16.09.](docs/GATE-RESTPUNKTE-2026-09-16.md)
 - [Produktrichtung: Entscheidungen, Learnings, Backlog, Annahmen und offene Fragen](docs/PRODUKTVISION.md)
 - [Abschluss Sicherheitsblock vom 12.09.2026](docs/ABSCHLUSS-2026-09-12.md)
 - [B4-Abschluss vom 14.09.2026 und nächster Einstieg](docs/ABSCHLUSS-2026-09-14-B4.md)
