@@ -17,7 +17,7 @@ Stand 16.09.2026: Produkteditor, Dokumentverwaltung, öffentliche Passansicht, V
 
 Der Einstieg in die Umsetzung wurde am 10.09. freigegeben; der erste Sicherheitsblock ist am 12.09. lokal implementiert und geprüft. Größere Architekturvorschläge bleiben gesondert zu entscheiden. Die ursprüngliche PP-Entscheidungshistorie und der Lernplan liegen im privaten [Brain-KI-Projektordner PassPilot](https://github.com/schaufkevin4-commits/Brain-KI/tree/main/PassPilot) und im [LP-002-Plan](https://github.com/schaufkevin4-commits/Brain-KI/blob/main/KI_Lernen/LERNPL%C3%84NE/LP-002/PLAN.md). Der Analysebericht nennt die konkret gelesenen Versionsstände. „PassPilot“ bleibt der interne Codename.
 
-N9/F07 ist danach lokal umgesetzt und geprüft: 75 Unit-/Regressionstests, 78 Integrationstests, Lint, Typen, Build und sichtbare Browserprüfungen. Autosave/Materialentfernung/Navigationsschutz und Veröffentlichung sind koordiniert; `editor_version` schützt gegen veraltete Tabs. Die neue Migration gilt nur in `lotsora-integration` (jetzt 20 Migrationen). Details und Grenzen: [N9-Abschluss](docs/ABSCHLUSS-2026-09-16-N9.md). Kein N9-Push; nach diesem Block Pause.
+N9/F07 ist danach lokal umgesetzt und geprüft: 75 Unit-/Regressionstests, 78 Integrationstests, Lint, Typen, Build und sichtbare Browserprüfungen. Autosave/Materialentfernung/Navigationsschutz und Veröffentlichung sind koordiniert; `editor_version` schützt gegen veraltete Tabs. Die neue Migration gilt nur in `lotsora-integration` (jetzt 20 Migrationen). Details und Grenzen: [N9-Abschluss](docs/ABSCHLUSS-2026-09-16-N9.md). Kevin hat anschließend auch die Übernahme und den Push von N9 nach main beauftragt; danach Pause. Siehe [Tagesabschluss](docs/TAGESABSCHLUSS-2026-09-16.md).
 
 ## Lokal entwickeln
 
