@@ -11,7 +11,8 @@ import {
   getMissingRequiredFields,
   checkMaterialShares,
 } from "@/lib/services/products";
-import { getDokumenteMitUrl } from "@/lib/services/documents";
+import { getDokumenteMitUrl, erzeugeSignierteUrl } from "@/lib/services/documents";
+import { ProductImage } from "@/components/produkte/product-image";
 import { ProduktFormular } from "./ProduktFormular";
 import { DokumenteAbschnitt } from "./DokumenteAbschnitt";
 import { LoeschenButton } from "./LoeschenButton";
@@ -75,6 +76,7 @@ export default async function ProduktEditorSeite({
       />
 
       <FileCleanupPanel operations={offeneDateivorgaenge} />
+      <ProductImage productId={id} path={produkt.image_url} url={produkt.image_url ? await erzeugeSignierteUrl(supabase, produkt.image_url) : null} />
       <DokumenteAbschnitt productId={id} dokumente={dokumente} />
 
       <VeroeffentlichenAbschnitt

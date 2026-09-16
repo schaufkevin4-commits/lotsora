@@ -2,9 +2,10 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database.types";
-import { createFixtures, testConfig, type Fixtures } from "./fixtures";
+import { createFixtures, testConfig, pdfBytes, type Fixtures } from "./fixtures";
 import { sql, asManufacturer } from "./sql";
-import { DOKUMENTE_BUCKET, ladeDokumentHoch, loescheDokument } from "@/lib/services/documents";
+import { DOKUMENTE_BUCKET, loescheDokument } from "@/lib/services/documents";
+import { ladeDokumentHoch } from "@/lib/services/upload-completion";
 import { deleteProdukt, getOeffentlicherPass } from "@/lib/services/products";
 import { bereinigeDatei, bereinigeProduktdateien, getOffeneDateivorgaenge } from "@/lib/services/file-cleanup";
 
@@ -30,7 +31,7 @@ async function product() {
   return data;
 }
 async function document(productId: string, client = fixture.a.client) {
-  return ladeDokumentHoch(client, productId, new File(["B3 Testdatei"], "loeschtest.pdf", { type: "application/pdf" }), { name: "B3 Dokument", docType: null, description: null });
+  return ladeDokumentHoch(client, productId, new File([await pdfBytes()], "loeschtest.pdf", { type: "application/pdf" }), { name: "B3 Dokument", docType: null, description: null }, fixture.verifier);
 }
 async function operation(path: string) {
   const result = await fixture.a.client.from("file_operations").select().eq("file_path", path).single();
@@ -179,7 +180,7 @@ describe("B3: Uploadkompensation und Berechtigungen", () => {
         headers: { Authorization: `Bearer ${session.data.session!.access_token}` },
         fetch: async (input, init) => {
           const result = await fetch(input, init);
-          if (!lost && String(input).includes("/rest/v1/documents") && init?.method === "POST" && result.ok) {
+          if (!lost && String(input).includes("/rest/v1/rpc/attach_document_upload") && init?.method === "POST" && result.ok) {
             lost = true; throw new Error("Synthetischer Antwortverlust nach Commit");
           }
           return result;

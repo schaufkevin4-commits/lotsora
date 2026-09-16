@@ -10,6 +10,7 @@ import { bereinigeProduktdateien, type LoeschErgebnis } from "@/lib/services/fil
 import { isValidPublicId } from "@/lib/public-id";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
 import {
+  erzeugeSignierteUrl,
   getDokumenteMitUrl,
   getOeffentlicheDokumenteMitUrl,
   type OeffentlichesDokument,
@@ -441,6 +442,7 @@ export async function saveProdukt(
     category: string;
     brand: string | null;
     expectedStatus: ProductStatus;
+    articleNumber?: string | null;
   },
   materials: MaterialInput[],
   textildaten: TextileInput,
@@ -456,7 +458,8 @@ export async function saveProdukt(
   const validierungsfehler = validateMaterialShares(bereinigt);
   if (validierungsfehler) throw new Error(validierungsfehler);
 
-  const { error } = await supabase.rpc("save_product", {
+  const { error } = await supabase.rpc("save_product_with_article", {
+    p_article_number: produkt.articleNumber ?? "",
     p_product_id: productId,
     p_name: produkt.name,
     p_description: produkt.description,
@@ -568,7 +571,7 @@ export async function getOeffentlicherPass(
       description: produkt.description,
       category: produkt.category,
       brand: produkt.brand,
-      image_url: produkt.image_url,
+      image_url: produkt.image_url ? await erzeugeSignierteUrl(supabase, produkt.image_url) : null,
       updated_at: produkt.updated_at,
     },
     hersteller,
@@ -605,7 +608,7 @@ export async function getVorschauPass(
       description: produkt.description,
       category: produkt.category,
       brand: produkt.brand,
-      image_url: produkt.image_url,
+      image_url: produkt.image_url ? await erzeugeSignierteUrl(supabase, produkt.image_url) : null,
       updated_at: produkt.updated_at,
     },
     hersteller: hersteller

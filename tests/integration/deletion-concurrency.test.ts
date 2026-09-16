@@ -29,7 +29,7 @@ it("Storage-Upload wartet auf Produktlöschung und wird danach abgewiesen", asyn
   const transaction = sqlSession();
   try {
     await transaction.query(`${asManufacturer(fixture.a.company.user_id)} delete from public.products where id = '${op.product_id}';`);
-    const uploading = fixture.a.client.storage.from(DOKUMENTE_BUCKET).upload(op.file_path, "B3 parallel");
+    const uploading = fixture.a.client.storage.from(DOKUMENTE_BUCKET).upload(op.file_path, "B3 parallel", { contentType: "application/pdf" });
     await waitForBlockedRequest("storage");
     transaction.end("commit;");
     expect((await transaction.done).code).toBe(0);
@@ -40,7 +40,7 @@ it("Storage-Upload wartet auf Produktlöschung und wird danach abgewiesen", asyn
 
 it("Dokumentbindung kann eine bereits begonnene Dateibereinigung nicht überholen", async () => {
   const op = await reservation();
-  expect((await fixture.a.client.storage.from(DOKUMENTE_BUCKET).upload(op.file_path, "B3 parallel")).error).toBeNull();
+  expect((await fixture.a.client.storage.from(DOKUMENTE_BUCKET).upload(op.file_path, "B3 parallel", { contentType: "application/pdf" })).error).toBeNull();
   const transaction = sqlSession();
   try {
     await transaction.query(`${asManufacturer(fixture.a.company.user_id)} select public.begin_file_cleanup('${op.id}');`);

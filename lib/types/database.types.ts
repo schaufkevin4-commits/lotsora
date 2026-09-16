@@ -89,8 +89,11 @@ export type Database = {
           last_error: string | null
           owner_id: string
           product_id: string
+          purpose: string
           reason: string
           state: string
+          validated: boolean
+          validation_started_at: string | null
         }
         Insert: {
           attempts?: number
@@ -102,8 +105,11 @@ export type Database = {
           last_error?: string | null
           owner_id: string
           product_id: string
+          purpose?: string
           reason: string
           state: string
+          validated?: boolean
+          validation_started_at?: string | null
         }
         Update: {
           attempts?: number
@@ -115,8 +121,11 @@ export type Database = {
           last_error?: string | null
           owner_id?: string
           product_id?: string
+          purpose?: string
           reason?: string
           state?: string
+          validated?: boolean
+          validation_started_at?: string | null
         }
         Relationships: []
       }
@@ -331,6 +340,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      attach_document_upload: {
+        Args: {
+          p_description: string
+          p_doc_type: string
+          p_name: string
+          p_operation_id: string
+        }
+        Returns: {
+          description: string | null
+          doc_type: string | null
+          file_name: string | null
+          file_path: string | null
+          id: string
+          name: string
+          product_id: string
+          uploaded_at: string
+          visibility: Database["public"]["Enums"]["document_visibility"]
+        }
+        SetofOptions: {
+          from: "*"
+          to: "documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       begin_file_cleanup: {
         Args: { p_operation_id: string }
         Returns: {
@@ -343,8 +377,36 @@ export type Database = {
           last_error: string | null
           owner_id: string
           product_id: string
+          purpose: string
           reason: string
           state: string
+          validated: boolean
+          validation_started_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "file_operations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      begin_file_validation: {
+        Args: { p_operation_id: string }
+        Returns: {
+          attempts: number
+          created_at: string
+          document_id: string | null
+          file_name: string
+          file_path: string
+          id: string
+          last_error: string | null
+          owner_id: string
+          product_id: string
+          purpose: string
+          reason: string
+          state: string
+          validated: boolean
+          validation_started_at: string | null
         }
         SetofOptions: {
           from: "*"
@@ -362,6 +424,11 @@ export type Database = {
       hersteller_hat_veroeffentlichtes_produkt: {
         Args: { p_manufacturer: string }
         Returns: boolean
+      }
+      is_public_product_image: { Args: { p_path: string }; Returns: boolean }
+      mark_file_validated: {
+        Args: { p_operation_id: string; p_owner_id: string }
+        Returns: undefined
       }
       owns_product: { Args: { p_product: string }; Returns: boolean }
       produkt_ist_veroeffentlicht: {
@@ -385,8 +452,36 @@ export type Database = {
           last_error: string | null
           owner_id: string
           product_id: string
+          purpose: string
           reason: string
           state: string
+          validated: boolean
+          validation_started_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "file_operations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      reserve_file_upload: {
+        Args: { p_file_name: string; p_product_id: string; p_purpose: string }
+        Returns: {
+          attempts: number
+          created_at: string
+          document_id: string | null
+          file_name: string
+          file_path: string
+          id: string
+          last_error: string | null
+          owner_id: string
+          product_id: string
+          purpose: string
+          reason: string
+          state: string
+          validated: boolean
+          validation_started_at: string | null
         }
         SetofOptions: {
           from: "*"
@@ -406,6 +501,29 @@ export type Database = {
           p_product_id: string
           p_sustainability: Json
           p_textile_data: Json
+        }
+        Returns: undefined
+      }
+      save_product_with_article: {
+        Args: {
+          p_article_number: string
+          p_brand: string
+          p_category: string
+          p_description: string
+          p_expected_status: Database["public"]["Enums"]["product_status"]
+          p_materials: Json
+          p_name: string
+          p_product_id: string
+          p_sustainability: Json
+          p_textile_data: Json
+        }
+        Returns: undefined
+      }
+      set_product_image: {
+        Args: {
+          p_expected_path: string
+          p_new_path: string
+          p_product_id: string
         }
         Returns: undefined
       }

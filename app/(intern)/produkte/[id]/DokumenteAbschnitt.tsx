@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useRef } from "react";
 import {
-  dokumentHochladen,
   dokumentLoeschen,
   dokumentSichtbarkeitAendern,
   type DokumentFormState,
@@ -15,6 +14,8 @@ import {
   type DokumentSichtbarkeit,
 } from "@/lib/services/documents";
 import { Button } from "@/components/ui/button";
+import { useFileUpload } from "@/components/produkte/use-file-upload";
+import { DOCUMENT_ACCEPT } from "@/lib/uploads/contract";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -148,10 +149,7 @@ export function DokumenteAbschnitt({
   productId: string;
   dokumente: DokumentMitUrl[];
 }) {
-  const [state, formAction, pending] = useActionState(
-    dokumentHochladen.bind(null, productId),
-    initial,
-  );
+  const { state, action: formAction, pending, cancel, canCancel } = useFileUpload(productId, "document");
 
   // Nach erfolgreichem Upload das Formular wieder leeren.
   const formRef = useRef<HTMLFormElement>(null);
@@ -173,7 +171,8 @@ export function DokumenteAbschnitt({
       <form ref={formRef} action={formAction} className="space-y-4">
         <div className="space-y-1.5">
           <Label htmlFor="datei">Datei</Label>
-          <Input id="datei" name="datei" type="file" />
+          <Input id="datei" name="datei" type="file" accept={DOCUMENT_ACCEPT} disabled={pending} />
+          <p className="text-sm text-muted-foreground">PDF, JPEG, PNG oder WebP; maximal 10 MiB. Bilder: höchstens 25 Megapixel, nicht animiert.</p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -204,9 +203,9 @@ export function DokumenteAbschnitt({
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="description">Beschreibung</Label>
+          <Label htmlFor="dok_description">Beschreibung</Label>
           <Textarea
-            id="description"
+            id="dok_description"
             name="description"
             placeholder="Optional: kurze Notiz zum Dokument"
           />
@@ -219,6 +218,7 @@ export function DokumenteAbschnitt({
         )}
 
         <div className="flex items-center justify-end gap-3">
+          {canCancel && <Button type="button" variant="outline" onClick={cancel}>Upload abbrechen</Button>}
           <span className="text-sm text-muted-foreground" aria-live="polite">
             {pending ? "Lädt hoch …" : state.ok ? "Hochgeladen" : ""}
           </span>

@@ -2,7 +2,14 @@ import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import type { Database } from "@/lib/types/database.types";
-import { DOKUMENTE_BUCKET, ladeDokumentHoch, setzeDokumentSichtbarkeit } from "@/lib/services/documents";
+import { DOKUMENTE_BUCKET, setzeDokumentSichtbarkeit } from "@/lib/services/documents";
+import { ladeDokumentHoch } from "@/lib/services/upload-completion";
+import { PDFDocument } from "pdf-lib";
+
+export async function pdfBytes() {
+  const pdf = await PDFDocument.create(); pdf.addPage([100, 100]);
+  return new Uint8Array(await pdf.save());
+}
 
 export type TestCookie = { name: string; value: string };
 
@@ -87,10 +94,10 @@ export async function createFixtures() {
     const published = await product("veroeffentlicht");
     const draft = await product("entwurf");
     async function document(productId: string, visibility: "intern" | "oeffentlich") {
-      const content = `Synthetisches Dokument ${label} ${visibility}`;
+      const content = await pdfBytes();
       const doc = await ladeDokumentHoch(client, productId,
         new File([content], "test.pdf", { type: "application/pdf" }),
-        { name: `Dokument ${label} ${visibility}`, docType: "Datenblatt", description: "Interne Testnotiz" });
+        { name: `Dokument ${label} ${visibility}`, docType: "Datenblatt", description: "Interne Testnotiz" }, admin);
       files.push({ client, path: doc.file_path! });
       return visibility === "oeffentlich"
         ? setzeDokumentSichtbarkeit(client, doc.id, visibility)
@@ -105,7 +112,7 @@ export async function createFixtures() {
   try {
     const a = await manufacturer("A");
     const b = await manufacturer("B");
-    return { a, b, anon, cleanup };
+    return { a, b, anon, verifier: admin, cleanup };
   } catch (error) {
     await cleanup();
     throw error;

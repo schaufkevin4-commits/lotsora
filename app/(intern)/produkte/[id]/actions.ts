@@ -50,6 +50,7 @@ export async function produktSpeichern(
     description: String(formData.get("description") ?? "").trim(),
     category: String(formData.get("category") ?? "").trim(),
     brand: String(formData.get("brand") ?? "").trim() || null,
+    articleNumber: textOderNull(formData.get("article_number")),
   };
 
   // Nur ausgefüllte Material-Zeilen zählen — identisch zur Speicher-Logik.

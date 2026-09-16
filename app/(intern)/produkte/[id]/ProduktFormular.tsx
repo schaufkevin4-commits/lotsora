@@ -131,6 +131,10 @@ export function ProduktFormular({
     >
       <section className="space-y-4 rounded-lg border p-5">
         <h2 className="font-medium">Basis</h2>
+        <div className="space-y-1.5">
+          <Label htmlFor="article_number">Artikelnummer (optional, nur intern)</Label>
+          <Input id="article_number" name="article_number" maxLength={120} defaultValue={produkt.article_number ?? ""} />
+        </div>
 
         <div className="space-y-1.5">
           <Label htmlFor="name">Produktname *</Label>

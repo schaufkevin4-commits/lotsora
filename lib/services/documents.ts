@@ -35,8 +35,7 @@ export const DOKUMENT_TYPEN = [
   "Sonstiges Dokument",
 ] as const;
 
-// Weiche MVP-Obergrenze pro Datei (der Storage-Global-Limit liegt bei 50 MiB).
-export const MAX_DATEI_BYTES = 10 * 1024 * 1024; // 10 MB
+export { MAX_DATEI_BYTES } from "@/lib/uploads/contract";
 
 // --- Pure Helfer (testbar, ohne Server-Abhängigkeiten) -----------------------
 
@@ -159,53 +158,6 @@ export async function erzeugeSignierteUrl(
   return data.signedUrl;
 }
 
-export class DokumentUploadFehler extends Error {}
-
-// Dauerhafter Uploadbezug vor der ersten Storage-Operation. Ein Abbruch
-// zwischen Storage und DB bleibt so auffindbar und gezielt bereinigbar.
-export async function ladeDokumentHoch(
-  supabase: DB,
-  productId: string,
-  datei: File,
-  meta: { name: string | null; docType: string | null; description: string | null },
-): Promise<Dokument> {
-  const bytes = await datei.arrayBuffer();
-  const reserved = await supabase.rpc("reserve_document_upload", {
-    p_product_id: productId,
-    p_file_name: bereinigeDateiname(datei.name).slice(0, 180),
-  });
-  if (reserved.error) throw reserved.error;
-  const operation = reserved.data;
-  try {
-    const uploaded = await supabase.storage.from(DOKUMENTE_BUCKET).upload(operation.file_path, bytes, {
-      contentType: datei.type || undefined, upsert: false,
-    });
-    if (uploaded.error) throw uploaded.error;
-    const inserted = await supabase.from("documents").insert({
-      product_id: productId, name: meta.name?.trim() || datei.name,
-      doc_type: meta.docType, description: meta.description,
-      file_name: datei.name, file_path: operation.file_path,
-    }).select().single();
-    if (inserted.error) throw inserted.error;
-    return inserted.data;
-  } catch {
-    // Antwortverlust kann einen erfolgreichen Insert verdecken. Ein bereits
-    // angehängtes Dokument niemals durch die Uploadkompensation beschädigen.
-    const existing = await supabase.from("documents").select().eq("file_path", operation.file_path).maybeSingle();
-    if (existing.data) return existing.data;
-    if (!existing.error) {
-      try {
-        if ((await bereinigeDatei(supabase, operation.id)).complete) {
-          throw new DokumentUploadFehler("Upload fehlgeschlagen. Die Datei wurde bereinigt; bitte erneut versuchen.");
-        }
-      } catch (error) {
-        if (error instanceof DokumentUploadFehler) throw error;
-      }
-    }
-    throw new DokumentUploadFehler("Upload nicht bestätigt. Der Dateivorgang bleibt gespeichert und kann unter den offenen Dateivorgängen bereinigt werden; unbestätigte Uploads erscheinen dort nach 15 Minuten.");
-  }
-}
-
 // Sichtbarkeit eines eigenen Dokuments ändern. Die documents-RLS prüft dabei
 // weiterhin serverseitig, ob das Dokument zu einem Produkt des Nutzers gehört.
 export async function setzeDokumentSichtbarkeit(
@@ -241,4 +193,12 @@ export async function loescheDokument(supabase: DB, id: string): Promise<LoeschE
       .eq("document_id", id).eq("state", "cleanup");
     return { complete: complete && !remaining.error && remaining.count === 0 };
   } catch { return { complete: false }; }
+}
+
+// Reservierungsgrenze einhalten, ohne bei langen Namen die Dateiendung zu verlieren.
+export function bereinigeUploadDateiname(name: string): string {
+  const clean = bereinigeDateiname(name);
+  if (clean.length <= 180) return clean;
+  const extension = clean.slice(clean.lastIndexOf("."));
+  return clean.slice(0, 180 - extension.length) + extension;
 }

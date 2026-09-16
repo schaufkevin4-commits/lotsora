@@ -224,7 +224,8 @@ describe("saveProdukt (W1)", () => {
     );
 
     expect(rpc).toHaveBeenCalledOnce();
-    expect(rpc).toHaveBeenCalledWith("save_product", {
+    expect(rpc).toHaveBeenCalledWith("save_product_with_article", {
+      p_article_number: "",
       p_product_id: "produkt-1",
       p_name: "Hemd",
       p_description: "Leinenhemd",

@@ -62,7 +62,7 @@ describe("Echte Mandantentrennung auf lotsora-integration", () => {
     const publicFile = await fixture.anon.storage.from(DOKUMENTE_BUCKET)
       .download(fixture.a.publicDoc.file_path!);
     expect(publicFile.error).toBeNull();
-    expect(await publicFile.data?.text()).toBe("Synthetisches Dokument A oeffentlich");
+    expect((await publicFile.data?.text())?.startsWith("%PDF-")).toBe(true);
   });
 
   it("öffentliche Route liefert Seite und Metadaten unabhängig von A/B/anon-Cookies (F02)", async () => {
