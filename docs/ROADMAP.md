@@ -1,5 +1,7 @@
 # Lotsora: ergänzender Arbeitsplan nach der Architekturanalyse
 
+Tagesabschluss 18.09.: N3/N8-Code in `9d4ad38` committed; main-Push ausdrücklich beauftragt. [Übergabe und Einstieg morgen](TAGESABSCHLUSS-2026-09-18.md). N8-Restabnahme, Architekturentscheidungen und Gesamt-Gate bleiben offen. Ältere Angaben zum uncommitteten Stand sind historisch.
+
 Plan erstellt am 10.09.2026; Fortschritt ergänzt am 16.09.2026. **Einstieg freigegeben; Sicherheitsblock, B4, B3 und B5/N7 lokal umgesetzt und geprüft. Das Gesamt-Gate bleibt offen.** Ergänzt [LP-002, Stand 08.09.2026][plan], ersetzt weder dessen Tagesnummern noch bestehende PP-Beschlüsse. Technischer Ausgangspunkt: 4c20755. Befunde und Begründungen stehen im [Analysebericht](ANALYSE-2026-09-10.md).
 
 ## Erledigter Block und nächster Einstieg

@@ -1,5 +1,7 @@
 # N8 / QR / proxy – lokaler Abschluss, 18.09.2026
 
+Nachtrag Tagesabschluss: Code in `9d4ad38` committed; Kevin hat die Übernahme und den Push nach main freigegeben. Die nachfolgenden Angaben „uncommitted/kein Push“ beschreiben den vorherigen Blockabschluss. Aktueller Übergabestand: [Tagesabschluss 18.09.](TAGESABSCHLUSS-2026-09-18.md).
+
 ## Ergebnis
 Der beauftragte technische Block ist umgesetzt und lokal geprüft; keine weitere Baustelle begonnen. Die vollständige manuelle Barrierefreiheitsabnahme und physische QR-Abnahme bleiben offen. Gesamt-Gate und Livegang sind nicht freigegeben.
 

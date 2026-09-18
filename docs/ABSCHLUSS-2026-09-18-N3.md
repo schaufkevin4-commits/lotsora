@@ -1,5 +1,7 @@
 # N3 – gemeinsame Passladung und erneuerbare Dateilinks
 
+Nachtrag Tagesabschluss: Code in `9d4ad38` committed; Kevin hat die Übernahme und den Push nach main freigegeben. Die nachfolgenden Angaben „uncommitted/kein Push“ beschreiben den vorherigen Blockabschluss. Aktueller Übergabestand: [Tagesabschluss 18.09.](TAGESABSCHLUSS-2026-09-18.md).
+
 Umgesetzt und lokal geprüft am 17.–18.09.2026. Ausgangspunkt `4ca4b3ccf985e90ba3ee88c13d9a1b4106a7b7b0`, bestehender Branch `codex/n9-autosave-veroeffentlichung`. Beim Einstieg sauber; Änderungen bleiben uncommitted in diesem Arbeitsbaum. Kein Branchwechsel, Commit, Push, Deployment oder Cloudzugriff. Ausschließlich N3 bearbeitet.
 
 ## Ergebnis

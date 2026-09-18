@@ -1,5 +1,7 @@
 # Noch offen bis zum lokalen Gate „MVP funktional vollständig“
 
+Tagesabschluss 18.09.: N3/N8-Code in `9d4ad38` committed; main-Push ausdrücklich beauftragt. [Übergabe und Einstieg morgen](TAGESABSCHLUSS-2026-09-18.md). N8-Restabnahme, Architekturentscheidungen und Gesamt-Gate bleiben offen. Ältere Angaben zum uncommitteten Stand sind historisch.
+
 Stand: 16.09.2026. N1/N2, Sicherheitsblock, B4, B3 und B5/N7 sind implementiert und lokal geprüft. B5/N7 liegt im Commit `1a19141`; Kevin hat anschließend die Übernahme und den Push nach main beauftragt. Der Code-Push ist keine Datenbankmigration oder Gate-Freigabe.
 
 N9/F07 ist lokal umgesetzt und geprüft: bestätigtes Autosave, Materialentfernung, Navigationsschutz, Versionsvergleich und koordinierte Veröffentlichung sowie PP-018/019-Abgleich. 75 Unit- und 78 Integrationstests, Lint, Typen, Build und gezielte sichtbare Browserprüfungen bestanden. Siehe [N9-Abschluss](ABSCHLUSS-2026-09-16-N9.md). Neue Migration nur in `lotsora-integration`. Kevin hat anschließend die Übernahme von N9-Commit `b96b7c9` und den Push nach main ausdrücklich beauftragt; siehe Tagesabschluss vom 16.09. **Nach N9 Pause; nächster Baublock erst nach neuem Auftrag: N3.** Die Entscheidung über getrennte Veröffentlichungsstände und das Gesamt-Gate bleiben offen.

@@ -1,5 +1,7 @@
 # Lotsora
 
+Tagesabschluss 18.09.: N3/N8-Code in `9d4ad38` committed; main-Push ausdrücklich beauftragt. [Übergabe und Einstieg morgen](docs/TAGESABSCHLUSS-2026-09-18.md). N8-Restabnahme, Architekturentscheidungen und Gesamt-Gate bleiben offen. Ältere Angaben zum uncommitteten Stand sind historisch.
+
 Textil-/Apparel-first-Anwendung für Produktdaten, Dokumente und öffentliche digitale Produktpässe. Langfristig soll daraus eine einfach bedienbare, KI-gestützte Produktdatenplattform werden. Die abschließende Prüfung und Veröffentlichung bleiben beim verantwortlichen Kunden; Lotsora gibt keine Compliance-Garantie.
 
 ## Stand und Planung
