@@ -6,8 +6,7 @@
 
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { createPublicClient } from "@/lib/supabase/public";
-import { getOeffentlicherPass } from "@/lib/services/products";
+import { ladeOeffentlichenPass } from "@/lib/public-pass";
 import { ProduktPass } from "@/components/produkte/produkt-pass";
 
 export async function generateMetadata({
@@ -17,9 +16,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id: publicId } = await params;
   await connection();
-  const supabase = createPublicClient();
-  const pass = await getOeffentlicherPass(supabase, publicId);
-  if (!pass) return { title: "Produktpass" };
+  const ergebnis = await ladeOeffentlichenPass(publicId);
+  if (ergebnis.status !== "verfuegbar") return { title: "Produktpass", description: "Produktpass derzeit nicht verfügbar." };
+  const { pass } = ergebnis;
   return {
     title: `${pass.produkt.name} – Produktpass`,
     description: pass.produkt.description.slice(0, 160),
@@ -33,10 +32,20 @@ export default async function OeffentlicherPassSeite({
 }) {
   const { id: publicId } = await params;
   await connection();
-  const supabase = createPublicClient();
-  const pass = await getOeffentlicherPass(supabase, publicId);
+  const ergebnis = await ladeOeffentlichenPass(publicId);
 
-  if (!pass) {
+  if (ergebnis.status === "fehler") {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center gap-4 px-4 text-center">
+        <h1 className="text-xl font-semibold">Produktpass konnte nicht geladen werden</h1>
+        <p>Die Daten sind vorübergehend nicht erreichbar. Bitte versuchen Sie es erneut.</p>
+        {/* Ein neuer Dokumentabruf liest auch nach einem fehlgeschlagenen Render frisch. */}
+        <a className="underline underline-offset-4" href={`/p/${encodeURIComponent(publicId)}`}>Erneut versuchen</a>
+      </main>
+    );
+  }
+
+  if (ergebnis.status === "nicht-verfuegbar") {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-4 py-16 text-center">
         <h1 className="text-xl font-semibold">Produktpass nicht verfügbar</h1>
@@ -50,7 +59,7 @@ export default async function OeffentlicherPassSeite({
 
   return (
     <main>
-      <ProduktPass pass={pass} />
+      <ProduktPass pass={ergebnis.pass} />
     </main>
   );
 }

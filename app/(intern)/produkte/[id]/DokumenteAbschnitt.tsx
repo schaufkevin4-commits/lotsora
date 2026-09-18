@@ -236,9 +236,9 @@ export function DokumenteAbschnitt({
       ) : (
         <ul className="divide-y rounded-md border">
           {dokumente.map((d) => (
-            <li key={d.id} className="flex items-center justify-between gap-3 p-3">
+            <li key={d.id} className="flex flex-col items-start justify-between gap-3 p-3 sm:flex-row sm:items-center">
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="truncate font-medium">{d.name}</span>
                   <Badge
                     variant={d.visibility === "oeffentlich" ? "default" : "secondary"}
@@ -251,7 +251,7 @@ export function DokumenteAbschnitt({
                   {d.file_name ?? "Datei"}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 {d.signedUrl && (
                   <a
                     href={d.signedUrl}

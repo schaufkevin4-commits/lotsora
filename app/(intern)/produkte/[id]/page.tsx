@@ -20,6 +20,8 @@ import { QrCodeAbschnitt } from "./QrCodeAbschnitt";
 import { EditorProvider } from "./EditorProvider";
 import { datenluecken } from "@/lib/services/completeness";
 
+export const metadata = { title: "Produkt bearbeiten | lotsora" };
+
 export default async function ProduktEditorSeite({
   params,
   searchParams,
@@ -58,7 +60,7 @@ export default async function ProduktEditorSeite({
         </Link>
       </div>
 
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-semibold">Produkt bearbeiten</h1>
         <div className="flex items-center gap-3">
           <StatusBadge status={produkt.status} />

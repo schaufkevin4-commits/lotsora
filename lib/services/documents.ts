@@ -8,6 +8,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database.types";
 import { bereinigeDatei, type LoeschErgebnis } from "@/lib/services/file-cleanup";
+import { oeffentlicherDokumentpfad } from "@/lib/public-file-paths";
 
 type DB = SupabaseClient<Database>;
 
@@ -73,7 +74,7 @@ export function baueDateipfad(
 
 export type DokumentMitUrl = Dokument & { signedUrl: string | null };
 export type OeffentlichesDokument = Pick<Dokument, "id" | "name" | "doc_type"> & {
-  signedUrl: string | null;
+  url: string | null;
 };
 
 // Alle Dokumente eines Produkts, neueste zuerst.
@@ -117,7 +118,7 @@ export async function getOeffentlicheDokumenteMitUrl(
 ): Promise<OeffentlichesDokument[]> {
   const { data: produkt, error: produktError } = await supabase
     .from("products")
-    .select("status")
+    .select("status, public_id")
     .eq("id", productId)
     .maybeSingle();
 
@@ -133,16 +134,13 @@ export async function getOeffentlicheDokumenteMitUrl(
 
   if (error) throw error;
 
-  return Promise.all(
-    (data ?? []).map(async (d) => ({
-      id: d.id,
-      name: d.name,
-      doc_type: d.doc_type,
-      signedUrl: d.file_path
-        ? await erzeugeSignierteUrl(supabase, d.file_path)
-        : null,
-    })),
-  );
+  // Stabile App-Links: Freigabe und Signatur erst beim tatsächlichen Öffnen.
+  return (data ?? []).map((d) => ({
+    id: d.id,
+    name: d.name,
+    doc_type: d.doc_type,
+    url: d.file_path ? oeffentlicherDokumentpfad(produkt.public_id, d.id) : null,
+  }));
 }
 
 // Eine Signed-URL für einen Storage-Pfad (Default 1 Stunde gültig).

@@ -7,6 +7,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { OeffentlicherPass } from "@/lib/services/products";
+import { PassBild } from "@/components/produkte/pass-bild";
 
 const DISCLAIMER =
   "Die Angaben auf dieser Seite stammen vom Hersteller. Diese Angaben werden nicht geprüft; es werden keine Compliance- oder Rechtsversprechen gemacht.";
@@ -82,14 +83,7 @@ export function ProduktPass({
       )}
 
       {hatText(bild) && (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={bild}
-            alt={produkt.name}
-            className="mb-6 aspect-square w-full rounded-xl object-cover"
-          />
-        </>
+        <PassBild key={bild} src={bild} alt={produkt.name} />
       )}
 
       <header className="space-y-1">
@@ -198,9 +192,9 @@ export function ProduktPass({
             <ul className="space-y-2">
               {dokumente.map((d) => (
                 <li key={d.id}>
-                  {d.signedUrl ? (
+                  {d.url ? (
                     <a
-                      href={d.signedUrl}
+                      href={d.url}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm text-primary underline underline-offset-4"
@@ -221,7 +215,7 @@ export function ProduktPass({
 
         <footer className="space-y-3 border-t pt-6 text-xs text-muted-foreground">
           <div className="space-y-0.5">
-            <p>Zuletzt aktualisiert: {datum}</p>
+            <p>Produktdaten zuletzt gespeichert: {datum}</p>
             <p>Pass-ID: {produkt.public_id}</p>
           </div>
           <p>{DISCLAIMER}</p>

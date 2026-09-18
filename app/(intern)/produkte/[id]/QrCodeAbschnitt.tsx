@@ -28,6 +28,8 @@ export function QrCodeAbschnitt({ svg, passUrl }: QrCodeAbschnittProps) {
             {/* Weißer Kasten: QR braucht hellen Hintergrund, auch im Dark Mode. */}
             <div className="inline-block rounded-md bg-white p-3">
               <div
+                role="img"
+                aria-label="QR-Code zum öffentlichen Produktpass; derselbe Link steht darunter"
                 className="h-40 w-40 [&>svg]:h-full [&>svg]:w-full"
                 dangerouslySetInnerHTML={{ __html: svg }}
               />

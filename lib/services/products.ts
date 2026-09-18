@@ -8,6 +8,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database.types";
 import { bereinigeProduktdateien, type LoeschErgebnis } from "@/lib/services/file-cleanup";
 import { isValidPublicId } from "@/lib/public-id";
+import { oeffentlicherBildpfad } from "@/lib/public-file-paths";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
 import {
   erzeugeSignierteUrl,
@@ -597,7 +598,7 @@ export async function getOeffentlicherPass(
       description: produkt.description,
       category: produkt.category,
       brand: produkt.brand,
-      image_url: produkt.image_url ? await erzeugeSignierteUrl(supabase, produkt.image_url) : null,
+      image_url: produkt.image_url ? oeffentlicherBildpfad(produkt.public_id, produkt.updated_at) : null,
       updated_at: produkt.updated_at,
     },
     hersteller,
@@ -647,6 +648,7 @@ export async function getVorschauPass(
     materialien,
     textildaten,
     nachhaltigkeit,
-    dokumente: alleDokumente.filter((d) => d.visibility === "oeffentlich"),
+    dokumente: alleDokumente.filter((d) => d.visibility === "oeffentlich")
+      .map((d) => ({ id: d.id, name: d.name, doc_type: d.doc_type, url: d.signedUrl })),
   };
 }

@@ -83,23 +83,48 @@ try {
     prepare();
     cli(["migration", "up", "--local"]);
     console.log("Migrationen ausschließlich auf lotsora-integration angewendet.");
-  } else if (action === "test") {
+  } else if (action === "test" || action === "http" || action === "browser") {
     verifyProject();
     const status = JSON.parse(cli(["status", "--output", "json"]));
     if (status.API_URL !== "http://127.0.0.1:55321" || !status.ANON_KEY || !status.SERVICE_ROLE_KEY) {
       throw new Error("CLI liefert nicht die erwartete isolierte Testinstanz.");
     }
-    command("node_modules/vitest/vitest.mjs", ["run", "--config", "vitest.integration.config.mts", ...process.argv.slice(3)], {
+    const testEnv = {
       LOTSORA_TEST_URL: status.API_URL,
       LOTSORA_TEST_ANON_KEY: status.ANON_KEY,
       LOTSORA_TEST_SERVICE_KEY: status.SERVICE_ROLE_KEY,
-    }, true);
+    };
+    if (action === "browser") {
+      Object.assign(testEnv, {
+        LOTSORA_TEST_BROWSER: "1",
+        NEXT_PUBLIC_SUPABASE_URL: status.API_URL,
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: status.ANON_KEY,
+        SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,
+        NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:3109",
+        NEXT_TELEMETRY_DISABLED: "1",
+      });
+    }
+    if (action === "http") {
+      // Nur lokale Testports; keine .env.local-Werte für Supabase übernehmen.
+      Object.assign(testEnv, {
+        LOTSORA_TEST_HTTP: "1",
+        NEXT_PUBLIC_SUPABASE_URL: "http://127.0.0.1:55329",
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: status.ANON_KEY,
+        SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,
+        NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:3108",
+        NEXT_TELEMETRY_DISABLED: "1",
+        LOTSORA_TEST_HTTP_BROWSER: process.argv.includes("--browser") ? "1" : "0",
+      });
+      command("node_modules/next/dist/bin/next", ["build"], testEnv, true);
+    }
+    command("node_modules/vitest/vitest.mjs", ["run", "--config", "vitest.integration.config.mts",
+      ...(action === "http" ? ["tests/integration/public-http.test.ts"] : action === "browser" ? ["tests/integration/browser-session.test.ts"] : process.argv.slice(3))], testEnv, true);
   } else if (action === "stop") {
     verifyProject();
     cli(["stop"]);
     console.log("Testinstanz gestoppt; Testvolumes bleiben erhalten.");
   } else {
-    throw new Error("Erlaubte Aktionen: start, test, migrate, stop. Kein Reset oder Cloudzugriff.");
+    throw new Error("Erlaubte Aktionen: start, test, http, browser, migrate, stop. Kein Reset oder Cloudzugriff.");
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : "Integrationstest fehlgeschlagen.");

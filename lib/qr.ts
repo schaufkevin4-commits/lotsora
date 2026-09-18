@@ -19,7 +19,7 @@ export async function generateQrSvg(
   return QRCode.toString(text, {
     type: "svg",
     errorCorrectionLevel: level,
-    margin: 1,
+    margin: 4,
     width: 256,
   });
 }

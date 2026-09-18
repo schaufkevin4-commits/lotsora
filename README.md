@@ -19,6 +19,10 @@ Der Einstieg in die Umsetzung wurde am 10.09. freigegeben; der erste Sicherheits
 
 N9/F07 ist danach lokal umgesetzt und geprüft: 75 Unit-/Regressionstests, 78 Integrationstests, Lint, Typen, Build und sichtbare Browserprüfungen. Autosave/Materialentfernung/Navigationsschutz und Veröffentlichung sind koordiniert; `editor_version` schützt gegen veraltete Tabs. Die neue Migration gilt nur in `lotsora-integration` (jetzt 20 Migrationen). Details und Grenzen: [N9-Abschluss](docs/ABSCHLUSS-2026-09-16-N9.md). Kevin hat anschließend auch die Übernahme und den Push von N9 nach main beauftragt; danach Pause. Siehe [Tagesabschluss](docs/TAGESABSCHLUSS-2026-09-16.md).
 
+N3 ist am 18.09.2026 lokal umgesetzt und geprüft: gemeinsame öffentliche Passladung, beim Öffnen erneuerte Dateilinks und kontrollierte Fehler. 93 Unit-Tests, 85 Integrationstests und sieben separate Produktions-HTTP-Tests bestanden; 21 Migrationen ausschließlich in `lotsora-integration`. Änderungen noch nicht committed/gepusht. Vertrag und Grenzen: [N3-Abschluss](docs/ABSCHLUSS-2026-09-18-N3.md). Gesamt-Gate und getrennte Veröffentlichungsstände bleiben offen.
+
+N8/QR/proxy ist am 18.09. lokal umgesetzt: mobile Formulare, Tastaturfokus, Kontrast, QR-Rand und Proxy-Konvention. 113 Unit-/acht Produktions-HTTP-Tests bestanden; manuelle Restabnahme (Screenreader, nativer Zoom, echte Exportdateien/Druckscan) offen. [Abschluss und Grenzen](docs/ABSCHLUSS-2026-09-18-N8.md). Gesamt-Gate bleibt offen.
+
 ## Lokal entwickeln
 
 Voraussetzungen: Node 24 gemäß .nvmrc, npm und für die lokale Supabase-Umgebung Docker. Die Entwicklung erfolgt gemäß PP-022 lokal, getrennt vom Cloud-Projekt.
@@ -48,6 +52,7 @@ Die isolierte Testinstanz verwendet `lotsora-integration`, API-Port 55321 und DB
 npm run test:integration:start
 npm run test:integration:migrate
 npm run test:integration
+node scripts/integration.mjs http
 npm run test:integration:stop
 ```
 
@@ -55,7 +60,7 @@ Migrationen werden aus `supabase/migrations` kopiert. `migrate` wendet sie aussc
 
 B3 reserviert Dateipfade vor dem Upload und erhält offene Löschvorgänge nach der Dokument-/Produktlöschung. Eigentümer können sie unter „Offene Dateivorgänge“ fortsetzen. Unbestätigte Uploads werden nach 15 Minuten beim erneuten Laden zur bewussten Bereinigung angeboten.
 
-B5 erlaubt PDF, JPEG, PNG und WebP bis 10 MiB, für Produktbilder nur die drei Bildformate. Dateien gehen authentifiziert direkt an Storage; der Server prüft den tatsächlichen Inhalt vor der Dokument-/Bildbindung. `products.image_url` enthält jetzt einen verwalteten Storage-Pfad; die Anzeige erhält einen signierten Link. App, Serverkonfiguration und alle Migrationen müssen zusammenpassen. Vorhandene Dateien werden nicht rückwirkend inhaltlich geprüft; die Übernahmevoraussetzungen stehen im B5-Abschluss. N9/F07 ist lokal abgeschlossen. Nächster Baublock nach neuem Auftrag: N3; getrennte Veröffentlichungsstände bleiben offen.
+B5 erlaubt PDF, JPEG, PNG und WebP bis 10 MiB, für Produktbilder nur die drei Bildformate. Dateien gehen authentifiziert direkt an Storage; der Server prüft den tatsächlichen Inhalt vor der Dokument-/Bildbindung. `products.image_url` enthält einen verwalteten Storage-Pfad; seit N3 prüft der öffentliche Dateieinstieg beim Öffnen die Freigabe und erzeugt dann einen kurzlebigen Link. App, Serverkonfiguration und alle Migrationen müssen zusammenpassen. Vorhandene Dateien werden nicht rückwirkend inhaltlich geprüft; die Übernahmevoraussetzungen stehen im B5-Abschluss. N9/F07 und N3 sind lokal abgeschlossen. Nächster Baublock nach neuem Auftrag: N8/QR/proxy; getrennte Veröffentlichungsstände bleiben offen.
 
 ## Projektstruktur
 

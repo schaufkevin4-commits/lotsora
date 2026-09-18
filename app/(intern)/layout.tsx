@@ -16,8 +16,9 @@ export default async function InternLayout({ children }: { children: React.React
 
   return (
     <div className="min-h-screen">
-      <header className="flex items-center justify-between border-b px-6 py-3">
-        <nav className="flex gap-4 text-sm">
+      <a href="#hauptinhalt" className="sr-only focus:not-sr-only focus:block focus:p-3">Zum Hauptinhalt</a>
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b px-4 py-3 sm:px-6">
+        <nav aria-label="Hauptnavigation" className="flex flex-wrap gap-4 text-sm">
           <Link href="/dashboard" className="hover:underline">Dashboard</Link>
           <Link href="/produkte" className="hover:underline">Produkte</Link>
           <Link href="/profil" className="hover:underline">Profil</Link>
@@ -26,7 +27,7 @@ export default async function InternLayout({ children }: { children: React.React
           <Button type="submit" variant="ghost" size="sm">Abmelden</Button>
         </form>
       </header>
-      <main className="mx-auto max-w-4xl p-6">{children}</main>
+      <main id="hauptinhalt" tabIndex={-1} className="mx-auto max-w-4xl p-4 sm:p-6">{children}</main>
     </div>
   );
 }

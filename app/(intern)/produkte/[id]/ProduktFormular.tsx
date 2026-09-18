@@ -1,7 +1,7 @@
 // app/(intern)/produkte/[id]/ProduktFormular.tsx
 "use client";
 
-import { startTransition, useState } from "react";
+import { startTransition, useLayoutEffect, useRef, useState } from "react";
 import { useEditor } from "./EditorProvider";
 import { MaterialAbschnitt } from "./MaterialAbschnitt";
 import { ProduktdetailsAbschnitt } from "./ProduktdetailsAbschnitt";
@@ -41,6 +41,17 @@ export function ProduktFormular({
   const { editor, formRef, state } = useEditor();
   const pending = state.pending;
   const [step, setStep] = useState<number | null>(guided ? 0 : null);
+  const focusStep = useRef<"step" | "basis" | null>(null);
+  useLayoutEffect(() => {
+    if (!focusStep.current) return;
+    const basis = focusStep.current === "basis";
+    focusStep.current = null;
+    const target = basis ? formRef.current?.querySelector<HTMLElement>("summary") : step === null
+      ? document.querySelector<HTMLElement>("#dokumente input")
+      : formRef.current?.querySelectorAll<HTMLDetailsElement>("fieldset details")[step]?.querySelector<HTMLElement>("summary");
+    target?.focus();
+  }, [step, formRef]);
+  function changeStep(next: number | null, basis = false) { focusStep.current = basis ? "basis" : "step"; setStep(next); }
   const steps = ["Basis", "Material", "Herkunft & Produktdetails", "Pflege", "Nutzung & Kreislauf"];
 
   // Pflichtfelder (PP-010) kontrolliert halten, damit wir live sehen, was fehlt.
@@ -67,7 +78,7 @@ export function ProduktFormular({
       {step !== null && <div className="space-y-3 rounded-lg border p-4">
         <p className="font-medium">Schritt {step + 1} von {steps.length}: {steps[step]}</p>
         <p className="text-sm text-muted-foreground">Zuerst die Basis ausfüllen, danach optionale Angaben ergänzen. Am Ende Dokumente und Vorschau prüfen.</p>
-        <Button type="button" variant="ghost" onClick={() => setStep(null)}>Alle Abschnitte anzeigen</Button>
+        <Button type="button" variant="ghost" onClick={() => changeStep(null, true)}>Alle Abschnitte anzeigen</Button>
       </div>}
       <fieldset inert={state.publishing} className="space-y-5">
       <div hidden={step !== null && step !== 0}>
@@ -86,10 +97,11 @@ export function ProduktFormular({
             value={name}
             onChange={(e) => setName(e.target.value)}
             aria-invalid={fehltName || undefined}
+            aria-describedby={fehltName ? "name-fehler" : undefined}
             className={fehltName ? FEHLT_KLASSE : undefined}
           />
           {fehltName && (
-            <p className="text-sm text-destructive">Pflichtfeld – bitte ausfüllen.</p>
+            <p id="name-fehler" className="text-sm text-destructive">Pflichtfeld – bitte ausfüllen.</p>
           )}
         </div>
 
@@ -101,10 +113,11 @@ export function ProduktFormular({
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             aria-invalid={fehltDescription || undefined}
+            aria-describedby={fehltDescription ? "description-fehler" : undefined}
             className={fehltDescription ? FEHLT_KLASSE : undefined}
           />
           {fehltDescription && (
-            <p className="text-sm text-destructive">Pflichtfeld – bitte ausfüllen.</p>
+            <p id="description-fehler" className="text-sm text-destructive">Pflichtfeld – bitte ausfüllen.</p>
           )}
         </div>
 
@@ -116,10 +129,11 @@ export function ProduktFormular({
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             aria-invalid={fehltCategory || undefined}
+            aria-describedby={fehltCategory ? "category-fehler" : undefined}
             className={fehltCategory ? FEHLT_KLASSE : undefined}
           />
           {fehltCategory && (
-            <p className="text-sm text-destructive">Pflichtfeld – bitte ausfüllen.</p>
+            <p id="category-fehler" className="text-sm text-destructive">Pflichtfeld – bitte ausfüllen.</p>
           )}
         </div>
 
@@ -138,11 +152,11 @@ export function ProduktFormular({
 
       <div hidden={step !== null && step !== 4}><KreislaufAbschnitt nachhaltigkeit={nachhaltigkeit} /></div>
 
-      {step !== null && <div className="flex justify-between gap-3">
-        <Button type="button" variant="outline" disabled={step === 0} onClick={() => setStep(step - 1)}>Zurück</Button>
-        <Button type="button" variant="outline" onClick={() => {
-          if (step < steps.length - 1) setStep(step + 1);
-          else { setStep(null); document.getElementById("dokumente")?.scrollIntoView({ behavior: "smooth" }); }
+      {step !== null && <div className="flex flex-wrap justify-between gap-3">
+        <Button type="button" variant="outline" disabled={step === 0} onClick={() => changeStep(step - 1)}>Zurück</Button>
+        <Button className="h-auto min-h-9 whitespace-normal text-left" type="button" variant="outline" onClick={() => {
+          if (step < steps.length - 1) changeStep(step + 1);
+          else changeStep(null);
         }}>{step < steps.length - 1 ? "Weiter" : "Weiter zu Dokumenten und Vorschau"}</Button>
       </div>}
       </fieldset>
@@ -154,7 +168,7 @@ export function ProduktFormular({
         </Alert>
       )}
 
-      <div className="flex items-center justify-end gap-3">
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <span className="text-sm text-muted-foreground" aria-live="polite">
           {statusText}
         </span>

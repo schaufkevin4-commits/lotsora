@@ -1,7 +1,7 @@
 // app/(intern)/produkte/[id]/MaterialAbschnitt.tsx
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useId, useLayoutEffect, useRef, useState } from "react";
 import { checkMaterialShares, type Material } from "@/lib/services/products";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,15 @@ function zuProzent(wert: string): number {
 
 export function MaterialAbschnitt({ materialien, onStructureChange }: { materialien: Material[]; onStructureChange: () => void }) {
   const [structure, setStructure] = useState(0);
-  useLayoutEffect(() => { if (structure > 0) onStructureChange(); }, [structure, onStructureChange]);
+  const prefix = useId();
+  const focusId = useRef<string | null>(null);
+  useLayoutEffect(() => {
+    if (structure > 0) onStructureChange();
+    if (focusId.current) {
+      document.getElementById(focusId.current)?.focus();
+      focusId.current = null;
+    }
+  }, [structure, onStructureChange]);
   const [zeilen, setZeilen] = useState<Zeile[]>(() => startZeilen(materialien));
   const naechsteId = useRef(0); // fortlaufende IDs für neu hinzugefügte Zeilen
 
@@ -39,10 +47,18 @@ export function MaterialAbschnitt({ materialien, onStructureChange }: { material
   const setPct = (id: string, v: string) =>
     setZeilen((z) => z.map((r) => (r.id === id ? { ...r, pct: v } : r)));
   const hinzufuegen = () => {
-    setZeilen((z) => [...z, { id: `neu-${naechsteId.current++}`, name: "", pct: "" }]);
+    const id = `neu-${naechsteId.current++}`;
+    focusId.current = `${prefix}-name-${id}`;
+    setZeilen((z) => [...z, { id, name: "", pct: "" }]);
     setStructure((n) => n + 1);
   };
-  const entfernen = (id: string) => { setZeilen((z) => z.filter((r) => r.id !== id)); setStructure((n) => n + 1); };
+  const entfernen = (id: string) => {
+    const index = zeilen.findIndex(r => r.id === id);
+    const next = zeilen[index + 1] ?? zeilen[index - 1];
+    focusId.current = next ? `${prefix}-name-${next.id}` : `${prefix}-add`;
+    setZeilen(z => z.filter(r => r.id !== id));
+    setStructure(n => n + 1);
+  };
 
   // Live-Summe (PP-012). Nur Zeilen mit Namen zählen — genau wie beim Speichern.
   const check = checkMaterialShares(
@@ -54,7 +70,7 @@ export function MaterialAbschnitt({ materialien, onStructureChange }: { material
   const summeKlasse = check.isOverLimit
     ? "text-sm font-medium text-destructive"
     : check.isUnderLimit
-      ? "text-sm text-amber-600"
+      ? "text-sm text-amber-800 dark:text-amber-300"
       : "text-sm text-muted-foreground";
 
   return (
@@ -68,21 +84,22 @@ export function MaterialAbschnitt({ materialien, onStructureChange }: { material
 
       <div className="space-y-3">
         {zeilen.map((r) => (
-          <div key={r.id} className="flex items-end gap-3">
-            <div className="flex-1 space-y-1.5">
-              <Label htmlFor={`name-${r.id}`}>Material</Label>
+          <div key={r.id} className="grid items-end gap-3 sm:grid-cols-[minmax(0,1fr)_7rem_auto]">
+            <div className="min-w-0 space-y-1.5">
+              <Label htmlFor={`${prefix}-name-${r.id}`}>Material</Label>
               <Input
-                id={`name-${r.id}`}
+                id={`${prefix}-name-${r.id}`}
                 name="material_name"
                 value={r.name}
                 onChange={(e) => setName(r.id, e.target.value)}
                 placeholder="z. B. Baumwolle"
               />
             </div>
-            <div className="w-28 space-y-1.5">
-              <Label htmlFor={`pct-${r.id}`}>Anteil %</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor={`${prefix}-pct-${r.id}`}>Anteil %</Label>
               <Input
-                id={`pct-${r.id}`}
+                id={`${prefix}-pct-${r.id}`}
+                aria-describedby={`${prefix}-sum`}
                 name="material_pct"
                 type="number"
                 min={0}
@@ -106,10 +123,10 @@ export function MaterialAbschnitt({ materialien, onStructureChange }: { material
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Button type="button" variant="outline" onClick={hinzufuegen}>
+        <Button id={`${prefix}-add`} type="button" variant="outline" onClick={hinzufuegen}>
           + Material hinzufügen
         </Button>
-        <p className={summeKlasse}>
+        <p id={`${prefix}-sum`} className={summeKlasse} aria-live="polite">
           Summe: {check.sum}%
           {check.isOverLimit
             ? " – mehr als 100 % ist nicht möglich"

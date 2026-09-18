@@ -16,14 +16,20 @@ type QrAktionenProps = {
 
 export function QrAktionen({ svg, passUrl }: QrAktionenProps) {
   const [kopiert, setKopiert] = useState(false);
+  const [meldung, setMeldung] = useState("");
 
   // Pass-ID aus der URL → im Dateinamen für Rückverfolgbarkeit.
   const dateiname = `produktpass-${passUrl.split("/").pop() ?? "code"}`;
 
   async function linkKopieren() {
-    await navigator.clipboard.writeText(passUrl);
-    setKopiert(true);
-    setTimeout(() => setKopiert(false), 2000);
+    try {
+      await navigator.clipboard.writeText(passUrl);
+      setKopiert(true);
+      setMeldung("Link kopiert.");
+      setTimeout(() => setKopiert(false), 2000);
+    } catch {
+      setMeldung("Kopieren nicht möglich. Bitte den angezeigten Link manuell kopieren.");
+    }
   }
 
   // Download-Mechanik einmal an einer Stelle (DRY): unsichtbaren <a download> klicken.
@@ -32,6 +38,7 @@ export function QrAktionen({ svg, passUrl }: QrAktionenProps) {
     a.href = href;
     a.download = `${dateiname}.${endung}`;
     a.click();
+    setMeldung(`${endung.toUpperCase()}-Download gestartet.`);
   }
 
   function svgHerunterladen() {
@@ -49,17 +56,18 @@ export function QrAktionen({ svg, passUrl }: QrAktionenProps) {
       canvas.width = groesse;
       canvas.height = groesse;
       const ctx = canvas.getContext("2d");
-      if (!ctx) return;
+      if (!ctx) { setMeldung("PNG konnte nicht erzeugt werden. Bitte SVG verwenden."); return; }
       ctx.fillStyle = "#ffffff"; // weißer Hintergrund für Kontrast
       ctx.fillRect(0, 0, groesse, groesse);
       ctx.drawImage(img, 0, 0, groesse, groesse); // Vektor → sauber gerastert
       canvas.toBlob((blob) => {
-        if (!blob) return;
+        if (!blob) { setMeldung("PNG konnte nicht erzeugt werden. Bitte SVG verwenden."); return; }
         const url = URL.createObjectURL(blob);
         datenLink(url, "png");
         URL.revokeObjectURL(url);
       }, "image/png");
     };
+    img.onerror = () => setMeldung("PNG konnte nicht erzeugt werden. Bitte SVG verwenden.");
     img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
   }
 
@@ -75,7 +83,7 @@ export function QrAktionen({ svg, passUrl }: QrAktionenProps) {
             QR-Code herunterladen
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start">
+        <DropdownMenuContent align="start" className="max-w-[calc(100vw-2rem)]">
           <DropdownMenuItem onClick={pngHerunterladen}>
             Als Bild (PNG) – für Word, E-Mail, Etiketten
           </DropdownMenuItem>
@@ -84,6 +92,7 @@ export function QrAktionen({ svg, passUrl }: QrAktionenProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      <p role="status" className="w-full text-sm text-muted-foreground">{meldung}</p>
     </div>
   );
 }

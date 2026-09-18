@@ -74,9 +74,9 @@ describe("Echte Mandantentrennung auf lotsora-integration", () => {
       const rendered = await page({ params: Promise.resolve({ id: fixture.a.published.public_id }) });
       const pass = rendered.props.children.props.pass;
       expect(pass.produkt.name).toBe(fixture.a.published.name);
-      expect(Object.keys(pass.dokumente[0]).sort()).toEqual(["doc_type", "id", "name", "signedUrl"]);
+      expect(Object.keys(pass.dokumente[0]).sort()).toEqual(["doc_type", "id", "name", "url"]);
       expect(Object.keys(pass.materialien[0]).sort()).toEqual(["id", "material_name", "percentage"]);
-      expect(pass.dokumente[0].signedUrl).toContain("/storage/v1/object/sign/");
+      expect(pass.dokumente[0].url).toBe(`/p/${fixture.a.published.public_id}/dokumente/${fixture.a.publicDoc.id}`);
     }
   });
 

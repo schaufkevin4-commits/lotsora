@@ -120,7 +120,7 @@ describe("B5/N7: privater Direktupload und bestätigter Abschluss", () => {
     expect((await fixture.anon.storage.from(DOKUMENTE_BUCKET).createSignedUrl(op.file_path, 60)).error).not.toBeNull();
     expect((await fixture.a.client.rpc("publish_product", { p_product_id: p.id })).error).toBeNull();
     const pass = await getOeffentlicherPass(fixture.anon, p.public_id);
-    expect(pass?.produkt.image_url).toContain("/storage/v1/object/sign/");
+    expect(pass?.produkt.image_url).toContain(`/p/${p.public_id}/bild?stand=`);
     expect((await fixture.anon.storage.from(DOKUMENTE_BUCKET).download(op.file_path)).error).toBeNull();
     expect((await fixture.b.client.storage.from(DOKUMENTE_BUCKET).download(op.file_path)).error).toBeNull();
     expect((await fixture.a.client.rpc("withdraw_product", { p_product_id: p.id })).error).toBeNull();
