@@ -1,5 +1,7 @@
 # Lotsora
 
+Tagesabschluss 19.09.: Echte PNG-/SVG-Downloads geprüft, Architekturvorlage A1–A5 ausgearbeitet. Kevin hat die Übernahme nach main und den Push beauftragt. [Aktuelle Übergabe und Einstieg morgen](docs/TAGESABSCHLUSS-2026-09-19.md). Fachliche Entscheidungen, N8-Restnachweise und Gesamt-Gate bleiben offen. Frühere Standangaben unten sind historisch.
+
 Tagesabschluss 18.09.: N3/N8-Code in `9d4ad38` committed; main-Push ausdrücklich beauftragt. [Übergabe und Einstieg morgen](docs/TAGESABSCHLUSS-2026-09-18.md). N8-Restabnahme, Architekturentscheidungen und Gesamt-Gate bleiben offen. Ältere Angaben zum uncommitteten Stand sind historisch.
 
 Textil-/Apparel-first-Anwendung für Produktdaten, Dokumente und öffentliche digitale Produktpässe. Langfristig soll daraus eine einfach bedienbare, KI-gestützte Produktdatenplattform werden. Die abschließende Prüfung und Veröffentlichung bleiben beim verantwortlichen Kunden; Lotsora gibt keine Compliance-Garantie.

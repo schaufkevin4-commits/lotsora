@@ -1,5 +1,7 @@
 # Lotsora: Produktrichtung und Entscheidungsstand
 
+Nachtrag 19.09.: Die offenen technischen Richtungen sind in der [Architekturvorlage A1–A5](ARCHITEKTURVORLAGE-2026-09-19.md) zu konkreten Entscheidungsvorschlägen mit Codebelegen, Umsetzungszeitpunkten und Abnahmekriterien verdichtet. Sie bleiben Empfehlungen; bestehende PP-Beschlüsse und V1-Verhalten werden dadurch nicht geändert.
+
 Stand: 10.09.2026. Quelle der ergänzten Richtung: Kevins Analyseauftrag vom 10.09.2026. Technische Empfehlungen sind im [Analysebericht](ANALYSE-2026-09-10.md) begründet; Ausführung gemäß [Arbeitsplan](ROADMAP.md) erst nach Freigabe.
 
 Fortschritt vom 12.09.2026: Der Einstieg wurde inzwischen freigegeben und der erste Sicherheitsblock ist lokal implementiert und geprüft ([Abschlussprotokoll](ABSCHLUSS-2026-09-12.md)). Die hier aufgeführten weitergehenden Architekturentscheidungen bleiben Vorschläge, soweit nicht ausdrücklich anders beschlossen.

@@ -1,5 +1,9 @@
 # Noch offen bis zum lokalen Gate „MVP funktional vollständig“
 
+Architekturstand 19.09.: Die fünf begrenzten Entwürfe liegen in der [Architekturvorlage A1–A5](ARCHITEKTURVORLAGE-2026-09-19.md) vor. Der Dokumentationsanteil von Block 4 ist ausgearbeitet; Kevins fachliche Richtungsentscheidungen bleiben offen. Kein neuer Implementierungsumfang als Gate-Bedingung eingeführt.
+
+Nachtrag 19.09.: Tatsächliche PNG-/SVG-Browserdownloads unabhängig zur erwarteten Pass-URL dekodiert; Dateinachweis bestanden. Kevin bestätigte 200-%-Browserzoom; im Serverprotokoll sind Editor und interne Passvorschau belegt. Separater öffentlicher `/p/`-Zoomnachweis, echte Screenreader-Sprachausgabe und physische Druck-/Handyscan-Abnahme bleiben offen. [N8-Restabnahme und reproduzierbare Dateiprüfung](N8-RESTABNAHME-2026-09-19.md).
+
 Tagesabschluss 18.09.: N3/N8-Code in `9d4ad38` committed; main-Push ausdrücklich beauftragt. [Übergabe und Einstieg morgen](TAGESABSCHLUSS-2026-09-18.md). N8-Restabnahme, Architekturentscheidungen und Gesamt-Gate bleiben offen. Ältere Angaben zum uncommitteten Stand sind historisch.
 
 Stand: 16.09.2026. N1/N2, Sicherheitsblock, B4, B3 und B5/N7 sind implementiert und lokal geprüft. B5/N7 liegt im Commit `1a19141`; Kevin hat anschließend die Übernahme und den Push nach main beauftragt. Der Code-Push ist keine Datenbankmigration oder Gate-Freigabe.
