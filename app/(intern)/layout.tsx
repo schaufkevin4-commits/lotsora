@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { abmelden } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
+import { getMeinHersteller } from "@/lib/services/manufacturers";
 
 export default async function InternLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -13,6 +14,7 @@ export default async function InternLayout({ children }: { children: React.React
 
   // Doppelter Boden zusätzlich zur Middleware.
   if (!user) redirect("/login");
+  const firma = await getMeinHersteller(supabase);
 
   return (
     <div className="min-h-screen">
@@ -22,12 +24,15 @@ export default async function InternLayout({ children }: { children: React.React
           <Link href="/dashboard" className="hover:underline">Dashboard</Link>
           <Link href="/produkte" className="hover:underline">Produkte</Link>
           <Link href="/profil" className="hover:underline">Profil</Link>
+          <Link href="/team" className="hover:underline">Team</Link>
         </nav>
         <form action={abmelden} data-leaves-editor>
           <Button type="submit" variant="ghost" size="sm">Abmelden</Button>
         </form>
       </header>
-      <main id="hauptinhalt" tabIndex={-1} className="mx-auto max-w-4xl p-4 sm:p-6">{children}</main>
+      <main id="hauptinhalt" tabIndex={-1} className="mx-auto max-w-4xl p-4 sm:p-6">
+        {firma ? children : <div className="space-y-3"><h1 className="text-2xl font-semibold">Keine Firmenzugehörigkeit</h1><p>Dein Konto gehört aktuell zu keiner Firma. Öffne eine gültige Teameinladung oder wende dich an den Firmenverantwortlichen.</p></div>}
+      </main>
     </div>
   );
 }

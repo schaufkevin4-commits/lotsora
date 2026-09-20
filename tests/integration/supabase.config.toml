@@ -36,13 +36,21 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-site_url = "http://127.0.0.1:3100"
-additional_redirect_urls = ["http://127.0.0.1:3100/auth/confirm"]
+site_url = "http://127.0.0.1:3109"
+additional_redirect_urls = ["http://127.0.0.1:3108/auth/confirm**", "http://127.0.0.1:3109/auth/confirm**"]
 enable_signup = true
 
 [auth.email]
 enable_signup = true
-enable_confirmations = false
+enable_confirmations = true
+
+[auth.email.template.confirmation]
+subject = "Lotsora: E-Mail bestätigen"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Lotsora: Passwort zurücksetzen"
+content_path = "./supabase/templates/recovery.html"
 
 [edge_runtime]
 enabled = false

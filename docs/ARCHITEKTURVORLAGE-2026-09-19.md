@@ -1,5 +1,7 @@
 # Lotsora – fünf begrenzte Architekturentscheidungen
 
+**Beschluss 20.09.:** Kevin hat die im Chat erläuterten Richtungen angenommen, mit einer Änderung: Mehrere Benutzer pro Firma sind bereits V1-Anforderung. Der bisherige Aufschub in A3 ist überholt. Maßgeblich ist der [Architekturbeschluss mit Team-Baublock](ARCHITEKTURBESCHLUSS-2026-09-20.md); die Vorlage unten bleibt als ursprünglicher Entwurf erhalten.
+
 Nachtrag Tagesabschluss: Kevin hat anschließend die Übernahme und den Push dieser Vorlage nach main beauftragt. Das ist keine fachliche Annahme der Empfehlungen. Angaben „kein Commit/Push“ unten beschreiben den vorherigen Blockabschluss. [Aktuelle Übergabe](TAGESABSCHLUSS-2026-09-19.md).
 
 Stand: 19.09.2026, Codebasis `7d0d481a52ff3105d531f0062a4392015a9f4327`. **Entscheidungsvorlage, noch kein fachlicher Beschluss oder Umsetzungsauftrag.** Die Bezeichnungen A1–A5 sind lokale Entwurfsnummern, keine neuen PP-Nummern. Grundlage: PRODUKTVISION, ROADMAP und Analyse vom 10.09., gezielt mit dem aktuellen Code abgeglichen.

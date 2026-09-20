@@ -62,6 +62,10 @@ function prepare() {
   mkdirSync(join(workdir, "supabase", "migrations"), { recursive: true });
   writeFileSync(marker, projectId);
   copyFileSync(join(root, "tests/integration/supabase.config.toml"), join(workdir, "supabase/config.toml"));
+  mkdirSync(join(workdir, "supabase/templates"), { recursive: true });
+  for (const name of ["confirmation.html", "recovery.html"]) {
+    copyFileSync(join(root, "supabase/templates", name), join(workdir, "supabase/templates", name));
+  }
   const sourceDir = join(root, "supabase/migrations");
   const targetDir = join(workdir, "supabase/migrations");
   const files = readdirSync(sourceDir).filter((file) => file.endsWith(".sql"));
@@ -97,6 +101,8 @@ try {
     if (action === "browser") {
       Object.assign(testEnv, {
         LOTSORA_TEST_BROWSER: "1",
+        LOTSORA_TEST_TEAM_BROWSER: process.argv.includes("--team") || process.argv.includes("--gate") ? "1" : "0",
+        LOTSORA_TEST_GATE_BROWSER: process.argv.includes("--gate") ? "1" : "0",
         NEXT_PUBLIC_SUPABASE_URL: status.API_URL,
         NEXT_PUBLIC_SUPABASE_ANON_KEY: status.ANON_KEY,
         SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,

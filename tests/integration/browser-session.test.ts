@@ -4,7 +4,9 @@ import { spawn } from "node:child_process";
 import { existsSync, writeFileSync, rmSync } from "node:fs";
 import { once } from "node:events";
 import { test, expect } from "vitest";
-import { createFixtures } from "./fixtures";
+import { createFixtures, pdfBytes } from "./fixtures";
+import { authMail } from "./auth-mail";
+import sharp from "sharp";
 
 // Ausschließlich explizite lokale Browserprüfung; keine produktive Loginroute.
 test.skipIf(process.env.LOTSORA_TEST_BROWSER !== "1")("lokale Browserprüfung", async () => {
@@ -12,14 +14,36 @@ test.skipIf(process.env.LOTSORA_TEST_BROWSER !== "1")("lokale Browserprüfung", 
   const stop = ".local-tests/n8-browser-stop";
   rmSync(stop, { force: true });
   const f = await createFixtures();
-  const token = randomUUID();
   const base = "http://127.0.0.1:3109";
+  const teamDemo = process.env.LOTSORA_TEST_TEAM_BROWSER === "1";
+  const gateDemo = process.env.LOTSORA_TEST_GATE_BROWSER === "1";
+  const email = `lotsora-gate-${randomUUID()}@example.invalid`;
+  let confirmation: string | undefined;
+  let inviteToken: string | undefined;
+  if (gateDemo) {
+    const invited = await f.a.client.rpc("create_company_invitation", { p_email: email });
+    if (invited.error) throw invited.error;
+    inviteToken = invited.data![0].token;
+  }
+  const member = gateDemo ? await f.pendingUser(`${base}/auth/confirm?next=/einladung/${inviteToken}`, true, email)
+    : teamDemo ? await f.invitedUser() : null;
+  if (gateDemo && member) {
+    confirmation = (await authMail(member.email)).url.toString();
+    writeFileSync(".local-tests/gate-datenblatt.pdf", await pdfBytes());
+    writeFileSync(".local-tests/gate-produktbild.png", await sharp({ create: { width: 320, height: 320, channels: 3, background: "#175f68" } }).png().toBuffer());
+  }
+  const token = randomUUID();
   const editor = `${base}/produkte/${f.a.published.id}`;
-  const bootstrap = createServer((req, res) => {
-    if (req.url !== `/${token}`) { res.writeHead(404).end(); return; }
+  const bootstrap = createServer(async (req, res) => {
+    const memberLogin = member && req.url === `/${token}/member`;
+    if (req.url !== `/${token}` && !memberLogin) { res.writeHead(404).end(); return; }
+    if (memberLogin && "password" in member && typeof member.password === "string") {
+      const login = await member.client.auth.signInWithPassword({ email: member.email, password: member.password });
+      if (login.error) { res.writeHead(403).end("Zuerst E-Mail bestätigen."); return; }
+    }
     res.writeHead(302, {
-      "Set-Cookie": f.a.cookies().map(c => `${c.name}=${c.value}; Path=/; HttpOnly; SameSite=Lax`),
-      Location: editor,
+      "Set-Cookie": (memberLogin ? member.cookies() : f.a.cookies()).map(c => `${c.name}=${c.value}; Path=/; HttpOnly; SameSite=Lax`),
+      Location: teamDemo ? `${base}/team` : editor,
       "Cache-Control": "no-store",
     }).end();
   });
@@ -36,7 +60,9 @@ test.skipIf(process.env.LOTSORA_TEST_BROWSER !== "1")("lokale Browserprüfung", 
       await new Promise(r => setTimeout(r, 1000));
     }
     expect(healthy).toBe(true);
-    writeFileSync(ready, JSON.stringify({ login: `http://127.0.0.1:3110/${token}`, editor, public: `${base}/p/${f.a.published.public_id}` }));
+    writeFileSync(ready, JSON.stringify({ login: `http://127.0.0.1:3110/${token}`, editor, public: `${base}/p/${f.a.published.public_id}`,
+      ...(member ? { memberLogin: `http://127.0.0.1:3110/${token}/member`, memberEmail: member.email } : {}),
+      ...(confirmation ? { confirmation } : {}) }));
     console.log("Lokaler Browser bereit auf Port 3109; Stop über .local-tests/n8-browser-stop.");
     const deadline = Date.now() + 40 * 60_000;
     while (!existsSync(stop) && Date.now() < deadline) await new Promise(r => setTimeout(r, 1000));

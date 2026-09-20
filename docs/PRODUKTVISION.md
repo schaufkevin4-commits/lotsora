@@ -1,5 +1,9 @@
 # Lotsora: Produktrichtung und Entscheidungsstand
 
+**Umsetzung 20.09.:** Die gemeinsamen Firmenzugänge sind nach Folgeauftrag lokal implementiert und geprüft. Zwei einfache Rollen, eine Firma je Konto und persönlich gebundene Einladungen; [Nachweise und Grenzen](ABSCHLUSS-2026-09-20-FIRMENTEAMS.md). Getrennte Veröffentlichungsrevisionen bleiben der spätere beschlossene Schritt vor kontrollierten Importen.
+
+**Aktueller Beschluss 20.09.:** Richtungen A1–A5 angenommen; mehrere Benutzer pro Firma sind ausdrücklich bereits Teil von V1. Der frühere Aufschub gemeinsamer Firmenzugänge ist aufgehoben. Separate öffentliche Freigabestände werden vor kontrollierten Importen eingeführt; QR-Identität richtet sich zunächst nach dem konkreten Produktmodell. [Beschluss, Umfang und nächster Team-Baublock](ARCHITEKTURBESCHLUSS-2026-09-20.md). Die folgenden älteren Entscheidungsstände bleiben historisch nachvollziehbar.
+
 Nachtrag 19.09.: Die offenen technischen Richtungen sind in der [Architekturvorlage A1–A5](ARCHITEKTURVORLAGE-2026-09-19.md) zu konkreten Entscheidungsvorschlägen mit Codebelegen, Umsetzungszeitpunkten und Abnahmekriterien verdichtet. Sie bleiben Empfehlungen; bestehende PP-Beschlüsse und V1-Verhalten werden dadurch nicht geändert.
 
 Stand: 10.09.2026. Quelle der ergänzten Richtung: Kevins Analyseauftrag vom 10.09.2026. Technische Empfehlungen sind im [Analysebericht](ANALYSE-2026-09-10.md) begründet; Ausführung gemäß [Arbeitsplan](ROADMAP.md) erst nach Freigabe.
@@ -45,9 +49,9 @@ Einfachheit und geringe Eingabelast sind verbindliche Produktziele. Zukunftsfäh
 |---|---|---|---|---|
 | Plattformnutzen | Vision 05.06.: strukturierte Produktinformationen/DPP; KI später | KI-gestützte Produktdatenplattform, DPP als ein Ergebnis | Auftrag 10.09.: weniger doppelte Datenpflege | Produktrichtung gesetzt; kein neuer V1-Featureumfang |
 | KI-Priorität | LP-002 vom 08.09.: optional später, kein nächster Bau-/Gatepunkt | Langfristig wichtiger Assistent; gegenwärtig weiterhin keine KI-Implementierung | Auftrag 10.09. und bestehendes Gate | Ergänzung der Vision, keine Aufhebung der Gate-Grenze |
-| Feldstruktur | DATENMODELL/TECHNIK: dynamische Metadaten später; keine komplexe Engine im MVP | Kennungen/Versionsvertrag früh; kleiner Textilkatalog statt Engine | Späteren Import-/Quellenumbau begrenzen | Technische Empfehlung, Freigabe offen |
-| Öffentlicher Datenstand | Code liest laufend aktuelle Tabellen; volle Versionierung laut PP-010 SOLL | Bearbeitungsstand von freigegebener Revision trennen | Kontrollierte Imports/Templateupdates dürfen nicht ungeprüft live gehen | Bewusste Änderung der Semantik; vor Umsetzung gesondert entscheiden |
-| Firmen-/Nutzerbezug | Bau-Tag 19: genau ein Login pro Hersteller; PP-017 Rollen später | Spätere Mitgliedschaften, stabile Herstelleridentität unabhängig vom Login | Multi-User/Multi-Company ermöglichen | Nur Vorbereitung empfohlen; heutige Einschränkung bleibt bis Migration |
+| Feldstruktur | DATENMODELL/TECHNIK: dynamische Metadaten später; keine komplexe Engine im MVP | Kennungen/Versionsvertrag früh; kleiner Textilkatalog statt Engine | Späteren Import-/Quellenumbau begrenzen | Richtung am 20.09. angenommen; noch nicht implementiert |
+| Öffentlicher Datenstand | Code liest laufend aktuelle Tabellen; volle Versionierung laut PP-010 SOLL | Bearbeitungsstand von freigegebener Revision trennen | Kontrollierte Imports/Templateupdates dürfen nicht ungeprüft live gehen | Richtung am 20.09. beschlossen; Umsetzung vor kontrollierten Importen |
+| Firmen-/Nutzerbezug | Bau-Tag 19: genau ein Login pro Hersteller; PP-017 komplexe Rollen später | Mehrere eigene Logins je Firma; stabile Herstelleridentität bleibt | Gemeinsames Arbeiten bereits in V1 | Am 20.09. ausdrücklich in V1 aufgenommen; technische Umsetzung offen. Mehrfirmenzugang eines Nutzers nicht mitbeauftragt |
 | Backendbeschreibung | PP-014/021 nennen API Routes | Bestehende Server Actions als Transport dokumentieren, Services/DB-Regeln beibehalten | Abgleich mit tatsächlichem Code | Dokumentationspräzisierung empfohlen, kein REST-Neubau |
 
 Keine Tabelle oben erteilt automatisch die Freigabe, das Produktmodell oder Veröffentlichungsverhalten zu ändern. Bei einem späteren Beschluss in Brain-KI Altentscheidung, neue Entscheidung, Grund, Datum und konkrete Reichweite übernehmen; Historie erhalten.
@@ -72,7 +76,8 @@ Diese Erkenntnisse sind lokale Analyseergebnisse. Bestehende L-xxx-Learnings in 
 | PDF-Datenübernahme; später DOCX, Scans/OCR und weitere Dokumente | Ausgewählte reale Dokumenttypen, unveränderliche Quellversionen |
 | KI-Feldvorschläge und intelligente Lücken-/Konflikthinweise | Manuelle Prüfung/Freigabe steht; nachgewiesener Mehrwert bei echten Beispielen |
 | Versionierte zusätzliche Templates und Anforderungshinweise | Verantwortliche fachliche Pflege, Änderungsquelle/Geltung, kontrollierte Migration |
-| Mehrere Benutzer/Brands/Firmen | Konkreter Pilotbedarf, Mitgliedschaftsmodell mit vollständig geprüfter RLS |
+| Mehrere Benutzer derselben Firma | Bereits V1-MUSS gemäß Beschluss 20.09.; Mitgliedschaften und sämtliche Rechtewege gemeinsam umsetzen |
+| Brands/mehrere Firmen je Nutzer | Weiterhin konkreter Pilotbedarf; nicht durch den Team-Beschluss vorgezogen |
 | Familien/Varianten/Chargen | Produktidentität und Geltungsbereich der QR-ID geklärt |
 | ERP/PIM/API | Stabiler Import-/Übernahmevertrag, Authentifizierung und wiederholbare Verarbeitung |
 | Lieferantenanfragen, Aufgaben, Verantwortlichkeiten | Wiederkehrender Kundenablauf mit passenden Berechtigungen |
@@ -83,7 +88,7 @@ Alle Formate teilen das Zielmodell, aber nicht denselben Parser. KI ist kein not
 
 ## Annahmen
 
-Ein kleines Textilprofil, ein verantwortlicher Nutzer je Firma und ein zunächst manuell bedienbarer Ablauf reichen für den nächsten stabilen Kern. Diese Annahmen werden bei ersten passenden Pilotgesprächen geprüft. Die Zahl benötigter Brands, Nutzer, Varianten und Quellen ist noch nicht belegt.
+Ein kleines Textilprofil und ein zunächst manuell bedienbarer Ablauf bleiben Grundlage. Die frühere Annahme „ein Nutzer je Firma reicht“ wurde durch Kevins Beschluss vom 20.09. aufgehoben: mehrere getrennte Konten je Firma gehören zu V1. Konkrete Teamgrößen sowie Bedarf an Brands, Varianten und Quellen bleiben in Pilotgesprächen zu prüfen.
 
 Weniger Übertragungsarbeit könnte ein Wettbewerbsvorteil sein. Das ist eine zu validierende Nutzenhypothese, kein bereits bewiesenes Alleinstellungsmerkmal. Zahlungsbereitschaft, Preisstrategie und Betreuungsbedarf bleiben offen; ein größerer Funktionsumfang beantwortet diese Fragen nicht.
 

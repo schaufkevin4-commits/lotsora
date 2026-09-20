@@ -5,6 +5,7 @@ import type { Database } from "@/lib/types/database.types";
 import { DOKUMENTE_BUCKET, setzeDokumentSichtbarkeit } from "@/lib/services/documents";
 import { ladeDokumentHoch } from "@/lib/services/upload-completion";
 import { PDFDocument } from "pdf-lib";
+import { sql } from "./sql";
 
 export async function pdfBytes() {
   const pdf = await PDFDocument.create(); pdf.addPage([100, 100]);
@@ -30,18 +31,29 @@ export async function createFixtures() {
   const admin = createClient<Database>(url, serviceKey, options);
   const anon = createClient<Database>(url, anonKey, options);
   const users: string[] = [];
+  const companies: string[] = [];
   const files: { client: SupabaseClient<Database>; path: string }[] = [];
 
   async function cleanup() {
     const errors: string[] = [];
     for (const file of files) {
-      const { error } = await file.client.storage.from(DOKUMENTE_BUCKET).remove([file.path]);
+      // Nur erfasste Testdateien; Rollenwechsel in Tests/Demo können dem
+      // ursprünglichen Kontoinhaber inzwischen die Aufräumrechte entziehen.
+      const { error } = await admin.storage.from(DOKUMENTE_BUCKET).remove([file.path]);
       if (error) errors.push(`Testdatei konnte nicht gelöscht werden: ${error.message}`);
+    }
+    // Firmen bewusst vor Konten abbauen: ein Verantwortlicher darf nicht
+    // versehentlich mitsamt gemeinsamem Firmenbestand gelöscht werden.
+    if (companies.length) {
+      if (companies.some(id => !/^[a-f0-9-]{36}$/.test(id))) throw new Error("Ungültige Testfirmen-ID.");
+      // service_role erhält keine zusätzlichen Firmen-Löschrechte nur für Tests.
+      const result = await sql(`delete from public.manufacturers where id in (${companies.map(id => `'${id}'`).join(",")});`);
+      if (result.code !== 0) errors.push(`Testfirmen konnten nicht gelöscht werden: ${result.output}`);
     }
     // Admin nur für Kontenaufbau/-abbau; sämtliche Fach-/Zugriffsprüfungen mit A/B/anon.
     for (const id of users) {
       const { error } = await admin.auth.admin.deleteUser(id);
-      if (error) errors.push(`Testkonto konnte nicht gelöscht werden: ${error.message}`);
+      if (error && error.status !== 404) errors.push(`Testkonto konnte nicht gelöscht werden: ${error.message}`);
     }
     if (users.length) {
       const { error } = await admin.from("file_operations").delete().in("owner_id", users);
@@ -76,6 +88,7 @@ export async function createFixtures() {
       .eq("user_id", account.user.id).select().single();
     if (companyError) throw companyError;
     const companyId = company.id;
+    companies.push(companyId);
 
     async function product(status: "entwurf" | "veroeffentlicht") {
       const { data, error } = await client.from("products").insert({
@@ -106,13 +119,69 @@ export async function createFixtures() {
     const internalDoc = await document(published.id, "intern");
     const publicDoc = await document(published.id, "oeffentlich");
     const draftDoc = await document(draft.id, "oeffentlich");
-    return { client, company, published, draft, internalDoc, publicDoc, draftDoc, cookies: () => cookies };
+    return { client, company, email, userId: account.user.id, published, draft, internalDoc, publicDoc, draftDoc, cookies: () => cookies };
+  }
+
+  async function invitedUser() {
+    const email = `lotsora-team-${randomUUID()}@example.invalid`;
+    const password = `Test-${randomUUID()}!`;
+    const { data, error } = await admin.auth.admin.createUser({
+      email, password, email_confirm: true, user_metadata: { join_team: true },
+    });
+    if (error) throw error;
+    users.push(data.user.id);
+    let cookies: TestCookie[] = [];
+    const client = createServerClient<Database>(url, anonKey, {
+      cookies: { getAll: () => cookies, setAll: (updates) => {
+        const values = new Map(cookies.map(c => [c.name, c.value]));
+        for (const cookie of updates) values.set(cookie.name, cookie.value);
+        cookies = [...values].map(([name, value]) => ({ name, value }));
+      } },
+    });
+    const login = await client.auth.signInWithPassword({ email, password });
+    if (login.error) throw login.error;
+    return { client, email, userId: data.user.id, cookies: () => cookies };
+  }
+
+  function sessionWithCookies(initial: TestCookie[] = []) {
+    let cookies = initial;
+    const client = createServerClient<Database>(url, anonKey, {
+      cookies: { getAll: () => cookies, setAll: (updates) => {
+        const values = new Map(cookies.map(c => [c.name, c.value]));
+        for (const cookie of updates) values.set(cookie.name, cookie.value);
+        cookies = [...values].map(([name, value]) => ({ name, value }));
+      } },
+    });
+    return { client, cookies: () => cookies };
+  }
+
+  async function pendingUser(redirectTo: string, joinTeam = true, requestedEmail?: string) {
+    const email = requestedEmail ?? `lotsora-auth-${randomUUID()}@example.invalid`;
+    if (!/^lotsora-[a-z-]+-[0-9a-f-]+@example\.invalid$/.test(email)) throw new Error("Nur synthetische Adressen erlaubt.");
+    const password = `Test-${randomUUID()}!`;
+    const session = sessionWithCookies();
+    const signup = await session.client.auth.signUp({ email, password, options: {
+      emailRedirectTo: redirectTo,
+      data: joinTeam ? { join_team: true } : { company_name: "Auth-Testfirma" },
+    } });
+    if (signup.error) throw signup.error;
+    if (!signup.data.user) throw new Error("Testregistrierung lieferte kein Konto.");
+    const userId = signup.data.user.id;
+    users.push(userId);
+    if (!joinTeam) {
+      const company = await sql(`select id from public.manufacturers where user_id='${userId}';`);
+      const id = company.output.trim();
+      if (company.code !== 0 || !/^[a-f0-9-]{36}$/.test(id)) throw new Error("Testfirma fehlt.");
+      companies.push(id);
+    }
+    if (signup.data.session) throw new Error("Testkonfiguration muss eine echte E-Mail-Bestätigung verlangen.");
+    return { ...session, email, password, userId };
   }
 
   try {
     const a = await manufacturer("A");
     const b = await manufacturer("B");
-    return { a, b, anon, verifier: admin, cleanup };
+    return { a, b, anon, verifier: admin, invitedUser, pendingUser, sessionWithCookies, cleanup };
   } catch (error) {
     await cleanup();
     throw error;

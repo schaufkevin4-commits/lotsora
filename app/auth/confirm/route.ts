@@ -10,12 +10,22 @@ export async function GET(request: NextRequest) {
   const type = searchParams.get("type") as EmailOtpType | null;
   const next = sicheresInternesZiel(searchParams.get("next"), request.url);
 
-  if (token_hash && type) {
+  const weiter = (url: URL) => {
+    // Next normalisiert lokale IPs in request.url teilweise zu localhost.
+    // Eine relative Location erhält die tatsächliche Cookie-Origin. Ein nach
+    // Normalisierung doppelter Slash darf dabei niemals zur fremden Authority werden.
+    const location = url.pathname.startsWith("//") ? "/dashboard" : `${url.pathname}${url.search}${url.hash}`;
+    const response = new NextResponse(null, { status: 307, headers: { Location: location } });
+    response.headers.set("Cache-Control", "no-store");
+    response.headers.set("Referrer-Policy", "no-referrer");
+    return response;
+  };
+  if (token_hash && type && ["email", "signup", "recovery"].includes(type)) {
     const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({ type, token_hash });
     if (!error) {
-      return NextResponse.redirect(next);
+      return weiter(next);
     }
   }
-  return NextResponse.redirect(new URL("/login?fehler=bestaetigung", request.url));
+  return weiter(new URL("/login?fehler=bestaetigung", request.url));
 }

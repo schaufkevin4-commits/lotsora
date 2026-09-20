@@ -21,7 +21,12 @@ export default async function ProfilPage() {
         </span>
       </div>
 
-      <ProfilFormular hersteller={hersteller} />
+      {hersteller?.user_id === user?.id ? <ProfilFormular hersteller={hersteller} /> : (
+        <div className="space-y-2 rounded-md border p-4">
+          <h2 className="font-semibold">{hersteller?.company_name}</h2>
+          <p className="text-sm text-muted-foreground">Das Firmenprofil wird vom Firmenverantwortlichen verwaltet. Produkte und Dokumente bearbeitet ihr gemeinsam.</p>
+        </div>
+      )}
     </div>
   );
 }

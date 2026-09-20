@@ -1,5 +1,11 @@
 # Lotsora
 
+**Manuelle Restabnahme 20.09.:** QR-Dateipaar unabhängig dekodiert; Kevin bestätigt Zoom-/Sprachausgabe-Stichprobe und Handyscan vom Bildschirm. [Nachweise](docs/N8-RESTABNAHME-2026-09-20.md). Als Nächstes die ausdrückliche lokale Gate-Entscheidung; physischer Ausdruckscan bleibt spätestens vor Kundeneinsatz offen. Ältere offene Einzelstatus unten sind historisch.
+
+**Gesamtsystemcheck 20.09.:** 113 Unit-, 96 Integrations- und 11 Produktions-HTTP-Tests sowie Lint, Typen und Build bestanden. Echte lokale Auth-Mails geprüft und zwei Ablaufprobleme behoben. Gemeinsamer Produkt-/Datei-/Passablauf zweier Firmenmitglieder live gezeigt, Testprodukt samt Dateien gelöscht. [Prüfbericht und noch offene manuelle Nachweise](docs/SYSTEMCHECK-2026-09-20.md). Nächster Schritt: manuelle Restabnahme und ausdrückliche Gate-Entscheidung; noch kein Push/Cloud-Rollout. Ältere „nächster Block“-Angaben unten sind historisch.
+
+Stand 20.09.: **Mehrere Benutzer derselben Firma sind lokal umgesetzt und geprüft**: Teamübersicht, Einladungen, gemeinsame Produkte/Dateien, Rechteentzug und geschützte Firmenverantwortung. Migration nur in der isolierten Testinstanz, noch kein Push/Cloud-Rollout. [Abschluss und Nachweise](docs/ABSCHLUSS-2026-09-20-FIRMENTEAMS.md), [Beschluss und Abnahmekriterien](docs/ARCHITEKTURBESCHLUSS-2026-09-20.md). Nächster Block: Gesamtsystemcheck und verbleibende manuelle Abnahme. Das Gesamt-Gate bleibt offen.
+
 Tagesabschluss 19.09.: Echte PNG-/SVG-Downloads geprüft, Architekturvorlage A1–A5 ausgearbeitet. Kevin hat die Übernahme nach main und den Push beauftragt. [Aktuelle Übergabe und Einstieg morgen](docs/TAGESABSCHLUSS-2026-09-19.md). Fachliche Entscheidungen, N8-Restnachweise und Gesamt-Gate bleiben offen. Frühere Standangaben unten sind historisch.
 
 Tagesabschluss 18.09.: N3/N8-Code in `9d4ad38` committed; main-Push ausdrücklich beauftragt. [Übergabe und Einstieg morgen](docs/TAGESABSCHLUSS-2026-09-18.md). N8-Restabnahme, Architekturentscheidungen und Gesamt-Gate bleiben offen. Ältere Angaben zum uncommitteten Stand sind historisch.
@@ -35,6 +41,8 @@ Voraussetzungen: Node 24 gemäß .nvmrc, npm und für die lokale Supabase-Umgebu
 2. Lokales Supabase mit `npx supabase start` starten.
 3. `.env.example` als Vorlage für `.env.local` verwenden und die lokale Supabase-URL/den passenden öffentlichen Schlüssel sowie die lokale Site-URL eintragen. Für die serverseitige Uploadprüfung außerdem `SUPABASE_SERVICE_ROLE_KEY` derselben lokalen Instanz setzen; niemals mit `NEXT_PUBLIC_` veröffentlichen oder committen. PASS_BASE_URL bleibt die kanonische QR-Domain gemäß PP-016.
 4. `npm run dev` starten und [localhost:3000](http://localhost:3000) öffnen. Die Startseite ist ein Platzhalter; der interne Einstieg erfolgt über `/login` bzw. `/registrieren`.
+
+Registrierungen benötigen nun eine E-Mail-Bestätigung. Die lokalen Bestätigungs-/Resetmails verwenden `supabase/templates`; Code, Callback-URLs und Templates gehören zusammen. Die App übergibt `/auth/confirm?next=...` als Redirect-Ziel. Konfigurationsänderungen werden erst durch einen regulären Supabase-Neustart aktiv; ein Datenbank-Reset ist dafür nicht nötig. Der isolierte Teststarter kopiert dieselben Templates. Details und Cloud-Abgrenzung stehen im [Systemcheck](docs/SYSTEMCHECK-2026-09-20.md).
 
 Schemaänderungen werden als neue Migration in supabase/migrations geführt, lokal geprüft und die Typen anschließend neu erzeugt (PP-021/022). Ein Datenbank-Reset verwirft lokale Daten; dafür eine isolierte Testinstanz verwenden. Cloud-Rollout und DNS-/Deploymentänderungen gehören zum gesonderten Livegang-Paket.
 

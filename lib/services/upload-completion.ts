@@ -15,7 +15,8 @@ export async function validateStoredUpload(supabase: DB, verifier: DB, operation
   const frozen = await supabase.rpc("begin_file_validation", { p_operation_id: operationId });
   if (frozen.error) throw frozen.error;
   const operation = frozen.data;
-  if (operation.owner_id !== user.data.user.id) throw new Error("Zugriff verweigert.");
+  // begin_file_validation prüft die aktuelle Firmenmitgliedschaft. Der
+  // ursprüngliche Uploader kann inzwischen aus dem Team entfernt worden sein.
   if (!operation.validated) {
     const downloaded = await supabase.storage.from(DOKUMENTE_BUCKET).download(operation.file_path);
     if (downloaded.error) throw downloaded.error;

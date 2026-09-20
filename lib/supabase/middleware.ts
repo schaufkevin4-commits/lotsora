@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const GESCHUETZT = ["/dashboard", "/profil", "/produkte"];
+const GESCHUETZT = ["/dashboard", "/profil", "/produkte", "/team"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

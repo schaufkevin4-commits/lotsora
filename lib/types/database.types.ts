@@ -34,6 +34,53 @@ export type Database = {
   }
   public: {
     Tables: {
+      company_invitations: {
+        Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          created_at: string
+          created_by: string
+          email: string
+          expires_at: string
+          id: string
+          manufacturer_id: string
+          revoked_at: string | null
+          token_hash: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          created_by: string
+          email: string
+          expires_at?: string
+          id?: string
+          manufacturer_id: string
+          revoked_at?: string | null
+          token_hash: string
+        }
+        Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          created_at?: string
+          created_by?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          manufacturer_id?: string
+          revoked_at?: string | null
+          token_hash?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_invitations_manufacturer_id_fkey"
+            columns: ["manufacturer_id"]
+            isOneToOne: false
+            referencedRelation: "manufacturers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           description: string | null
@@ -87,6 +134,7 @@ export type Database = {
           file_path: string
           id: string
           last_error: string | null
+          manufacturer_id: string | null
           owner_id: string
           product_id: string
           purpose: string
@@ -103,6 +151,7 @@ export type Database = {
           file_path: string
           id?: string
           last_error?: string | null
+          manufacturer_id?: string | null
           owner_id: string
           product_id: string
           purpose?: string
@@ -119,6 +168,7 @@ export type Database = {
           file_path?: string
           id?: string
           last_error?: string | null
+          manufacturer_id?: string | null
           owner_id?: string
           product_id?: string
           purpose?: string
@@ -128,6 +178,32 @@ export type Database = {
           validation_started_at?: string | null
         }
         Relationships: []
+      }
+      manufacturer_memberships: {
+        Row: {
+          created_at: string
+          manufacturer_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          manufacturer_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          manufacturer_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manufacturer_memberships_manufacturer_id_fkey"
+            columns: ["manufacturer_id"]
+            isOneToOne: false
+            referencedRelation: "manufacturers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       manufacturers: {
         Row: {
@@ -175,7 +251,15 @@ export type Database = {
           user_id?: string
           website?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "manufacturers_owner_membership_fkey"
+            columns: ["id", "user_id"]
+            isOneToOne: false
+            referencedRelation: "manufacturer_memberships"
+            referencedColumns: ["manufacturer_id", "user_id"]
+          },
+        ]
       }
       product_materials: {
         Row: {
@@ -343,6 +427,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_company_invitation: { Args: { p_token: string }; Returns: string }
       attach_document_upload: {
         Args: {
           p_description: string
@@ -378,6 +463,7 @@ export type Database = {
           file_path: string
           id: string
           last_error: string | null
+          manufacturer_id: string | null
           owner_id: string
           product_id: string
           purpose: string
@@ -403,6 +489,7 @@ export type Database = {
           file_path: string
           id: string
           last_error: string | null
+          manufacturer_id: string | null
           owner_id: string
           product_id: string
           purpose: string
@@ -419,6 +506,14 @@ export type Database = {
         }
       }
       can_write_product_file: { Args: { p_path: string }; Returns: boolean }
+      create_company_invitation: {
+        Args: { p_email: string }
+        Returns: {
+          expires_at: string
+          invitation_id: string
+          token: string
+        }[]
+      }
       finish_file_cleanup: {
         Args: { p_error_code?: string; p_operation_id: string }
         Returns: boolean
@@ -428,7 +523,18 @@ export type Database = {
         Args: { p_manufacturer: string }
         Returns: boolean
       }
+      is_company_member: { Args: { p_company_id: string }; Returns: boolean }
+      is_company_owner: { Args: { p_company_id: string }; Returns: boolean }
       is_public_product_image: { Args: { p_path: string }; Returns: boolean }
+      list_company_members: {
+        Args: never
+        Returns: {
+          email: string
+          joined_at: string
+          role: string
+          user_id: string
+        }[]
+      }
       mark_file_validated: {
         Args: { p_operation_id: string; p_owner_id: string }
         Returns: undefined
@@ -439,6 +545,7 @@ export type Database = {
         Returns: boolean
       }
       publish_product: { Args: { p_product_id: string }; Returns: undefined }
+      remove_company_member: { Args: { p_user_id: string }; Returns: undefined }
       replace_product_materials: {
         Args: { p_materials: Json; p_product_id: string }
         Returns: undefined
@@ -453,6 +560,7 @@ export type Database = {
           file_path: string
           id: string
           last_error: string | null
+          manufacturer_id: string | null
           owner_id: string
           product_id: string
           purpose: string
@@ -478,6 +586,7 @@ export type Database = {
           file_path: string
           id: string
           last_error: string | null
+          manufacturer_id: string | null
           owner_id: string
           product_id: string
           purpose: string
@@ -492,6 +601,10 @@ export type Database = {
           isOneToOne: true
           isSetofReturn: false
         }
+      }
+      revoke_company_invitation: {
+        Args: { p_invitation_id: string }
+        Returns: undefined
       }
       save_product: {
         Args: {
@@ -553,6 +666,10 @@ export type Database = {
           p_publish: boolean
         }
         Returns: number
+      }
+      transfer_company_ownership: {
+        Args: { p_user_id: string }
+        Returns: undefined
       }
       withdraw_product: { Args: { p_product_id: string }; Returns: undefined }
     }
