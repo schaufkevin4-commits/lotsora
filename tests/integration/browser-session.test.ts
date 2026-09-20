@@ -37,12 +37,21 @@ test.skipIf(process.env.LOTSORA_TEST_BROWSER !== "1")("lokale Browserprüfung", 
   const bootstrap = createServer(async (req, res) => {
     const memberLogin = member && req.url === `/${token}/member`;
     if (req.url !== `/${token}` && !memberLogin) { res.writeHead(404).end(); return; }
-    if (memberLogin && "password" in member && typeof member.password === "string") {
-      const login = await member.client.auth.signInWithPassword({ email: member.email, password: member.password });
-      if (login.error) { res.writeHead(403).end("Zuerst E-Mail bestätigen."); return; }
-    }
+    const account = memberLogin ? member : f.a;
+    // Reguläres Abmelden widerruft die Sitzung: jeden Testzugang neu anmelden.
+    const login = await account.client.auth.signInWithPassword({ email: account.email, password: account.password });
+    if (login.error) { res.writeHead(403).end("Testanmeldung fehlgeschlagen. Gegebenenfalls zuerst E-Mail bestätigen."); return; }
+    const cookies = account.cookies().filter(c => c.value);
+    // Auch beim Wechsel zwischen ungeteilten und aufgeteilten Cookies darf
+    // kein Cookie des vorherigen Testkontos die neue Sitzung überlagern.
+    const incomingNames = (req.headers.cookie ?? "").split(";").map(c => c.trim().split("=")[0]);
+    const clear = incomingNames.filter(name => /^sb-127-auth-token(?:[.-][a-zA-Z0-9.-]+)?$/.test(name)
+      && !cookies.some(c => c.name === name));
     res.writeHead(302, {
-      "Set-Cookie": (memberLogin ? member.cookies() : f.a.cookies()).map(c => `${c.name}=${c.value}; Path=/; HttpOnly; SameSite=Lax`),
+      "Set-Cookie": [
+        ...clear.map(name => `${name}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`),
+        ...cookies.map(c => `${c.name}=${c.value}; Path=/; HttpOnly; SameSite=Lax`),
+      ],
       Location: teamDemo ? `${base}/team` : editor,
       "Cache-Control": "no-store",
     }).end();

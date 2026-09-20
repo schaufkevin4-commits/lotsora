@@ -4,8 +4,9 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { updateMeinHersteller } from "@/lib/services/manufacturers";
+import { normalizeWebsite } from "@/lib/profile";
 
-export type ProfilState = { ok: boolean; error: string | null };
+export type ProfilState = { ok: boolean; error: string | null; website?: string | null };
 
 export async function profilSpeichern(
   _prev: ProfilState,
@@ -25,12 +26,19 @@ export async function profilSpeichern(
     return v === "" ? null : v;
   };
 
+  let website: string | null;
+  try {
+    website = normalizeWebsite(String(formData.get("website") ?? ""));
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Bitte die Website prüfen." };
+  }
+
   try {
     await updateMeinHersteller(supabase, user.id, {
       company_name,
       contact_person: text("contact_person"),
       phone: text("phone"),
-      website: text("website"),
+      website,
       street: text("street"),
       postal_code: text("postal_code"),
       city: text("city"),
@@ -42,5 +50,5 @@ export async function profilSpeichern(
 
   revalidatePath("/profil");
   revalidatePath("/dashboard");
-  return { ok: true, error: null };
+  return { ok: true, error: null, website };
 }

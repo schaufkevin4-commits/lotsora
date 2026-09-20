@@ -1,6 +1,6 @@
 # Noch offen bis zum lokalen Gate „MVP funktional vollständig“
 
-**Historische Liste – ersetzt am 20.09.2026:** Die eine gültige Restpunkteliste ist jetzt [RESTPUNKTE-GATE-2026-09-20.md](RESTPUNKTE-GATE-2026-09-20.md). **Gate geschlossen bis zu Kevins ausdrücklicher Abnahme.** Die folgenden Einträge bleiben als Historie erhalten; insbesondere ersetzt die frühere gebündelte Sprachausgabe-Bestätigung nicht die im neuen Auftrag verlangte echte Screenreader-Stichprobe.
+**Historische Liste – ersetzt am 20.09.2026:** Die eine gültige Restpunkteliste ist jetzt [RESTPUNKTE-GATE-2026-09-20.md](RESTPUNKTE-GATE-2026-09-20.md). **Lokales Gate nach Browserabnahme durch Kevin am 20.09.2026 ausdrücklich freigegeben.** Die folgenden Einträge bleiben als Historie erhalten; insbesondere ersetzt die frühere gebündelte Sprachausgabe-Bestätigung nicht die im neuen Auftrag verlangte echte Screenreader-Stichprobe.
 
 **Restabnahme bestätigt, 20.09.:** Neue PNG-/SVG-Dateien unabhängig erfolgreich dekodiert. Kevin bestätigt Zoom-/Sprachausgabe-Stichprobe und Handyscan vom Bildschirm auch bei 200 %. [Protokoll](N8-RESTABNAHME-2026-09-20.md). Verbleibend: ausdrückliche lokale Gate-Entscheidung; physischer Ausdruckscan in festgelegter Etikettengröße spätestens vor Kundeneinsatz (aktuell kein Drucker). Frühere Warteangaben zu Downloads/Zoom/Sprachausgabe sind historisch. Kein Push/Cloud-Rollout/Livegang freigegeben.
 

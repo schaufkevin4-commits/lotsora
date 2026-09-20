@@ -119,7 +119,7 @@ export async function createFixtures() {
     const internalDoc = await document(published.id, "intern");
     const publicDoc = await document(published.id, "oeffentlich");
     const draftDoc = await document(draft.id, "oeffentlich");
-    return { client, company, email, userId: account.user.id, published, draft, internalDoc, publicDoc, draftDoc, cookies: () => cookies };
+    return { client, company, email, password, userId: account.user.id, published, draft, internalDoc, publicDoc, draftDoc, cookies: () => cookies };
   }
 
   async function invitedUser() {
@@ -140,7 +140,7 @@ export async function createFixtures() {
     });
     const login = await client.auth.signInWithPassword({ email, password });
     if (login.error) throw login.error;
-    return { client, email, userId: data.user.id, cookies: () => cookies };
+    return { client, email, password, userId: data.user.id, cookies: () => cookies };
   }
 
   function sessionWithCookies(initial: TestCookie[] = []) {

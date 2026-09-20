@@ -4,15 +4,23 @@ Datum: 20.09.2026. Prüfstand der zwei unabhängigen Prüfungen (Claude, Codex):
 `bbf80930a778d2ee46e9c76e94e2f89a74105a3d` (`main`). Umsetzung auf dem neuen Branch
 `codex/gate-restpunkte`, ausgehend von diesem Stand.
 
-**Status: Gate geschlossen.** Die technische Umsetzung ersetzt Kevins Abnahme nicht.
+**Status: Lokales Gate durch Kevin am 20.09.2026 nach Browserabnahme freigegeben.**
 P1-1 bis P1-5 sind technisch umgesetzt und sämtliche geforderten automatisierten
-Prüfungen bestanden. Kevins ausdrückliche Abnahme steht aus.
+Prüfungen bestanden. Kevins ausdrückliche Abnahme einschließlich Profilverbesserung liegt vor.
+Die anschließende [lokale Browserprüfung](GATE-BROWSERABNAHME-2026-09-20.md)
+ist technisch abgeschlossen; ihr Protokoll trennt beobachtete Ergebnisse von
+noch ausstehenden manuellen Nachweisen. Kevin hat Gate-Freigabe und Push nach main
+nach der gemeinsamen Browserabnahme ausdrücklich beauftragt. Die Freigabe gilt lokal;
+P2/P3 bleiben vor Kundeneinsatz beziehungsweise Cloud-Livegang erforderlich.
+Die anschließend ausdrücklich beauftragte Profilverbesserung ist umgesetzt und
+im Browser sowie mit gezielten Unit-/Action-Tests und Produktionsbuild geprüft;
+Details und aktuelle zusätzliche Nachweise stehen im Browserprotokoll.
 Diese Datei ist die eine gültige Restpunkteliste bis zur Gate-Freigabe. Frühere Listen,
 Testzahlen und Einschätzungen in README und Abschlussberichten sind historisch.
 Insbesondere bleibt die echte Screenreader-Stichprobe gemäß dem neuen Arbeitsauftrag
 offen; die frühere gebündelte Nutzerbestätigung wird dafür nicht als abschließender Nachweis übernommen.
 
-Umfang: nur P1-1 bis P1-5 umsetzen. P2/P3 nur dokumentieren. Keine Entscheidung von Kevin
+Ursprünglicher Umsetzungsumfang (vor der anschließenden Browserabnahme): nur P1-1 bis P1-5 umsetzen. P2/P3 nur dokumentieren. Keine Entscheidung von Kevin
 zu diesen späteren Punkten vorwegnehmen. Kein Push nach main, kein Cloud-Rollout, kein
 Deployment, kein `supabase db push`, kein Reset. Bestehende Migrationen unverändert;
 die neue Migration gilt ausschließlich für `lotsora-integration` (API-Port 55321).
@@ -248,5 +256,6 @@ unimplementiert beziehungsweise unverändert. Die Schiedsentscheidungen wurden
 - Cloud-Prüfungen: produktive Rechte, Auth-URLs/Mailversand, Hostingheader,
   Tokenlogs, Domain/HTTPS und Betriebs-/Wiederherstellungsnachweise.
 
-Die gezielten Action-Tests ersetzen weder einen Browser-POST-Test noch Kevins
-manuelle Abnahme. **Gate geschlossen bis zur ausdrücklichen Abnahme durch Kevin.**
+Die gezielten Action-Tests ersetzen keine manuelle Abnahme. Der anschließende
+Browserdurchlauf und Kevins ausdrückliche lokale Gate-Freigabe sind im
+[Abnahmeprotokoll](GATE-BROWSERABNAHME-2026-09-20.md) dokumentiert.

@@ -10,6 +10,7 @@ import { registrieren, passwortResetAnfordern } from "@/app/(auth)/actions";
 import { deleteProdukt } from "@/lib/services/products";
 import { loescheDokument } from "@/lib/services/documents";
 import { sql } from "./sql";
+import { profilSpeichern } from "@/app/(intern)/profil/actions";
 
 // Nur Next-Requestkontext und Cache werden ersetzt. Auth, RLS, RPCs und
 // Fachservices laufen echt gegen die isolierte Datenbank und Storage-API.
@@ -24,6 +25,21 @@ vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 let f: Fixtures;
 const initial = { ok: false, error: null };
+it("Profil normalisiert Websites, schützt gespeicherte Daten bei Fehlern und verweigert Mitarbeitern Änderungen", async () => {
+  const saved = await profilSpeichern(initial, form({ company_name: "Profil-Testfirma", country: "AT", website: "www.example.com" }));
+  expect(saved).toMatchObject({ ok: true, website: "https://www.example.com/" });
+  const before = await f.a.client.from("manufacturers").select("company_name,country,website").eq("id", f.a.company.id).single();
+  expect(before.data).toEqual({ company_name: "Profil-Testfirma", country: "AT", website: "https://www.example.com/" });
+  const invalid = await profilSpeichern(initial, form({ company_name: "Nicht speichern", website: "javascript:alert(1)" }));
+  expect(invalid.ok).toBe(false);
+  expect(invalid.error).toContain("gültige Website");
+  const member = await joinMember();
+  visitor.cookies = member.cookies();
+  const denied = await profilSpeichern(initial, form({ company_name: "Nicht erlaubt", website: "https://example.org" }));
+  expect(denied.ok).toBe(false);
+  const after = await f.a.client.from("manufacturers").select("company_name,country,website").eq("id", f.a.company.id).single();
+  expect(after.data).toEqual(before.data);
+});
 beforeAll(async () => {
   f = await createFixtures();
   const config = testConfig();

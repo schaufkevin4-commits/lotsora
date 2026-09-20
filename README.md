@@ -1,6 +1,6 @@
 # Lotsora
 
-**Aktuell, 20.09.2026: Gate geschlossen.** Nach der Doppelprüfung durch Claude und Codex gilt ausschließlich die [verbindliche Restpunkteliste mit Korrekturen und frischen Nachweisen](docs/RESTPUNKTE-GATE-2026-09-20.md). Umsetzung auf `codex/gate-restpunkte`; keine Gate-Freigabe, kein Push nach main und kein Cloud-Rollout. Die nachfolgenden Fortschrittsmeldungen sind historisch. Die echte Screenreader-Stichprobe bleibt nach dem neuen Arbeitsauftrag ausdrücklich offen.
+**Aktuell, 20.09.2026: Lokales Gate „MVP funktional vollständig“ durch Kevin freigegeben.** Browserabnahme einschließlich Profilverbesserung abgeschlossen; Übernahme und Push nach main ausdrücklich beauftragt. [Abnahmeprotokoll](docs/GATE-BROWSERABNAHME-2026-09-20.md), [verbindliche Restpunkte vor Kunde/Cloud](docs/RESTPUNKTE-GATE-2026-09-20.md) und [Übergabe für den nächsten Chat](docs/UEBERGABE-NACH-GATE-2026-09-20.md). Keine Kunden- oder Cloud-Freigabe. Druckscan und echte Screenreader-Stichprobe bleiben offen. Die nachfolgenden Fortschrittsmeldungen sind historisch.
 
 **Manuelle Restabnahme 20.09.:** QR-Dateipaar unabhängig dekodiert; Kevin bestätigt Zoom-/Sprachausgabe-Stichprobe und Handyscan vom Bildschirm. [Nachweise](docs/N8-RESTABNAHME-2026-09-20.md). Als Nächstes die ausdrückliche lokale Gate-Entscheidung; physischer Ausdruckscan bleibt spätestens vor Kundeneinsatz offen. Ältere offene Einzelstatus unten sind historisch.
 
