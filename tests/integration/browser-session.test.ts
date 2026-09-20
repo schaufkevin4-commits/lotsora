@@ -16,6 +16,7 @@ test.skipIf(process.env.LOTSORA_TEST_BROWSER !== "1")("lokale Browserprüfung", 
   const f = await createFixtures();
   const base = "http://127.0.0.1:3109";
   const teamDemo = process.env.LOTSORA_TEST_TEAM_BROWSER === "1";
+  const deletionDemo = process.env.LOTSORA_TEST_DELETION_BROWSER === "1";
   const gateDemo = process.env.LOTSORA_TEST_GATE_BROWSER === "1";
   const email = `lotsora-gate-${randomUUID()}@example.invalid`;
   let confirmation: string | undefined;
@@ -26,7 +27,13 @@ test.skipIf(process.env.LOTSORA_TEST_BROWSER !== "1")("lokale Browserprüfung", 
     inviteToken = invited.data![0].token;
   }
   const member = gateDemo ? await f.pendingUser(`${base}/auth/confirm?next=/einladung/${inviteToken}`, true, email)
-    : teamDemo ? await f.invitedUser() : null;
+    : teamDemo || deletionDemo ? await f.invitedUser() : null;
+  if (deletionDemo && member) {
+    const invitation = await f.a.client.rpc("create_company_invitation", { p_email: member.email });
+    if (invitation.error) throw invitation.error;
+    const accepted = await member.client.rpc("accept_company_invitation", { p_token: invitation.data![0].token });
+    if (accepted.error) throw accepted.error;
+  }
   if (gateDemo && member) {
     confirmation = (await authMail(member.email)).url.toString();
     writeFileSync(".local-tests/gate-datenblatt.pdf", await pdfBytes());
@@ -52,7 +59,7 @@ test.skipIf(process.env.LOTSORA_TEST_BROWSER !== "1")("lokale Browserprüfung", 
         ...clear.map(name => `${name}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax`),
         ...cookies.map(c => `${c.name}=${c.value}; Path=/; HttpOnly; SameSite=Lax`),
       ],
-      Location: teamDemo ? `${base}/team` : editor,
+      Location: deletionDemo ? `${base}/konto` : teamDemo ? `${base}/team` : editor,
       "Cache-Control": "no-store",
     }).end();
   });
@@ -71,6 +78,8 @@ test.skipIf(process.env.LOTSORA_TEST_BROWSER !== "1")("lokale Browserprüfung", 
     expect(healthy).toBe(true);
     writeFileSync(ready, JSON.stringify({ login: `http://127.0.0.1:3110/${token}`, editor, public: `${base}/p/${f.a.published.public_id}`,
       ...(member ? { memberLogin: `http://127.0.0.1:3110/${token}/member`, memberEmail: member.email } : {}),
+      // Nur flüchtige synthetische Zugangsdaten in der gitignorierten lokalen Testdatei.
+      ...(deletionDemo ? { ownerPassword: f.a.password } : {}),
       ...(confirmation ? { confirmation } : {}) }));
     console.log("Lokaler Browser bereit auf Port 3109; Stop über .local-tests/n8-browser-stop.");
     const deadline = Date.now() + 40 * 60_000;

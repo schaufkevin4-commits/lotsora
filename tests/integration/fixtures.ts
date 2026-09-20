@@ -59,6 +59,15 @@ export async function createFixtures() {
       const { error } = await admin.from("file_operations").delete().in("owner_id", users);
       if (error) errors.push(`Test-Dateivorgänge konnten nicht entfernt werden: ${error.message}`);
     }
+    if (companies.length) {
+      const result = await admin.from("file_operations").delete().in("manufacturer_id", companies);
+      if (result.error) errors.push("Test-Dateivorgänge mit entferntem Akteur konnten nicht entfernt werden.");
+      const jobs = await admin.from("deletion_jobs").delete().in("company_id", companies);
+      if (jobs.error) errors.push("Test-Firmenlöschaufträge konnten nicht entfernt werden.");
+    }
+    // Persönliche Testaufträge können nach Auth-Löschung bereits anonymisiert sein.
+    // Neue Tests entfernen ihre bekannten Job-IDs zusätzlich im eigenen finally.
+    if (users.length) await admin.from("deletion_jobs").delete().in("actor_id", users);
     if (errors.length) throw new Error(errors.join("\n"));
   }
 

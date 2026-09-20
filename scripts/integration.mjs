@@ -87,7 +87,7 @@ try {
     prepare();
     cli(["migration", "up", "--local"]);
     console.log("Migrationen ausschließlich auf lotsora-integration angewendet.");
-  } else if (action === "test" || action === "http" || action === "browser") {
+  } else if (action === "test" || action === "http" || action === "browser" || action === "worker") {
     verifyProject();
     const status = JSON.parse(cli(["status", "--output", "json"]));
     if (status.API_URL !== "http://127.0.0.1:55321" || !status.ANON_KEY || !status.SERVICE_ROLE_KEY) {
@@ -98,11 +98,19 @@ try {
       LOTSORA_TEST_ANON_KEY: status.ANON_KEY,
       LOTSORA_TEST_SERVICE_KEY: status.SERVICE_ROLE_KEY,
     };
+    if (action === "worker") {
+      command("scripts/deletion-worker.mjs", process.argv.slice(3), {
+        NEXT_PUBLIC_SUPABASE_URL: status.API_URL,
+        SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,
+      }, true);
+      process.exit(0);
+    }
     if (action === "browser") {
       Object.assign(testEnv, {
         LOTSORA_TEST_BROWSER: "1",
         LOTSORA_TEST_TEAM_BROWSER: process.argv.includes("--team") || process.argv.includes("--gate") ? "1" : "0",
         LOTSORA_TEST_GATE_BROWSER: process.argv.includes("--gate") ? "1" : "0",
+        LOTSORA_TEST_DELETION_BROWSER: process.argv.includes("--deletion") ? "1" : "0",
         NEXT_PUBLIC_SUPABASE_URL: status.API_URL,
         NEXT_PUBLIC_SUPABASE_ANON_KEY: status.ANON_KEY,
         SUPABASE_SERVICE_ROLE_KEY: status.SERVICE_ROLE_KEY,
@@ -130,7 +138,7 @@ try {
     cli(["stop"]);
     console.log("Testinstanz gestoppt; Testvolumes bleiben erhalten.");
   } else {
-    throw new Error("Erlaubte Aktionen: start, test, http, browser, migrate, stop. Kein Reset oder Cloudzugriff.");
+    throw new Error("Erlaubte Aktionen: start, test, http, browser, worker, migrate, stop. Kein Reset oder Cloudzugriff.");
   }
 } catch (error) {
   console.error(error instanceof Error ? error.message : "Integrationstest fehlgeschlagen.");

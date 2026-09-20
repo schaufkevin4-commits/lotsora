@@ -43,7 +43,7 @@ describe("B5/N7: privater Direktupload und bestätigter Abschluss", () => {
     expect((await fixture.a.client.from("products").update({ image_url: op.file_path }).eq("id", p.id)).error?.code).toBe("23514");
     expect((await fixture.a.client.from("documents").insert({ product_id: p.id, name: "Ungeprüft", file_path: op.file_path })).error?.code).toBe("23514");
     expect((await fixture.anon.storage.from(DOKUMENTE_BUCKET).download(op.file_path)).error).not.toBeNull();
-    expect((await fixture.a.client.rpc("mark_file_validated", { p_operation_id: op.id, p_owner_id: op.owner_id })).error?.code).toBe("42501");
+    expect((await fixture.a.client.rpc("mark_file_validated", { p_operation_id: op.id, p_owner_id: fixture.a.userId })).error?.code).toBe("42501");
     expect((await fixture.a.client.from("file_operations").update({ validated: true }).eq("id", op.id)).error?.code).toBe("42501");
     await bereinigeDatei(fixture.a.client, op.id);
   });

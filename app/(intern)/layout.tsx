@@ -31,7 +31,7 @@ export default async function InternLayout({ children }: { children: React.React
         </form>
       </header>
       <main id="hauptinhalt" tabIndex={-1} className="mx-auto max-w-4xl p-4 sm:p-6">
-        {firma ? children : <div className="space-y-3"><h1 className="text-2xl font-semibold">Keine Firmenzugehörigkeit</h1><p>Dein Konto gehört aktuell zu keiner Firma. Öffne eine gültige Teameinladung oder wende dich an den Firmenverantwortlichen.</p></div>}
+        {firma ? children : <div className="space-y-3"><h1 className="text-2xl font-semibold">Keine Firmenzugehörigkeit</h1><p>Dein Konto gehört aktuell zu keiner Firma. Öffne eine gültige Teameinladung oder wende dich an den Firmenverantwortlichen.</p><p><Link href="/konto" className="underline">Konto verwalten oder Löschvorgang fortsetzen</Link></p></div>}
       </main>
     </div>
   );

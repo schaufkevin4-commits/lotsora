@@ -38,11 +38,12 @@ Belege ohne Commitangabe beziehen sich auf diesen Branch. `T` steht für
 | P1-3 | Direkte Action-Tests für Teamkette und Versionskonflikt (A3) | P1 | vor lokalem Gate | Umgesetzt; 11 gezielte Integrationstests grün | `tests/integration/gate-actions.test.ts:67` |
 | P1-4 | Fehlende/fremde Löschziele verständlich melden (A6) | P1 | vor lokalem Gate | Umgesetzt; Service-/Action- und Cleanup-Tests grün | `lib/services/products.ts:277`; `lib/services/documents.ts:180`; `tests/integration/gate-actions.test.ts:158` |
 | P1-5 | Tote Firmen-Policies entfernen; Widerrufszeitpunkt erhalten (A5/A7a) | P1 | vor lokalem Gate | Umgesetzt; Katalog-/Action-Tests grün | `supabase/migrations/20260920180000_gate_restpunkte.sql:8`; `tests/integration/gate-actions.test.ts:89,184` |
-| P2-1 | Konto-/Firmenlöschung für alleinigen Verantwortlichen (A1) | P2 | vor erstem Kunden | Offen; Entscheidung Kevin | `T:13–18,41,174,187–190`; `tests/integration/fixtures.ts:50–55` |
+| P2-1 | Konto-/Firmenlöschung für alleinigen Verantwortlichen (A1) | P2 | vor erstem Kunden | Umgesetzt, geprüft und nach Live-Vorführung durch Kevin abgenommen; Sicherung auf main beauftragt | `P2-1-UMSETZUNG-2026-09-20.md`; Cloud-Betrieb bleibt P3 |
 | P2-2 | Weg für mitgliedschaftslose Konten (A2) | P2 | vor erstem Kunden | Offen; Entscheidung Kevin | `app/(intern)/layout.tsx:34`; `T:54–66`; `tests/integration/teams.test.ts:128–129` |
 | P2-3 | Reichweite des Versionsschutzes (A7b/N2) | P2 | vor erstem Kunden | Offen; Entscheidung Kevin | `supabase/migrations/20260916120000_editor_konfliktschutz.sql:41–82` |
 | P2-4 | Getrennte Veröffentlichungsstände (D5) | P2 | vor erstem Kunden | Offen; Produktentscheidung Kevin | `lib/editor-save.ts:29`; `app/(intern)/produkte/[id]/VeroeffentlichenAbschnitt.tsx:41,57` |
 | P2-5 | Physischer QR-Druckscan und echte Screenreader-Stichprobe | P2 | vor erstem Kunden | Offen; manuelle Nachweise fehlen | `docs/N8-RESTABNAHME-2026-09-20.md:7–19`; neuer Arbeitsauftrag, Teil 3 |
+| P2-6 | Eigener Designblock für das gesamte Frontend | P2 | vor erstem Kundentest | Beauftragt zu planen; Designrichtung und visuelle Abnahme offen | Aktueller Folgeauftrag; Umfang und Abnahme in `UEBERGABE-NACH-GATE-2026-09-20.md` |
 | P3-1 | Voll-Apply auf garantiert leere Instanz (C2) | P3 | vor Cloud-Livegang | Offen; jetzt ausdrücklich nicht ausgeführt | `scripts/integration.mjs:78–87,129–131` |
 | P3-2 | CSP, Framing-Schutz und HSTS (C3) | P3 | vor Cloud-Livegang | Offen; Hostingkonfiguration festlegen | `next.config.ts:3–10`; `app/auth/confirm/route.ts:19–20` |
 | P3-3 | Einladungstoken aus Hostinglogs heraushalten (B2) | P3 | vor Cloud-Livegang | Offen; tatsächliche Logs prüfen | `app/einladung/[token]/page.tsx:8`; `T:121–123` |
@@ -259,3 +260,213 @@ unimplementiert beziehungsweise unverändert. Die Schiedsentscheidungen wurden
 Die gezielten Action-Tests ersetzen keine manuelle Abnahme. Der anschließende
 Browserdurchlauf und Kevins ausdrückliche lokale Gate-Freigabe sind im
 [Abnahmeprotokoll](GATE-BROWSERABNAHME-2026-09-20.md) dokumentiert.
+
+## Neue Phase: Bestandsprüfung am 20.09.2026
+
+Diese Ergänzung dokumentiert die erneute Bestandsprüfung und die ursprüngliche
+Vorlage für P2-1. Kevins anschließende Wahl und die inzwischen bestätigte Kontenabgrenzung
+stehen am Anfang des P2-1-Abschnitts. Keine neue PP-Entscheidungsnummer, keine Änderung
+der abgeschlossenen Gate-Abnahme und keine Umsetzung des Löschablaufs.
+
+### Tatsächlich erneut gelesener Stand
+
+- Lotsora-GitHub-`main`: `5bebdb6336ce21e1474fc34ec1224daf242b54a3`, über den
+  GitHub-Connector frisch abgefragt; keine neueren main-Änderungen.
+- Lokales main unter `C:/Users/kevin/OneDrive/Documents/ChatGPT/Lotsora` und
+  Arbeitskopie unter `C:/Users/kevin/Documents/Codex/2026-09-14/starte/work/lotsora-b4`
+  standen vor dieser Dokumentation sauber auf demselben Commit. Letztere ist
+  weiterhin auf `codex/gate-restpunkte`; ihr Inhalt war identisch zu main.
+- Geltende `AGENTS.md` gelesen: vor Codearbeit relevante Next-Guides aus der
+  installierten Version lesen. Keine untergeordneten AGENTS-Dateien gefunden.
+  README, Übergabe, diese Restpunkteliste, Browserabnahme und Architekturbeschluss
+  vollständig gelesen; zusätzlich relevante Produktvision/Planung, Migrationen,
+  Services und Teamtests untersucht.
+- Brain-KI über GitHub zugänglich: aktuelles `main`
+  `0439b2c56b296e6951f0c5f5234d4bf918dcf273`. Erneut gelesen: README,
+  System/MASTER, BRAIN_REGELN (v4.1), DATEI_ZUORDNUNG und CLOUD;
+  System/ENTSCHEIDUNGEN, relevante Abschnitte aus System/AKTUELL,
+  PassPilot/ENTSCHEIDUNGEN (insbesondere PP-013, PP-016/E6, PP-017, PP-018–022),
+  STAND, TECHNIK, MVP, DATENMODELL und ROADMAP sowie LP-002/PLAN und relevante
+  KI_Lernen/LEARNINGS (kleiner Umfang bei klarer Logik, dauerhafte QR-Adressen,
+  Datentrennung und Wireframe versus visuelle Gestaltung).
+- Lokaler Brain `C:/Brain-KI`: sauber auf `5975954`; GitHub-Vergleich bestätigt
+  **11 Commits hinter dem aktuellen main**, keine Divergenz. Nicht synchronisiert.
+  Eine Brain-Root-AGENTS.md wurde über GitHub mit 404 beantwortet; lokal keine
+  AGENTS.md gefunden. Das ist kein fehlender Zugriff auf die gelesenen Brain-Dateien.
+- Keine neue Laufzeit-, Browser-, Datenbank- oder Cloud-Prüfung. Der dokumentierte
+  Testdatenabbau und frühere grüne Testläufe bleiben historische Nachweise; die
+  beendete Testumgebung wurde für diese Dokumentationsaufgabe nicht gestartet.
+
+### Widersprüche, Einordnung und Grenzen
+
+1. Brain `PassPilot/STAND.md`, `System/AKTUELL.md` und LP-002 beziehen sich noch
+   auf ältere Lotsora-Stände und ein offenes lokales Gate. Die aktuelle
+   Lotsora-Restpunkteliste und dokumentierte Freigabe vom 20.09. sind gemäß
+   Kevins aktuellem Auftrag maßgeblich. Kein Wiederöffnen erledigter Gate-Punkte.
+2. Brain PP-017/E5 und TECHNIK verschieben Firmenrollen; DATENMODELL führt
+   Unternehmensaccounts/Benutzerrollen als später. Der neuere Lotsora-
+   Architekturbeschluss zieht einfache Firmenzugänge ausdrücklich in V1 vor;
+   sie sind umgesetzt und bleiben erhalten. Entsprechend ergänzt die aktuelle
+   Teamnavigation den älteren Menüumfang aus PP-018/020. Komplexe Rollen/Mehrfirmenzugang
+   werden daraus nicht abgeleitet. Brain-Dokumentationsdrift bleibt sichtbar.
+3. P2-4 nennt eine offene Produktentscheidung. Der Architekturbeschluss A4 hat
+   die Richtung zu getrennten Freigabeständen bereits angenommen, spätestens
+   vor kontrollierten Importen. Offen zu entscheiden sind der vorgezogene
+   Termin vor dem ersten Kunden und die konkrete Ausgestaltung; keine stille
+   Rücknahme der beschlossenen Richtung. Heute ändern gespeicherte Werte
+   weiterhin unmittelbar den veröffentlichten Pass.
+4. Brain TECHNIK nennt noch Vorbereitungsphase/ungewählte Datenbank neben
+   bereits beschlossenen Technologien; ROADMAP enthält historische Phasen.
+   Das ist kein aktueller Befund über die implementierte Anwendung.
+5. Brain-Regeln zu automatischem Sync, allgemeinem Reset-/Cloud-Workflow und
+   Dokumentation in geschützten Dateien sind keine zusätzliche Erlaubnis:
+   Kevins aktueller Auftrag untersagt hier automatische Brain-Synchronisierung,
+   Änderungen an den benannten Ausnahmedateien sowie Reset/Cloud/Deployment.
+   Alle Brain-Dateien bleiben unverändert. Die Vorlage steht in dieser bereits
+   vorhandenen zulässigen Projektunterlage, nicht als beschlossene Entscheidung.
+6. Die bisherigen Schiedsentscheidungen (insbesondere A1, N3 und B1) bleiben
+   bestehen. Der fehlende Löschablauf wird als bekannter P2-1 bearbeitet, nicht
+   als neuer Gate-Blocker oder als pauschales Rechtswidrigkeitsurteil.
+
+## P2-1: Entscheidungsvorlage zur Konto- und Firmenlöschung
+
+**Fortschreibung nach Kevins Antwort am 20.09.2026:** Kevin wählt ausdrücklich
+volle Selbstbedienung statt des empfohlenen Betreiberprozesses. Bei Firmenlöschung
+soll eine Abfrage zu allen zugehörigen Mitarbeitern erscheinen; sie sollen danach
+keinen Zugriff mehr haben. Neutrale Hinweisseite bestätigt und weiterhin empfohlen;
+die öffentlichen IDs bleiben dauerhaft reserviert. Für den Zeitpunkt übernimmt
+Kevin die Empfehlung: Gelegenheit zur Datensicherung und bewusster Ausführungszeitpunkt,
+keine automatisch vorgegebene Bedenkfrist. In der Selbstbedienung wird der Vorgang
+vom Verantwortlichen selbst ausgelöst; kein Betreiber muss den Antrag freigeben.
+
+**Anschließend freigegeben und umgesetzt:** Die Mitarbeiterabfrage erhält eine
+explizite Ja/Nein-Auswahl: Ja löscht alle zugehörigen persönlichen Mitarbeiterkonten
+endgültig, Nein erhält die Konten ohne Firmenzugehörigkeit und Firmenzugriff.
+Das eigene Konto wird separat ausgewählt. Keine Vorauswahl und keine feste Wartefrist.
+Aktueller Umsetzungs- und Prüfnachweis: [P2-1-UMSETZUNG-2026-09-20.md](P2-1-UMSETZUNG-2026-09-20.md).
+
+Die folgenden Vergleiche und die Betreiberempfehlung bleiben als ursprüngliche
+Vorlage erhalten; die obige Wahl ersetzt die empfohlene Variante. „Alleiniger
+Firmenverantwortlicher“ bedeutet nicht zwingend „einziges Teammitglied“:
+Das Modell hat genau einen Verantwortlichen und kann weitere Mitarbeiter haben.
+
+### Ausgangsstand der ursprünglichen Vorlage (vor Umsetzung)
+
+Die Team-Migration sperrt das Löschen des verantwortlichen Auth-Kontos durch
+`ON DELETE RESTRICT` und sichert dessen Mitgliedschaft. Eine Verantwortungsübergabe
+an ein bestehendes Mitglied ist vorhanden. Normale Nutzer besitzen kein
+Firmen-DELETE-Recht. Ein durchgängiger Konto-/Firmenlöschprozess ist nicht vorhanden.
+Der privilegierte Fixture-Abbau ist ausschließlich ein Testhelfer und kein
+Betreiberprozess (`20260920120000_firmenteams.sql`, `tests/integration/fixtures.ts`).
+
+Produktdaten und Dokumente gehören der Firma, auch wenn ein Mitarbeiter sie
+angelegt hat. Das Löschen eines Mitarbeiterkontos darf sie nicht entfernen.
+Dateivorgänge erhalten Firmen-, Produkt-, Akteur- und Pfadbezüge über eine
+Produktlöschung hinaus. Die aktuellen Cleanup-RPCs prüfen jedoch die noch
+bestehende Mitgliedschaft: Nach Löschung der Firma wäre eine Bereinigung durch
+normale Mitglieder nicht mehr möglich. Ein Abschlussprozess muss dies ausdrücklich
+lösen; ein einfaches „Firma löschen, danach Konto löschen“ reicht nicht.
+
+### Vergleich
+
+| Gesichtspunkt | Selbstbedienung durch Verantwortlichen | Dokumentierter Betreiberprozess |
+|---|---|---|
+| Bedienung | Persönliches Konto und gesamte Firma als getrennte Aktionen; klare Folgenübersicht und erneute Identitätsbestätigung | Sichtbarer Kontakt-/Antragsweg; Betreiber prüft Identität, aktuelle Verantwortung, Umfang und ausdrückliche Bestätigung |
+| Geschwindigkeit | Jederzeit selbst nutzbar; keine manuelle Wartezeit | Abhängig von erreichbarem Betreiber und vereinbartem Bearbeitungstermin |
+| Aufwand vor erstem Kunden | Größer: sichere Oberfläche, Wiederanmeldung, dauerhafter Ablaufstatus, Fehlerfortsetzung und eigene Verwaltung bei Teilausfall | Kleiner bei wenigen Kunden, aber ebenfalls ein geprüftes technisches Verfahren mit Checkliste und Abschlussnachweis erforderlich |
+| Hauptrisiko | Eine versehentliche Bestätigung kann den Bestand des gesamten Teams betreffen; Automatismus muss alle Fehlerfälle beherrschen | Falsche Firmenzuordnung, manuelle Fehler oder liegengebliebene Anträge; begrenzen durch exakte Zielprüfung, Vorschau und wiederholbare Ausführung |
+| Dateibereinigung | Muss auch nach Abbruch, Logout und Verlust der Mitgliedschaft zuverlässig fortsetzbar sein | Betreiber muss dieselbe Fortsetzbarkeit unabhängig vom zu löschenden Konto haben |
+| Späterer Ausbau | Weniger laufender Betreuungsaufwand bei wachsender Kundenzahl | Gut für den ersten Kunden; später denselben geprüften Ablauf hinter Selbstbedienung verwenden |
+
+### Folgen für Konten, Team, Daten und öffentliche Pässe
+
+| Gegenstand | Nur persönliches Konto löschen | Gesamte Firma löschen |
+|---|---|---|
+| Verantwortung | Solange die Firma bestehen soll, zuerst an ein bestehendes Mitglied übertragen; ist niemand vorhanden, Nachfolge einladen oder Firmenlöschung gesondert beauftragen | Die Firma wird ausdrücklich beendet; die Kontolöschung darf dies niemals still auslösen |
+| Teammitglieder | Andere Konten und deren Firmenzugang bleiben erhalten | Alle Firmenmitgliedschaften und Einladungen enden; persönliche Mitarbeiterkonten bleiben standardmäßig bestehen und erhalten einen verständlichen Weg ohne Firma (P2-2) |
+| Gemeinsame Produkte | Bleiben bei der Firma, unabhängig vom ursprünglichen Ersteller | Produkt- und Detaildaten der Firma werden entfernt, einschließlich Mitarbeiterbeiträgen |
+| Dokumente und Bilder | Bleiben bei der Firma; Upload-/Akteurbezüge müssen bereinigbar bleiben | Interne und öffentliche Dokumente sowie Produktbilder müssen als Datensätze UND physische Storage-Dateien bereinigt werden |
+| Offene Dateivorgänge | Andere berechtigte Mitglieder können bestehende firmenbezogene Vorgänge weiterführen | Alle Zustände berücksichtigen: angehängt, abgebrochener/laufender Upload und schon offene Bereinigung; Restfehler erhalten einen dauerhaften Auftrag |
+| Öffentliche Produktpässe | Bleiben verfügbar, wenn die Firma sie weiter veröffentlicht | Empfehlung: Inhalte ab dem bestätigten Ausführungsbeginn zurücknehmen; QR-Adresse zeigt die neutrale Hinweisseite ohne Firmen-/Produktdaten |
+| Öffentliche IDs | Unverändert | Reservierungen in `private.product_public_ids` bleiben dauerhaft; niemals löschen, wiederverwenden oder einem anderen Produkt zuordnen |
+
+Ein dauerhaftes öffentliches Inhaltsarchiv nach Firmenlöschung wäre ein eigenes,
+ausdrücklich zu beschließendes Betriebsmodell. Dauerhafte ID/URL bedeutet nicht,
+dass sämtliche früheren Inhalte öffentlich gespeichert bleiben müssen.
+
+Bestehende Dateilinks sind eine gesonderte Grenze: Der öffentliche Einstieg prüft
+die aktuelle Freigabe und erzeugt im Code einen Link für 300 Sekunden; interne
+Links verwenden standardmäßig 3.600 Sekunden (`public-files.ts`, `documents.ts`).
+Bereits ausgegebene signierte Links können bis zu ihrem Ablauf bzw. wirksamer
+Dateientfernung weiter nutzbar sein. Bereits heruntergeladene Dateien oder externe
+Kopien lassen sich nicht zurückrufen. Keine Zusage einer weltweit sofortigen Löschung.
+
+### Empfehlung für den ersten Kunden
+
+**Zunächst Betreiberprozess mit sichtbarem Antragsweg und geprüftem technischem
+Löschverfahren.** Das passt zum kleinen ersten Kundenkreis und ermöglicht eine
+bewusste Prüfung gemeinsamer Daten und gedruckter QR-Codes. Die Empfehlung
+begründet sich mit dem geringeren Umfang der ersten Umsetzung; ein manueller
+Prozess ist nicht automatisch sicher. Eine reine Supportadresse oder eine lose
+SQL-Anleitung erfüllt P2-1 nicht.
+
+Vorgeschlagener Ablauf, erst nach Entscheidung umzusetzen:
+
+1. Identität, aktuelle Firmenverantwortung und exakte Firma prüfen. Konto,
+   Firmenbestand und gewünschte Kontolöschungen getrennt festhalten; keine
+   pauschale Löschbefugnis über persönliche Mitarbeiterkonten.
+2. Auswirkungen mit Anzahl Mitglieder, Produkte, veröffentlichter Pässe und
+   Dateien anzeigen. Nachfolge oder Datensicherung anbieten; für den ersten
+   Kunden bei Bedarf betreiberseitige Übergabe statt neuem Exportprodukt.
+3. Teaminformation, Datensicherung und Ausführungstermin mit dem Verantwortlichen
+   abstimmen; bis zum Beginn widerrufbar. Vor dem ersten unwiderruflichen Schritt
+   Umfang bestätigen und Verantwortung/Bestand erneut prüfen.
+4. Einen dauerhaften Löschvorgang beginnen: Änderungen, neue Uploads und
+   Einladungsannahmen wirksam sperren; öffentliche Inhalte zurücknehmen.
+   Sperre muss auch direkte API-Wege und bestehende Sitzungen erfassen.
+5. Dateiinventar und fortsetzbare Aufträge sichern. DB- und Storage-Schritte
+   kontrolliert ausführen; Bereinigung darf nicht von einer danach entfernten
+   Mitgliedschaft abhängen. Storage-Dateien über die Storage-API entfernen,
+   nicht nur Metadaten per SQL. Fehler bleiben sichtbar und wiederholbar.
+6. Firmenbestand/Mitgliedschaften/Einladungen und gesondert beauftragtes Konto
+   geordnet entfernen. Dauerhafte öffentliche ID-Reservierungen erhalten.
+   Abschluss erst nach Kontrolle von Datenbestand, Storage und offenen Vorgängen;
+   „öffentlich nicht verfügbar“ und „vollständig bereinigt“ getrennt melden.
+7. Minimales Abschlussprotokoll ohne Zugangstoken/unnötige Inhalte führen.
+   Personenbezüge und Dateinamen in technischen Vorgängen nicht unbegrenzt
+   allein wegen der öffentlichen ID aufbewahren. Konkrete Fristen und nötige
+   Ausnahmen sind noch nicht festgelegt. Backup-/Restore-Regeln im separaten
+   P3-Paket müssen verhindern, dass erledigte Löschungen später still rückgängig
+   werden; eine Live-Datenlöschung ist kein Nachweis gelöschter Sicherungskopien.
+
+### Ursprüngliche Fragen an Kevin (inzwischen beantwortet)
+
+1. Zunächst den empfohlenen Betreiberprozess oder bereits vollständige
+   Selbstbedienung umsetzen?
+2. Die Trennung bestätigen: persönliches Konto nach Übergabe löschbar;
+   Firmenlöschung nur ausdrücklich, Mitarbeiterkonten bleiben erhalten und
+   das Konto des Antragstellers wird nur auf eigenen Wunsch mitgelöscht?
+3. Bei Firmenlöschung öffentliche Inhalte zurücknehmen und die dauerhaften
+   QR-Adressen nur noch auf eine neutrale Hinweisseite führen, wie empfohlen;
+   oder wird eine weitere öffentliche Bereitstellung der Inhalte benötigt?
+4. Löschung nach abgestimmtem Termin und Gelegenheit zur Datensicherung
+   ausführen, ohne automatische Wartefrist; oder wird eine feste Bedenkfrist
+   gewünscht? Empfehlung: abgestimmter Termin, bei Bedarf betreiberseitige
+   Datenübergabe vor Beginn; keine versprochene Wiederherstellung nach Beginn.
+5. Falls Betreiberprozess: Über welchen tatsächlichen Kontaktweg soll der
+   Antrag eingehen, und übernimmst du die Bearbeitung? Keine Supportadresse
+   oder Bearbeitungsfrist erfinden.
+
+### Abnahme nach der Entscheidung
+
+Gezielt prüfen: alleiniger Nutzer; Verantwortlicher mit Mitarbeitern; Übergabe
+ohne Datenverlust; abgewiesener Antrag durch Mitarbeiter/fremde Firma; widerrufene
+Berechtigung; alte Sitzungen; paralleler Save/Upload/Beitritt; Unterbrechung und
+Wiederholung; fehlende Datei/Storage-Ausfall; verbliebene offene Dateivorgänge;
+unveränderter Fremdmandant; nicht mehr erreichbare öffentliche Inhalte und Dateien;
+erhaltene ID-Reservierungen. Zusätzlich den gewählten Antrags-/Bestätigungsablauf
+im Browser zeigen. Dies war der Prüfplan vor Umsetzung; die tatsächlich ausgeführten
+Prüfungen sind im separaten Umsetzungsnachweis aufgeführt.
+
+Dokumentationsstand: 20.09.2026. P2-1 ist lokal umgesetzt und geprüft; Cloud-Betrieb
+und Rollout sind nicht erfolgt. P2-2 bis P2-6 sowie P3 werden hier nicht als erledigt markiert.

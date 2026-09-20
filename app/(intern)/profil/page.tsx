@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
 import { ProfilFormular } from "./ProfilFormular";
 import { countries } from "@/lib/profile";
+import Link from "next/link";
 
 export default async function ProfilPage() {
   const supabase = await createClient();
@@ -31,6 +32,11 @@ export default async function ProfilPage() {
           <p className="text-sm text-muted-foreground">Das Firmenprofil wird vom Firmenverantwortlichen verwaltet. Produkte und Dokumente bearbeitet ihr gemeinsam.</p>
         </div>
       )}
+      <div className="space-y-2 rounded-md border p-4">
+        <h2 className="font-semibold">Konto und Firma verwalten</h2>
+        <p className="text-sm text-muted-foreground">Persönliches Konto löschen oder als Verantwortlicher die Firma mit getrennten Kontoentscheidungen auflösen.</p>
+        <Link href="/konto" className="text-sm underline">Konto- und Firmenlöschung öffnen</Link>
+      </div>
     </div>
   );
 }

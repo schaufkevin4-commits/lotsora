@@ -81,6 +81,39 @@ export type Database = {
           },
         ]
       }
+      deletion_jobs: {
+        Row: {
+          actor_id: string | null
+          company_id: string | null
+          completed_at: string | null
+          created_at: string
+          delete_members: boolean
+          delete_self: boolean
+          id: string
+          state: string
+        }
+        Insert: {
+          actor_id?: string | null
+          company_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          delete_members: boolean
+          delete_self: boolean
+          id?: string
+          state?: string
+        }
+        Update: {
+          actor_id?: string | null
+          company_id?: string | null
+          completed_at?: string | null
+          created_at?: string
+          delete_members?: boolean
+          delete_self?: boolean
+          id?: string
+          state?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           description: string | null
@@ -135,7 +168,7 @@ export type Database = {
           id: string
           last_error: string | null
           manufacturer_id: string | null
-          owner_id: string
+          owner_id: string | null
           product_id: string
           purpose: string
           reason: string
@@ -152,7 +185,7 @@ export type Database = {
           id?: string
           last_error?: string | null
           manufacturer_id?: string | null
-          owner_id: string
+          owner_id?: string | null
           product_id: string
           purpose?: string
           reason: string
@@ -169,7 +202,7 @@ export type Database = {
           id?: string
           last_error?: string | null
           manufacturer_id?: string | null
-          owner_id?: string
+          owner_id?: string | null
           product_id?: string
           purpose?: string
           reason?: string
@@ -428,6 +461,7 @@ export type Database = {
     }
     Functions: {
       accept_company_invitation: { Args: { p_token: string }; Returns: string }
+      advance_deletion_job: { Args: { p_job_id: string }; Returns: boolean }
       attach_document_upload: {
         Args: {
           p_description: string
@@ -464,7 +498,7 @@ export type Database = {
           id: string
           last_error: string | null
           manufacturer_id: string | null
-          owner_id: string
+          owner_id: string | null
           product_id: string
           purpose: string
           reason: string
@@ -490,7 +524,7 @@ export type Database = {
           id: string
           last_error: string | null
           manufacturer_id: string | null
-          owner_id: string
+          owner_id: string | null
           product_id: string
           purpose: string
           reason: string
@@ -506,6 +540,10 @@ export type Database = {
         }
       }
       can_write_product_file: { Args: { p_path: string }; Returns: boolean }
+      company_deletion_preview: {
+        Args: { p_company_id: string }
+        Returns: Json
+      }
       create_company_invitation: {
         Args: { p_email: string }
         Returns: {
@@ -514,6 +552,7 @@ export type Database = {
           token: string
         }[]
       }
+      deletion_job_batch: { Args: { p_job_id: string }; Returns: Json }
       finish_file_cleanup: {
         Args: { p_error_code?: string; p_operation_id: string }
         Returns: boolean
@@ -561,7 +600,7 @@ export type Database = {
           id: string
           last_error: string | null
           manufacturer_id: string | null
-          owner_id: string
+          owner_id: string | null
           product_id: string
           purpose: string
           reason: string
@@ -587,7 +626,7 @@ export type Database = {
           id: string
           last_error: string | null
           manufacturer_id: string | null
-          owner_id: string
+          owner_id: string | null
           product_id: string
           purpose: string
           reason: string
@@ -666,6 +705,17 @@ export type Database = {
           p_publish: boolean
         }
         Returns: number
+      }
+      start_account_deletion: { Args: { p_actor_id: string }; Returns: string }
+      start_company_deletion: {
+        Args: {
+          p_actor_id: string
+          p_company_id: string
+          p_delete_members: boolean
+          p_delete_self: boolean
+          p_fingerprint: string
+        }
+        Returns: string
       }
       transfer_company_ownership: {
         Args: { p_user_id: string }
