@@ -6,6 +6,16 @@ einem neuen Chat. Hier wurden noch keine Arbeiten an P2/P3 begonnen.
 
 ## Maßgebliche Dokumente
 
+**Dauerhafte Arbeitsvorgabe von Kevin:** Die Brain-KI immer mit berücksichtigen.
+Vor Planung und Umsetzung die aktuellen zugänglichen Brain-Regeln und die für
+Lotsora/PassPilot relevanten Entscheidungen, Learnings und Projektunterlagen lesen
+und mit dem Lotsora-Stand abgleichen. Referenziertes Repository:
+https://github.com/schaufkevin4-commits/Brain-KI (Projektbereich `PassPilot`).
+Bei fehlendem Zugriff die Lücke ausdrücklich benennen; alte Verweise nicht als
+Nachweis einer aktuellen Prüfung darstellen. Widersprüche transparent machen.
+Berücksichtigung bedeutet keine automatische Synchronisierung und hebt die
+bisherigen Ausnahmen für Änderungen an Brain-Dateien nicht auf.
+
 - [Verbindliche Restpunkteliste](RESTPUNKTE-GATE-2026-09-20.md)
 - [Browserabnahme, Profilergänzung und ausdrückliche Freigabe](GATE-BROWSERABNAHME-2026-09-20.md)
 - [Architekturbeschluss einschließlich mehrerer Benutzer pro Firma](ARCHITEKTURBESCHLUSS-2026-09-20.md)
@@ -52,7 +62,11 @@ und ausgenommenen Brain-Dateien bleiben verbindlich.
 > Wir arbeiten an Lotsora weiter. Das lokale Gate wurde am 20.09.2026 freigegeben;
 > der Abschlussstand liegt auf main. Lies zuerst README.md,
 > docs/UEBERGABE-NACH-GATE-2026-09-20.md und docs/RESTPUNKTE-GATE-2026-09-20.md
-> und prüfe den aktuellen Git-Stand. Beginne mit der Entscheidungsvorlage für P2-1:
+> und prüfe den aktuellen Git-Stand. Berücksichtige immer auch die Brain-KI:
+> Lies die aktuellen zugänglichen Brain-Regeln und relevanten PassPilot-Unterlagen,
+> gleiche sie mit Lotsora ab und benenne fehlenden Zugriff oder Widersprüche.
+> Bestehende Ausnahmen für Änderungen an Brain-Dateien bleiben erhalten.
+> Beginne mit der Entscheidungsvorlage für P2-1:
 > Konto-/Firmenlöschung für einen alleinigen Firmenverantwortlichen. Stelle mir
 > die notwendigen Fragen direkt hier im Chat. Erst nach meiner Entscheidung den
 > ausgewählten Ablauf implementieren. Kein Cloud-Rollout und kein Datenbank-Reset.
