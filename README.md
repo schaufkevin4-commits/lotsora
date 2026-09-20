@@ -1,5 +1,7 @@
 # Lotsora
 
+**Aktuell, 20.09.2026: Gate geschlossen.** Nach der Doppelprüfung durch Claude und Codex gilt ausschließlich die [verbindliche Restpunkteliste mit Korrekturen und frischen Nachweisen](docs/RESTPUNKTE-GATE-2026-09-20.md). Umsetzung auf `codex/gate-restpunkte`; keine Gate-Freigabe, kein Push nach main und kein Cloud-Rollout. Die nachfolgenden Fortschrittsmeldungen sind historisch. Die echte Screenreader-Stichprobe bleibt nach dem neuen Arbeitsauftrag ausdrücklich offen.
+
 **Manuelle Restabnahme 20.09.:** QR-Dateipaar unabhängig dekodiert; Kevin bestätigt Zoom-/Sprachausgabe-Stichprobe und Handyscan vom Bildschirm. [Nachweise](docs/N8-RESTABNAHME-2026-09-20.md). Als Nächstes die ausdrückliche lokale Gate-Entscheidung; physischer Ausdruckscan bleibt spätestens vor Kundeneinsatz offen. Ältere offene Einzelstatus unten sind historisch.
 
 **Gesamtsystemcheck 20.09.:** 113 Unit-, 96 Integrations- und 11 Produktions-HTTP-Tests sowie Lint, Typen und Build bestanden. Echte lokale Auth-Mails geprüft und zwei Ablaufprobleme behoben. Gemeinsamer Produkt-/Datei-/Passablauf zweier Firmenmitglieder live gezeigt, Testprodukt samt Dateien gelöscht. [Prüfbericht und noch offene manuelle Nachweise](docs/SYSTEMCHECK-2026-09-20.md). Nächster Schritt: manuelle Restabnahme und ausdrückliche Gate-Entscheidung; noch kein Push/Cloud-Rollout. Ältere „nächster Block“-Angaben unten sind historisch.

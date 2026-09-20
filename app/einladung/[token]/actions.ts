@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getSiteUrl, SiteUrlFehler } from "@/lib/site-url";
 
 export type EinladungState = { error?: string; message?: string };
 
@@ -22,9 +23,15 @@ export async function einladungAktion(token: string, _prev: EinladungState, form
   const password = String(form.get("password") ?? "");
   if (!email || password.length < 6) return { error: "Bitte E-Mail und Passwort mit mindestens 6 Zeichen angeben." };
   if (intent === "signup") {
+    let siteUrl: string;
+    try { siteUrl = getSiteUrl(); }
+    catch (error) {
+      if (error instanceof SiteUrlFehler) return { error: error.message };
+      throw error;
+    }
     const { data, error } = await supabase.auth.signUp({ email, password, options: {
       data: { join_team: true },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm?next=/einladung/${token}`,
+      emailRedirectTo: `${siteUrl}/auth/confirm?next=/einladung/${token}`,
     } });
     if (error) return { error: "Registrierung fehlgeschlagen. Falls du bereits ein Konto hast, melde dich bitte an." };
     if (!data.session) return { message: "Prüfe dein E-Mail-Postfach und bestätige deine Adresse. Öffne danach diesen Einladungslink erneut und melde dich an." };

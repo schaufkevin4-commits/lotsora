@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { getSiteUrl, SiteUrlFehler } from "@/lib/site-url";
 
 export type TeamState = { error?: string; message?: string; invitationUrl?: string };
 
@@ -11,6 +12,12 @@ export async function teamAktion(_previous: TeamState, form: FormData): Promise<
   if (!user) return { error: "Bitte erneut anmelden." };
   const intent = String(form.get("intent") ?? "");
   if (intent === "invite") {
+    let siteUrl: string;
+    try { siteUrl = getSiteUrl(); }
+    catch (error) {
+      if (error instanceof SiteUrlFehler) return { error: error.message };
+      throw error;
+    }
     const { data, error } = await supabase.rpc("create_company_invitation", {
       p_email: String(form.get("email") ?? "").trim(),
     });
@@ -20,7 +27,7 @@ export async function teamAktion(_previous: TeamState, form: FormData): Promise<
     revalidatePath("/team");
     return {
       message: "Einladung erstellt. Teile diesen Link mit der eingeladenen Person. Es wurde keine E-Mail verschickt.",
-      invitationUrl: `${process.env.NEXT_PUBLIC_SITE_URL}/einladung/${invitation.token}`,
+      invitationUrl: `${siteUrl}/einladung/${invitation.token}`,
     };
   }
   if (form.get("confirmed") !== "yes") return { error: "Bitte die Änderung bestätigen." };

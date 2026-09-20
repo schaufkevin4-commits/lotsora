@@ -6,6 +6,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database.types";
+import { LoeschzielFehler } from "@/lib/services/delete-error";
 import { bereinigeProduktdateien, type LoeschErgebnis } from "@/lib/services/file-cleanup";
 import { isValidPublicId } from "@/lib/public-id";
 import { oeffentlicherBildpfad } from "@/lib/public-file-paths";
@@ -274,8 +275,9 @@ export async function setzeProduktVeroeffentlichung(supabase: DB, id: string, ex
 
 // Ein Produkt löschen (RLS lässt nur eigene zu).
 export async function deleteProdukt(supabase: DB, id: string): Promise<LoeschErgebnis> {
-  const { error } = await supabase.from("products").delete().eq("id", id);
+  const { data, error } = await supabase.from("products").delete().eq("id", id).select("id");
   if (error) throw error;
+  if (!data?.length) throw new LoeschzielFehler("Produkt");
   return bereinigeProduktdateien(supabase, id);
 }
 

@@ -14,7 +14,7 @@ afterAll(async () => {
   if (!fixture) return;
   for (const owner of [fixture.a, fixture.b]) {
     const ops = await owner.client.from("file_operations").select("file_path");
-    if (ops.data?.length) await owner.client.storage.from(DOKUMENTE_BUCKET).remove(ops.data.map(x => x.file_path));
+    if (ops.data?.length) await fixture.verifier.storage.from(DOKUMENTE_BUCKET).remove(ops.data.map(x => x.file_path));
   }
   await fixture.cleanup();
 });
@@ -80,7 +80,14 @@ describe("B5/N7: privater Direktupload und bestätigter Abschluss", () => {
     const bucket = fixture.a.client.storage.from(DOKUMENTE_BUCKET);
     expect((await bucket.update(op.file_path, Buffer.from("falsch"), { contentType: "image/png" })).error).not.toBeNull();
     expect((await bucket.upload(op.file_path, Buffer.from("falsch"), { contentType: "image/png", upsert: true })).error).not.toBeNull();
-    expect((await bucket.remove([op.file_path])).error).toBeNull();
+    expect((await bucket.remove([op.file_path])).data ?? []).toHaveLength(0);
+    expect((await bucket.download(op.file_path)).error).toBeNull();
+    // Externen Dateiverlust bewusst administrativ simulieren; Nutzer dürfen
+    // geprüfte Inhalte außerhalb des Cleanup-Zustands nicht direkt entfernen.
+    const removed = await fixture.verifier.storage.from(DOKUMENTE_BUCKET).remove([op.file_path]);
+    expect(removed.error).toBeNull();
+    expect(removed.data).toHaveLength(1);
+    expect((await bucket.download(op.file_path)).error).not.toBeNull();
     expect((await bucket.upload(op.file_path, Buffer.from("falsch"), { contentType: "image/png" })).error).not.toBeNull();
     await expect(completeImageUpload(fixture.a.client, fixture.verifier, op.id, null)).rejects.toBeDefined();
     await bereinigeDatei(fixture.a.client, op.id);

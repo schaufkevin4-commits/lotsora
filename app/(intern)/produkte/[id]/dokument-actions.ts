@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { LoeschzielFehler } from "@/lib/services/delete-error";
 import {
   loescheDokument,
   parseDokumentSichtbarkeit,
@@ -54,7 +55,7 @@ export async function dokumentLoeschen(id: string, productId: string, _previous:
     revalidatePath(`/produkte/${productId}`);
     revalidatePath("/produkte");
     return { ok: result.complete, error: result.complete ? null : "Dokument entfernt. Die Dateilöschung bleibt unter den offenen Dateivorgängen gespeichert." };
-  } catch {
-    return { ok: false, error: "Löschung konnte nicht bestätigt werden. Bitte neu laden und erneut versuchen." };
+  } catch (error) {
+    return { ok: false, error: error instanceof LoeschzielFehler ? error.message : "Löschung konnte nicht bestätigt werden. Bitte neu laden und erneut versuchen." };
   }
 }

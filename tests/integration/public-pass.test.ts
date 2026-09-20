@@ -24,7 +24,7 @@ beforeAll(async () => {
 afterAll(async () => {
   vi.unstubAllEnvs();
   if (f) {
-    if (images.length) await f.a.client.storage.from(DOKUMENTE_BUCKET).remove(images);
+    if (images.length) await f.verifier.storage.from(DOKUMENTE_BUCKET).remove(images);
     await f.cleanup();
   }
 });

@@ -101,7 +101,7 @@ describe.skipIf(process.env.LOTSORA_TEST_HTTP !== "1")("N3 im echten Next-Produk
       server.kill(); await closed;
     }
     if (proxy) { proxy.closeAllConnections(); await new Promise<void>(done => proxy.close(() => done())); }
-    if (f && imagePath) await f.a.client.storage.from(DOKUMENTE_BUCKET).remove([imagePath]);
+    if (f && imagePath) await f.verifier.storage.from(DOKUMENTE_BUCKET).remove([imagePath]);
     await f?.cleanup();
   }, 660000);
   async function page(cookie = "") {

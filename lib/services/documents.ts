@@ -7,6 +7,7 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database.types";
+import { LoeschzielFehler } from "@/lib/services/delete-error";
 import { bereinigeDatei, type LoeschErgebnis } from "@/lib/services/file-cleanup";
 import { oeffentlicherDokumentpfad } from "@/lib/public-file-paths";
 
@@ -175,10 +176,11 @@ export async function setzeDokumentSichtbarkeit(
 }
 
 // DB-Trigger sichern den Dateibezug atomar beim Entfernen des Dokuments.
-// Ein wiederholter Aufruf findet offene Vorgänge auch ohne Dokumentzeile.
+// Weitere Bereinigungsversuche laufen über die offenen Dateivorgänge.
 export async function loescheDokument(supabase: DB, id: string): Promise<LoeschErgebnis> {
-  const removed = await supabase.from("documents").delete().eq("id", id);
+  const removed = await supabase.from("documents").delete().eq("id", id).select("id");
   if (removed.error) throw removed.error;
+  if (!removed.data?.length) throw new LoeschzielFehler("Dokument");
   try {
     const operations = await supabase.from("file_operations").select("id").eq("document_id", id).eq("state", "cleanup");
     if (operations.error) throw operations.error;

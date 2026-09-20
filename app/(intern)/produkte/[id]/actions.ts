@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { LoeschzielFehler } from "@/lib/services/delete-error";
 import {
   getProdukt,
   deleteProdukt,
@@ -128,7 +129,7 @@ export async function produktLoeschen(id: string, _previous: ProduktFormState, _
   void _previous; void _formData;
   const supabase = await createClient();
   try { await deleteProdukt(supabase, id); }
-  catch { return { ok: false, error: "Löschung konnte nicht bestätigt werden. Bitte neu laden und erneut versuchen." }; }
+  catch (error) { return { ok: false, error: error instanceof LoeschzielFehler ? error.message : "Löschung konnte nicht bestätigt werden. Bitte neu laden und erneut versuchen." }; }
   revalidatePath("/produkte");
   revalidatePath("/dashboard");
   redirect("/produkte");

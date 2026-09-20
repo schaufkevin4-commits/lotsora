@@ -60,13 +60,14 @@ function storageFault(client: DB, mode: "remove" | "remove-empty" | "remove-resp
   } });
 }
 
-describe("B3: wiederholbare Dokument- und Produktlöschung", () => {
-  it("entfernt Datei und Dokument; Wiederholung ist erfolgreich", async () => {
+describe("B3: Dokument- und Produktlöschung mit wiederholbarer Dateibereinigung", () => {
+  it("entfernt Datei und Dokument; erneute Löschung meldet fehlendes Ziel", async () => {
     const p = await product(); const d = await document(p.id);
     expect(await loescheDokument(fixture.a.client, d.id)).toEqual({ complete: true });
     expect((await operation(d.file_path!)).state).toBe("deleted");
     expect((await fixture.a.client.storage.from(DOKUMENTE_BUCKET).download(d.file_path!)).error).not.toBeNull();
-    expect(await loescheDokument(fixture.a.client, d.id)).toEqual({ complete: true });
+    await expect(loescheDokument(fixture.a.client, d.id)).rejects.toThrow("Dokument nicht gefunden oder kein Zugriff.");
+    expect(await bereinigeDatei(fixture.a.client, (await operation(d.file_path!)).id)).toEqual({ complete: true });
   });
 
   it("erhält bei Storage-Ausfall den Dateibezug nach Dokumentlöschung", async () => {
@@ -76,7 +77,7 @@ describe("B3: wiederholbare Dokument- und Produktlöschung", () => {
     expect(pending.state).toBe("cleanup"); expect(pending.last_error).toBe("cleanup_failed");
     expect((await fixture.a.client.from("documents").select().eq("id", d.id)).data).toEqual([]);
     expect((await getOffeneDateivorgaenge(fixture.a.client, p.id)).map((f) => f.id)).toContain(pending.id);
-    expect(await loescheDokument(fixture.a.client, d.id)).toEqual({ complete: true });
+    expect(await bereinigeDatei(fixture.a.client, pending.id)).toEqual({ complete: true });
     expect((await operation(d.file_path!)).state).toBe("deleted");
   });
 
@@ -84,14 +85,19 @@ describe("B3: wiederholbare Dokument- und Produktlöschung", () => {
     const p = await product(); const d = await document(p.id);
     expect(await loescheDokument(storageFault(fixture.a.client, "remove-empty"), d.id)).toEqual({ complete: false });
     expect((await operation(d.file_path!)).last_error).toBe("file_still_present");
-    expect(await loescheDokument(fixture.a.client, d.id)).toEqual({ complete: true });
+    expect(await bereinigeDatei(fixture.a.client, (await operation(d.file_path!)).id)).toEqual({ complete: true });
   });
 
   it.each(["vorher fehlend", "Antwort verloren"])("beendet Löschung bei bereits entfernter Datei: %s", async (mode) => {
     const p = await product(); const d = await document(p.id);
-    if (mode === "vorher fehlend") await fixture.a.client.storage.from(DOKUMENTE_BUCKET).remove([d.file_path!]);
-    else expect(await loescheDokument(storageFault(fixture.a.client, "remove-response-lost"), d.id)).toEqual({ complete: false });
-    expect(await loescheDokument(fixture.a.client, d.id)).toEqual({ complete: true });
+    if (mode === "vorher fehlend") {
+      // Absichtliche externe Beschädigung, kein erlaubter Nutzer-Löschweg.
+      expect((await fixture.verifier.storage.from(DOKUMENTE_BUCKET).remove([d.file_path!])).error).toBeNull();
+      expect(await loescheDokument(fixture.a.client, d.id)).toEqual({ complete: true });
+    } else {
+      expect(await loescheDokument(storageFault(fixture.a.client, "remove-response-lost"), d.id)).toEqual({ complete: false });
+      expect(await bereinigeDatei(fixture.a.client, (await operation(d.file_path!)).id)).toEqual({ complete: true });
+    }
   });
 
   it("Produktlöschung erhält Dateirechte und reservierte öffentliche ID bis zur Bereinigung", async () => {
@@ -103,7 +109,8 @@ describe("B3: wiederholbare Dokument- und Produktlöschung", () => {
     expect((await getOffeneDateivorgaenge(fixture.a.client, p.id))).toHaveLength(3);
     expect((await fixture.a.client.storage.from(DOKUMENTE_BUCKET).download(a.file_path!)).error).toBeNull();
     expect((await fixture.b.client.storage.from(DOKUMENTE_BUCKET).download(a.file_path!)).error).not.toBeNull();
-    expect(await deleteProdukt(fixture.a.client, p.id)).toEqual({ complete: true });
+    await expect(deleteProdukt(fixture.a.client, p.id)).rejects.toThrow("Produkt nicht gefunden oder kein Zugriff.");
+    expect(await bereinigeProduktdateien(fixture.a.client, p.id)).toEqual({ complete: true });
     for (const path of [a.file_path!, b.file_path!, reserved.data!.file_path]) expect((await operation(path)).state).toBe("deleted");
     const id = await sql(`select count(*) from private.product_public_ids where public_id = '${p.public_id}';`);
     expect(id.output.trim()).toBe("1");

@@ -3,6 +3,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { getSiteUrl, SiteUrlFehler } from "@/lib/site-url";
 
 export type AuthState = { error: string | null };
 export type ResetState = { error: string | null; sent: boolean };
@@ -29,13 +30,20 @@ export async function registrieren(_prev: AuthState, formData: FormData): Promis
   if (!companyName) return { error: "Bitte einen Firmennamen angeben." };
   if (!email) return { error: "Bitte eine E-Mail-Adresse angeben." };
 
+  let siteUrl: string;
+  try { siteUrl = getSiteUrl(); }
+  catch (error) {
+    if (error instanceof SiteUrlFehler) return { error: error.message };
+    throw error;
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email,
     password,
     options: {
       data: { company_name: companyName }, // -> raw_user_meta_data -> Trigger aus Schritt 3
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm?next=/dashboard`,
+      emailRedirectTo: `${siteUrl}/auth/confirm?next=/dashboard`,
     },
   });
 
@@ -67,9 +75,16 @@ export async function passwortResetAnfordern(
   const email = String(formData.get("email") ?? "").trim();
   if (!email) return { error: "Bitte eine E-Mail-Adresse angeben.", sent: false };
 
+  let siteUrl: string;
+  try { siteUrl = getSiteUrl(); }
+  catch (error) {
+    if (error instanceof SiteUrlFehler) return { error: error.message, sent: false };
+    throw error;
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/confirm?next=/passwort-neu`,
+    redirectTo: `${siteUrl}/auth/confirm?next=/passwort-neu`,
   });
 
   if (error) return { error: freundlich(error.message), sent: false };
