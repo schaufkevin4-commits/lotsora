@@ -1,5 +1,7 @@
 "use client";
 
+import { Zugangsseite } from "@/components/layout/zugangsseite";
+
 import { useActionState } from "react";
 import Link from "next/link";
 import { passwortResetAnfordern, type ResetState } from "../actions";
@@ -14,8 +16,8 @@ export default function PasswortVergessenPage() {
   const [state, formAction, pending] = useActionState(passwortResetAnfordern, initial);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-semibold">Passwort zurücksetzen</h1>
+    <Zugangsseite titel="Passwort zurücksetzen">
+
       {state.sent ? (
         <p className="text-muted-foreground">
           Wenn ein Konto zu dieser E-Mail existiert, haben wir einen Link zum Zurücksetzen
@@ -38,6 +40,6 @@ export default function PasswortVergessenPage() {
         </form>
       )}
       <Link href="/login" className="text-sm underline">Zurück zur Anmeldung</Link>
-    </main>
+    </Zugangsseite>
   );
 }

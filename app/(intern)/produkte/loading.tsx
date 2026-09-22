@@ -1,8 +1,8 @@
 // Wird automatisch angezeigt, solange die Produktseite lädt (PP-020 E5: „lädt").
 export default function Laedt() {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
+      <div role="status" aria-label="Produkte werden geladen" className="space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="h-8 w-40 animate-pulse rounded bg-muted" />
           <div className="h-9 w-36 animate-pulse rounded bg-muted" />
         </div>

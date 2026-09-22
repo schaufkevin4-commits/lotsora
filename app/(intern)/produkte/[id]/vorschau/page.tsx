@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { ProduktPass } from "@/components/produkte/produkt-pass";
 import { getVorschauPass } from "@/lib/services/products";
 import { createClient } from "@/lib/supabase/server";
@@ -14,5 +15,5 @@ export default async function ProduktVorschauSeite({
 
   if (!pass) notFound();
 
-  return <ProduktPass pass={pass} vorschau />;
+  return <div className="space-y-4"><Link href={`/produkte/${id}#veroeffentlichung`} className="text-sm underline">← Zurück zur Veröffentlichung</Link><ProduktPass pass={pass} vorschau /></div>;
 }

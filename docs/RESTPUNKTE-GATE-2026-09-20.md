@@ -1,6 +1,6 @@
 # Verbindliche Restpunkte bis zur Gate-Freigabe
 
-**Einordnung 22.09.2026:** [LP-002-Abgleich und Zuordnung zu Phase 6](UEBERGABE-NACH-GATE-2026-09-20.md#lp-002-abgleich-am-22092026). Die aktuellen Tabellenstatus gelten; ältere Problembeschreibungen unten sind historisch. P2-1 bis P2-3 sind nach den bestätigten Fortsetzungen abgenommen. P2-4 ist jetzt vor Kundentest im vollständigen Passumfang lokal umgesetzt und technisch/live geprüft; Nutzerabnahme des neuen Stands offen. [Nachweis](P2-4-UMSETZUNG-2026-09-22.md). Als Nächstes P2-6-Designrichtung vorbereiten.
+**Einordnung 22.09.2026:** [LP-002-Abgleich und Zuordnung zu Phase 6](UEBERGABE-NACH-GATE-2026-09-20.md#lp-002-abgleich-am-22092026). Die aktuellen Tabellenstatus gelten; ältere Problembeschreibungen unten sind historisch. P2-1 bis P2-3 sind nach den bestätigten Fortsetzungen abgenommen. P2-4 ist jetzt vor Kundentest im vollständigen Passumfang lokal umgesetzt und technisch/live geprüft; Nutzerabnahme des neuen Stands offen. [Nachweis](P2-4-UMSETZUNG-2026-09-22.md). P2-6-Struktur inzwischen über die Seitenfamilien umgesetzt; Nutzerbeurteilung und finale Optik offen.
 
 Datum: 20.09.2026. Prüfstand der zwei unabhängigen Prüfungen (Claude, Codex):
 `bbf80930a778d2ee46e9c76e94e2f89a74105a3d` (`main`). Umsetzung auf dem neuen Branch
@@ -45,7 +45,7 @@ Belege ohne Commitangabe beziehen sich auf diesen Branch. `T` steht für
 | P2-3 | Reichweite des Versionsschutzes (A7b/N2) | P2 | vor erstem Kunden | Voller Formular-/Statusumfang lokal umgesetzt, technisch/live geprüft und durch bestätigte Fortsetzung angenommen | [Umsetzung und Nachweise](P2-3-UMSETZUNG-2026-09-22.md) |
 | P2-4 | Getrennte Veröffentlichungsstände (D5) | P2 | vor erstem Kunden | Vollständiger Passumfang lokal umgesetzt, technisch/live geprüft; separate Nutzerabnahme offen | [Umsetzung und Nachweise](P2-4-UMSETZUNG-2026-09-22.md) |
 | P2-5 | Physischer QR-Druckscan und echte Screenreader-Stichprobe | P2 | vor erstem Kunden | Offen; manuelle Nachweise fehlen | `docs/N8-RESTABNAHME-2026-09-20.md:7–19`; neuer Arbeitsauftrag, Teil 3 |
-| P2-6 | Struktur und später finales Erscheinungsbild des Frontends | P2 | vor erstem Kundentest | Erster Strukturaufbau am Editor umgesetzt und geprüft; Nutzerbeurteilung, weitere Seiten und spätere finale Optik offen | [Erster Strukturentwurf und Prüfungen](P2-6-STRUKTUR-2026-09-22.md) |
+| P2-6 | Struktur und später finales Erscheinungsbild des Frontends | P2 | vor erstem Kundentest | Gemeinsame Struktur auf Seitenfamilien übertragen und geprüft; Nutzerbeurteilung und finale Optik offen | [Seitenumfang, Wettbewerb und Prüfungen](P2-6-SEITEN-UND-WETTBEWERB-2026-09-22.md) |
 | P3-1 | Voll-Apply auf garantiert leere Instanz (C2) | P3 | vor Cloud-Livegang | Offen; jetzt ausdrücklich nicht ausgeführt | `scripts/integration.mjs:78–87,129–131` |
 | P3-2 | CSP, Framing-Schutz und HSTS (C3) | P3 | vor Cloud-Livegang | Offen; Hostingkonfiguration festlegen | `next.config.ts:3–10`; `app/auth/confirm/route.ts:19–20` |
 | P3-3 | Einladungstoken aus Hostinglogs heraushalten (B2) | P3 | vor Cloud-Livegang | Offen; tatsächliche Logs prüfen | `app/einladung/[token]/page.tsx:8`; `T:121–123` |

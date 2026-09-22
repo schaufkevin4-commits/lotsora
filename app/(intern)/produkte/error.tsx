@@ -2,10 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Seitentitel } from "@/components/layout/seitentitel";
 
 export default function Fehler({ reset }: { error: Error; reset: () => void }) {
   return (
     <div className="space-y-4">
+      <Seitentitel titel="Produkte" />
       <Alert variant="destructive">
         <AlertTitle>Produkte konnten nicht geladen werden</AlertTitle>
         <AlertDescription>Da ist etwas schiefgelaufen. Bitte versuch es erneut.</AlertDescription>

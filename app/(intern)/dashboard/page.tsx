@@ -1,4 +1,3 @@
-// app/(intern)/dashboard/page.tsx
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
@@ -8,127 +7,83 @@ import { neuesProduktAnlegen } from "../produkte/actions";
 import { StatusBadge } from "@/components/produkte/status-badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Seitentitel } from "@/components/layout/seitentitel";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
   const [hersteller, produkte] = await Promise.all([
-    getMeinHersteller(supabase), // RLS: nur die eigene Zeile
-    getMeineProdukte(supabase),
+    getMeinHersteller(supabase), getMeineProdukte(supabase),
   ]);
-
-  const begruessung = `Willkommen${hersteller?.company_name ? `, ${hersteller.company_name}` : ""}`;
-
-  // --- Empty-State (Tag 19): noch keine Produkte -----------------------------
-  if (produkte.length === 0) {
-    return (
-      <div className="flex flex-col gap-6">
-        <div>
-          <h1 className="text-2xl font-semibold">{begruessung}</h1>
-          <p className="text-muted-foreground">Leg dein erstes Produkt an und teile den QR-Code.</p>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Erste Schritte</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
-              <li>Erstes Produkt anlegen</li>
-              <li>Daten ausfüllen</li>
-              <li>Veröffentlichen</li>
-              <li>QR-Code teilen</li>
-            </ol>
-            <Button asChild>
-              <Link href="/produkte">Erstes Produkt anlegen</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  // --- Befüllt (Screen 8): Kacheln + kurze Produktliste ----------------------
   const zahlen = zaehleNachStatus(produkte);
-  const letzte = produkte.slice(0, 5);
   const luecken = await getDatenluecken(supabase, produkte);
-  const naechstesProdukt = luecken.find((p) => p.required.length === 0) ?? luecken[0];
+  const pflichtluecken = luecken.filter(p => p.required.length > 0);
+  const entwuerfe = luecken.filter(p => produkte.find(product => product.id === p.id)?.status !== "veroeffentlicht");
+  const naechstes = entwuerfe.find(p => p.required.length === 0) ?? entwuerfe[0] ?? pflichtluecken[0];
 
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{begruessung}</h1>
-        <form action={neuesProduktAnlegen}>
-          <Button type="submit">+ Neues Produkt</Button>
-        </form>
+  return <div className="space-y-6">
+    <Seitentitel titel="Dashboard" kontext={hersteller?.company_name} beschreibung="Deine Produkte im Überblick und der nächste Schritt."
+      aktion={produkte.length > 0 && <form action={neuesProduktAnlegen}><Button type="submit">+ Neues Produkt</Button></form>} />
+
+    {produkte.length === 0 ? <Card>
+      <CardHeader><CardTitle><h2>Dein erster Produktpass</h2></CardTitle></CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-muted-foreground">Produkt anlegen → Angaben ergänzen → Vorschau prüfen → veröffentlichen und QR-Code teilen.</p>
+        <form action={neuesProduktAnlegen}><Button type="submit">Erstes Produkt anlegen</Button></form>
+      </CardContent>
+    </Card> : <>
+      <div className="grid grid-cols-3 gap-2 sm:gap-4" aria-label="Produktübersicht">
+        {[
+          { label: "Gesamt", value: zahlen.gesamt, href: "/produkte" },
+          { label: "Öffentlich", value: zahlen.veroeffentlicht, href: "/produkte?status=veroeffentlicht" },
+          { label: "Entwürfe", value: zahlen.entwuerfe, href: "/produkte?status=privat" },
+        ].map(item => <Link key={item.label} href={item.href} className="min-w-0 space-y-2 rounded-lg border p-3 hover:bg-muted/40 sm:p-5">
+          <span className="block text-xs text-muted-foreground sm:text-sm">{item.label}</span>
+          <span className="block text-2xl font-semibold sm:text-3xl">{item.value}</span>
+        </Link>)}
       </div>
-
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Produkte gesamt</CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">{zahlen.gesamt}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Veröffentlicht</CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">{zahlen.veroeffentlicht}</CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Entwürfe &amp; Unvollständig</CardTitle>
-          </CardHeader>
-          <CardContent className="text-3xl font-semibold">{zahlen.entwuerfe}</CardContent>
-        </Card>
-      </div>
-
-      {zahlen.veroeffentlicht === 0 && <Card>
-        <CardHeader><CardTitle>Erste Schritte zum Produktpass</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <ol className="list-decimal space-y-1 pl-5 text-sm">
-            <li>Produkt angelegt ✓</li>
-            <li>{naechstesProdukt.required.length ? "Pflichtangaben ergänzen" : "Pflichtangaben ausgefüllt ✓"}</li>
-            <li>Angaben und Vorschau prüfen, dann veröffentlichen</li>
-            <li>QR-Code teilen</li>
-          </ol>
-          <Button asChild><Link href={`/produkte/${naechstesProdukt.id}`}>Mit Produkt fortfahren</Link></Button>
-        </CardContent>
-      </Card>}
 
       <Card>
-        <CardHeader><CardTitle>Datenlücken</CardTitle></CardHeader>
-        <CardContent className="space-y-3 text-sm">
-          <p className="text-muted-foreground">Orientierung zu Pflichtangaben, Material, Herkunft, Pflege und Kreislauf. Optionale Angaben bleiben freiwillig.</p>
-          {luecken.slice(0, 5).map((p) => <div key={p.id}>
-            <Link href={`/produkte/${p.id}`} className="font-medium underline">{p.name || "(ohne Namen)"}: {p.label}</Link>
-            {p.required.length > 0 && <p>Pflichtangaben fehlen: {p.required.join(", ")}.</p>}
-            {p.optional.length > 0 && <p>Optional ergänzen: {p.optional.join(", ")}.</p>}
-          </div>)}
-          {luecken.length > 5 && <Link href="/produkte" className="underline">Weitere Produkte prüfen</Link>}
+        <CardHeader><CardTitle><h2>{naechstes ? "Hier weitermachen" : "Alle Produkte sind veröffentlicht"}</h2></CardTitle></CardHeader>
+        <CardContent className="space-y-4">
+          {naechstes ? <>
+            <p className="font-medium break-words">{naechstes.name?.trim() || "Produkt ohne Namen"}</p>
+            <p className="text-sm text-muted-foreground">{naechstes.required.length
+              ? `Im Entwurf fehlen noch: ${naechstes.required.join(", ")}.`
+              : "Die Pflichtangaben sind ausgefüllt. Prüfe die Vorschau und entscheide, ob du den Pass veröffentlichen möchtest."}</p>
+            <Button asChild><Link href={`/produkte/${naechstes.id}#${naechstes.required.length ? "produktdaten" : "veroeffentlichung"}`}>
+              {naechstes.required.length ? "Angaben ergänzen" : "Veröffentlichung prüfen"}
+            </Link></Button>
+          </> : <p className="text-sm text-muted-foreground">Neue Änderungen speichert ihr zunächst intern. Prüft beim jeweiligen Produkt, ob ihr den öffentlichen Stand aktualisieren möchtet.</p>}
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Letzte Produkte</CardTitle>
-          <Link href="/produkte" className="text-sm text-muted-foreground hover:underline">
-            Alle ansehen
-          </Link>
+        <CardHeader className="flex flex-wrap items-center justify-between gap-3 sm:flex-row">
+          <CardTitle><h2>Zuletzt bearbeitet</h2></CardTitle>
+          <Link href="/produkte" className="text-sm underline underline-offset-4">Alle Produkte</Link>
         </CardHeader>
-        <CardContent className="flex flex-col divide-y">
-          {letzte.map((p) => (
-            <Link
-              key={p.id}
-              href={`/produkte/${p.id}`}
-              className="flex items-center justify-between py-2 hover:underline"
-            >
-              <span><span className="font-medium">{p.name?.trim() ? p.name : "(ohne Namen)"}</span><span className="block text-xs text-muted-foreground">Zuletzt geändert: {new Date(p.updated_at).toLocaleString("de-DE", { timeZone: "Europe/Berlin" })}</span></span>
-              <StatusBadge status={p.status} />
-            </Link>
-          ))}
+        <CardContent className="divide-y">
+          {produkte.slice(0, 5).map(p => <Link key={p.id} href={`/produkte/${p.id}`} className="flex flex-wrap items-center justify-between gap-3 py-3 hover:underline">
+            <span className="min-w-0 flex-1 break-words"><span className="font-medium">{p.name?.trim() || "(ohne Namen)"}</span>
+              <span className="mt-1 block text-xs text-muted-foreground">{new Date(p.updated_at).toLocaleDateString("de-DE", { timeZone: "Europe/Berlin" })}</span></span>
+            <StatusBadge status={p.status} />
+          </Link>)}
         </CardContent>
       </Card>
-    </div>
-  );
+
+      <details className="rounded-lg border p-4 sm:p-5">
+        <summary className="cursor-pointer font-medium">Angaben prüfen{pflichtluecken.length > 0 ? ` · ${pflichtluecken.length} mit fehlenden Pflichtangaben` : " · freiwillige Ergänzungen"}</summary>
+        <div className="mt-4 space-y-4 text-sm">
+          <p className="text-muted-foreground">Bezieht sich auf gespeicherte Entwürfe. Freiwillige Ergänzungen verhindern die Veröffentlichung nicht.</p>
+          {[...pflichtluecken, ...luecken.filter(p => !p.required.length && p.optional.length)].slice(0, 5).map(p => <div key={p.id} className="space-y-1">
+            <Link href={`/produkte/${p.id}#produktdaten`} className="font-medium underline break-words">{p.name?.trim() || "(ohne Namen)"}</Link>
+            {p.required.length > 0 && <p>Pflichtangaben: {p.required.join(", ")}.</p>}
+            {p.optional.length > 0 && <p className="text-muted-foreground">Freiwillig: {p.optional.join(", ")}.</p>}
+          </div>)}
+          {!luecken.some(p => p.required.length || p.optional.length) && <p>Die betrachteten Angaben sind vollständig ausgefüllt.</p>}
+          <Link href="/produkte" className="inline-block underline">Alle Produkte ansehen</Link>
+        </div>
+      </details>
+    </>}
+  </div>;
 }

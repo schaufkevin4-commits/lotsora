@@ -48,13 +48,11 @@ export function ProfilFormular({ hersteller, countries }: {
   return (
     <form action={formAction} className="flex max-w-2xl flex-col gap-6">
       <p className="text-sm text-muted-foreground">
-        Dieses Firmenprofil gilt für euer gesamtes Team. Änderungen an öffentlichen
-        Angaben erscheinen in den veröffentlichten Produktpässen eurer Firma.
-        Nur der Firmenverantwortliche kann das Profil ändern. Mit * markierte Angaben sind Pflichtfelder.
+        Dieses Firmenprofil gilt für euer gesamtes Team. Mit * markierte Angaben sind Pflichtfelder.
       </p>
       <fieldset disabled={pending} aria-describedby="public-profile-help" className="min-w-0 space-y-4 rounded-lg border p-5">
         <legend className="px-1 font-semibold">Öffentliches Firmenprofil</legend>
-        <p id="public-profile-help" className="text-sm text-muted-foreground">Öffentlich im Produktpass sichtbar.</p>
+        <p id="public-profile-help" className="text-sm text-muted-foreground">Änderungen werden erst öffentlich, wenn ihr beim jeweiligen Produkt „Veröffentlichung aktualisieren“ auswählt oder es erstmals veröffentlicht.</p>
         <Feld {...field("company_name")} label="Firmenname *" required autoComplete="organization" />
         <div className="flex flex-col gap-2">
           <Label htmlFor="country">Land des Firmensitzes (optional)</Label>
@@ -68,8 +66,10 @@ export function ProfilFormular({ hersteller, countries }: {
         </div>
         <Feld {...field("website")} label="Website (optional)" autoComplete="url" placeholder="www.firma.de" />
       </fieldset>
-      <fieldset disabled={pending} aria-describedby="internal-profile-help" className="min-w-0 space-y-4 rounded-lg border p-5">
-        <legend className="px-1 font-semibold">Interne Kontaktdaten</legend>
+      <details className="rounded-lg border p-5">
+        <summary className="cursor-pointer font-semibold">Interne Kontaktdaten · optional</summary>
+      <fieldset disabled={pending} aria-describedby="internal-profile-help" className="mt-4 min-w-0 space-y-4">
+        <legend className="sr-only">Interne Kontaktdaten</legend>
         <p id="internal-profile-help" className="text-sm text-muted-foreground">Diese Angaben sind optional und nicht im öffentlichen Produktpass sichtbar.</p>
         <Feld {...field("contact_person")} label="Interner Ansprechpartner" />
         <Feld {...field("phone")} label="Telefon" type="tel" autoComplete="tel" />
@@ -79,6 +79,7 @@ export function ProfilFormular({ hersteller, countries }: {
           <Feld {...field("city")} label="Ort" autoComplete="address-level2" />
         </div>
       </fieldset>
+      </details>
 
       {state.error && (
         <Alert variant="destructive">

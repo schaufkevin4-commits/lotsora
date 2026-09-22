@@ -1,3 +1,4 @@
+import { Seitentitel } from "@/components/layout/seitentitel";
 // app/(intern)/profil/page.tsx
 import { createClient } from "@/lib/supabase/server";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
@@ -13,28 +14,20 @@ export default async function ProfilPage() {
   const hersteller = await getMeinHersteller(supabase);
 
   return (
-    <div className="flex flex-col gap-6">
-      <h1 className="text-2xl font-semibold">Profil &amp; Einstellungen</h1>
-
-      <div className="flex flex-col gap-1 rounded-md border p-4">
-        <h2 className="font-semibold">Mein Konto</h2>
-        <span className="text-sm">
-          Angemeldet als <strong>{user?.email}</strong>
-        </span>
-        <span className="text-sm text-muted-foreground">
-          Rolle: {hersteller?.user_id === user?.id ? "Firmenverantwortlicher" : "Mitarbeiter"}
-        </span>
-      </div>
-
+    <div className="flex max-w-2xl flex-col gap-6">
+      <Seitentitel titel="Firmenprofil" beschreibung="Firmenangaben für eure Produktpässe und interne Kontaktdaten verwalten." />
       {hersteller?.user_id === user?.id ? <ProfilFormular hersteller={hersteller} countries={countries} /> : (
         <div className="space-y-2 rounded-md border p-4">
           <h2 className="font-semibold">{hersteller?.company_name}</h2>
           <p className="text-sm text-muted-foreground">Das Firmenprofil wird vom Firmenverantwortlichen verwaltet. Produkte und Dokumente bearbeitet ihr gemeinsam.</p>
         </div>
       )}
-      <p className="text-sm text-muted-foreground">Geänderte Firmenangaben erscheinen in bestehenden öffentlichen Pässen, sobald du beim jeweiligen Produkt „Veröffentlichung aktualisieren“ auswählst.</p>
       <div className="space-y-2 rounded-md border p-4">
-        <h2 className="font-semibold">Konto und Firma verwalten</h2>
+        <h2 className="font-semibold">Mein Konto</h2>
+        <div className="flex flex-col gap-1">
+          <span className="text-sm break-words">Angemeldet als <strong>{user?.email}</strong></span>
+          <span className="text-sm text-muted-foreground">Rolle: {hersteller?.user_id === user?.id ? "Firmenverantwortlicher" : "Mitarbeiter"}</span>
+        </div>
         <p className="text-sm text-muted-foreground">Persönliches Konto löschen oder als Verantwortlicher die Firma mit getrennten Kontoentscheidungen auflösen.</p>
         <Link href="/konto" className="text-sm underline">Konto- und Firmenlöschung öffnen</Link>
       </div>

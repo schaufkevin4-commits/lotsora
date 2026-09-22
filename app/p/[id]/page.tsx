@@ -1,3 +1,4 @@
+import { Seitentitel } from "@/components/layout/seitentitel";
 // app/p/[id]/page.tsx
 // Öffentliche Produktpass-Seite (Tag 27, PP-013). Kein Login (Middleware schützt
 // nur /dashboard, /profil, /produkte). Anonyme Besucher sehen über RLS nur die
@@ -37,7 +38,7 @@ export default async function OeffentlicherPassSeite({
   if (ergebnis.status === "fehler") {
     return (
       <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center gap-4 px-4 text-center">
-        <h1 className="text-xl font-semibold">Produktpass konnte nicht geladen werden</h1>
+        <Seitentitel titel="Produktpass konnte nicht geladen werden" />
         <p>Die Daten sind vorübergehend nicht erreichbar. Bitte versuchen Sie es erneut.</p>
         {/* Ein neuer Dokumentabruf liest auch nach einem fehlgeschlagenen Render frisch. */}
         <a className="underline underline-offset-4" href={`/p/${encodeURIComponent(publicId)}`}>Erneut versuchen</a>
@@ -48,7 +49,7 @@ export default async function OeffentlicherPassSeite({
   if (ergebnis.status === "nicht-verfuegbar") {
     return (
       <main className="mx-auto flex min-h-screen w-full max-w-xl flex-col items-center justify-center px-4 py-16 text-center">
-        <h1 className="text-xl font-semibold">Produktpass nicht verfügbar</h1>
+        <Seitentitel titel="Produktpass nicht verfügbar" />
         <p className="mt-2 text-sm text-muted-foreground">
           Dieser Produktpass ist derzeit nicht verfügbar.
         </p>

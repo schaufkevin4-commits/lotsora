@@ -1,3 +1,4 @@
+import { Seitentitel } from "@/components/layout/seitentitel";
 import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -10,8 +11,8 @@ export default async function NeueFirmaPage() {
   const { data: { user } } = await client.auth.getUser();
   if (!user) redirect("/login");
   const state = await getCompanyEntryState(client);
-  return <main id="hauptinhalt" className="mx-auto max-w-2xl space-y-6 px-4 py-8 sm:px-6">
-    <h1 className="text-2xl font-semibold">Eigene Firma anlegen</h1>
+  return <div className="max-w-2xl space-y-6">
+    <Seitentitel titel="Eigene Firma anlegen" beschreibung="Richte den gemeinsamen Arbeitsbereich für deine Firma ein." />
     {state === "ready" ? <FirmenFormular requestId={randomUUID()} /> : <section className="space-y-3">
       <p>{state === "member" ? "Dein Konto gehört bereits zu einer Firma. Pro Konto ist eine Firmenzugehörigkeit möglich."
         : state === "deleting" ? "Für dein Konto läuft noch ein Löschvorgang. Schließe ihn zuerst ab, bevor du einen neuen Firmenbereich anlegst."
@@ -20,5 +21,5 @@ export default async function NeueFirmaPage() {
         {state === "member" ? "Bestehende Firma öffnen" : "Zur Kontoverwaltung"}
       </Link>
     </section>}
-  </main>;
+  </div>;
 }

@@ -1,3 +1,4 @@
+import { Seitentitel } from "@/components/layout/seitentitel";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { OeffentlicherSeitenrahmen } from "@/components/oeffentlich/seitenrahmen";
@@ -27,19 +28,10 @@ function Abschnitt({
 export default function Datenschutzseite() {
   return (
     <OeffentlicherSeitenrahmen>
-      <main className="mx-auto w-full max-w-3xl flex-1 px-6 py-12 sm:py-16">
+      <main className="mx-auto w-full max-w-3xl flex-1 px-4 py-6 sm:px-6 sm:py-8">
         <article className="space-y-10">
-          <header className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              <Link href="/" className={linkKlassen}>
-                ← Zur Startseite
-              </Link>
-            </p>
-            <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-              Datenschutz
-            </h1>
-            <p className="text-sm text-muted-foreground">Stand: 3. September 2026</p>
-          </header>
+          <Seitentitel titel="Datenschutz" beschreibung="Stand: 3. September 2026"
+            kontext={<Link href="/" className={linkKlassen}>← Zur Startseite</Link>} />
 
           <Abschnitt titel="Platzhalterseite">
             <p>

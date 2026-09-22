@@ -8,6 +8,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { OeffentlicherPass } from "@/lib/services/products";
 import { PassBild } from "@/components/produkte/pass-bild";
+import { Seitentitel } from "@/components/layout/seitentitel";
 
 const DISCLAIMER =
   "Die Angaben auf dieser Seite stammen vom Hersteller. Diese Angaben werden nicht geprüft; es werden keine Compliance- oder Rechtsversprechen gemacht.";
@@ -16,10 +17,14 @@ function hatText(wert: string | null | undefined): wert is string {
   return typeof wert === "string" && wert.trim().length > 0;
 }
 
+function abschnittId(titel: string) {
+  return `pass-${titel.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
+}
+
 function Abschnitt({ titel, children }: { titel: string; children: ReactNode }) {
   return (
-    <section className="space-y-3 border-t pt-6">
-      <h2 className="text-sm font-medium text-muted-foreground">{titel}</h2>
+    <section id={abschnittId(titel)} aria-labelledby={`${abschnittId(titel)}-titel`} className="scroll-mt-6 space-y-3 border-t pt-6">
+      <h2 id={`${abschnittId(titel)}-titel`} className="text-lg font-semibold">{titel}</h2>
       {children}
     </section>
   );
@@ -31,7 +36,7 @@ function ZeileWenn({ label, wert }: { label: string; wert: string | null | undef
   return (
     <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-2">
       <dt className="w-40 shrink-0 text-sm text-muted-foreground">{label}</dt>
-      <dd className="text-sm whitespace-pre-line">{wert}</dd>
+      <dd className="min-w-0 text-sm whitespace-pre-line break-words">{wert}</dd>
     </div>
   );
 }
@@ -73,8 +78,18 @@ export function ProduktPass({
       hatText(n.disposal_notes) ||
       hatText(n.reusable_materials));
 
+  const inhalt = [
+    { titel: "Hersteller", sichtbar: hatHersteller },
+    { titel: "Beschreibung", sichtbar: hatText(produkt.description) },
+    { titel: "Material", sichtbar: materialien.length > 0 },
+    { titel: "Produktdetails", sichtbar: hatDetails },
+    { titel: "Pflege", sichtbar: hatPflege },
+    { titel: "Nutzung & Kreislauf", sichtbar: hatKreislauf },
+    { titel: "Dokumente", sichtbar: dokumente.length > 0 },
+  ].filter(item => item.sichtbar);
+
   return (
-    <div className="mx-auto w-full max-w-xl px-4 py-8">
+    <div className="mx-auto w-full max-w-2xl px-4 py-6 break-words sm:px-6 sm:py-8">
       {vorschau && (
         <div className="mb-6 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           Vorschau – so sehen Besucher den Produktpass. Diese Seite ist noch nicht
@@ -86,13 +101,15 @@ export function ProduktPass({
         <PassBild key={bild} src={bild} alt={produkt.name} />
       )}
 
-      <header className="space-y-1">
-        <h1 className="text-2xl font-semibold">{produkt.name}</h1>
-        <p className="text-sm text-muted-foreground">
-          {produkt.category}
-          {hatText(produkt.brand) ? ` · ${produkt.brand}` : ""}
-        </p>
-      </header>
+      <Seitentitel titel={produkt.name} kontext="Digitaler Produktpass"
+        beschreibung={`${produkt.category}${hatText(produkt.brand) ? ` · ${produkt.brand}` : ""}`} />
+
+      {inhalt.length > 1 && <nav aria-label="Inhalt des Produktpasses" className="mt-6 rounded-lg border p-4">
+        <p className="mb-2 text-sm font-medium">Direkt zum Abschnitt</p>
+        <ul className="flex flex-wrap gap-x-4 gap-y-1">{inhalt.map(item => <li key={item.titel}>
+          <a href={`#${abschnittId(item.titel)}`} className="inline-flex min-h-10 items-center text-sm underline underline-offset-4">{item.titel}</a>
+        </li>)}</ul>
+      </nav>}
 
       <div className="mt-6 space-y-6">
         {hatHersteller && (
@@ -103,7 +120,7 @@ export function ProduktPass({
               {hatText(website) && (
                 <div className="flex flex-col gap-0.5 sm:flex-row sm:gap-2">
                   <dt className="w-40 shrink-0 text-sm text-muted-foreground">Website</dt>
-                  <dd className="text-sm">
+                  <dd className="min-w-0 text-sm break-all">
                     <a
                       href={website}
                       target="_blank"

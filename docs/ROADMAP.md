@@ -1,10 +1,12 @@
 # Lotsora: ergänzender Arbeitsplan nach der Architekturanalyse
 
-**Neuester Einstieg 22.09.:** Kevin hat Struktur/Bedienung zuerst und finale
-Optik später bestätigt. Der erste Strukturentwurf am Produkteditor ist umgesetzt
-und geprüft; [Nachweis und nächster Schritt](P2-6-STRUKTUR-2026-09-22.md).
-Ersten Aufbau gemeinsam beurteilen, danach Produktübersicht/Dashboard übertragen.
-P2-6 bleibt offen; die endgültige Gestaltung folgt als eigener späterer Schritt.
+**Neuester Einstieg 22.09.:** Gemeinsame Struktur auf die Seitenfamilien übertragen;
+Dashboard fokussiert, Produktliste mit Suche/Filtern, Profil-/Teamdetails aufklappbar,
+Zugangsseiten und öffentlicher Pass abgestimmt. Öffentlichen Wettbewerbsvergleich
+mit Retraced, TrusTrace und PicoNext als Positionierungshypothese dokumentiert.
+[Umfang und Nachweise](P2-6-SEITEN-UND-WETTBEWERB-2026-09-22.md).
+Als Nächstes den durchgängigen Aufbau beurteilen, dann finale Gestaltungsrichtung
+abstimmen/umsetzen. P2-6 bleibt offen; kein neuer Lerntag oder Cloud-Rollout.
 
 **Aktueller Einstieg 22.09.:** Lokales Gate und P2-1 bis P2-3 sind bestätigt.
 P2-4 ist lokal technisch umgesetzt und live geprüft: private Entwürfe,

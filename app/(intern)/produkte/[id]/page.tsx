@@ -1,3 +1,4 @@
+import { Seitentitel } from "@/components/layout/seitentitel";
 import { getOffeneDateivorgaenge } from "@/lib/services/file-cleanup";
 import { FileCleanupPanel } from "@/components/produkte/file-cleanup-panel";
 import Link from "next/link";
@@ -57,19 +58,8 @@ export default async function ProduktEditorSeite({
   return (
     <EditorProvider key={id} id={id} version={produkt.editor_version}>
     <div className="max-w-2xl space-y-6">
-      <div>
-        <Link href="/produkte" className="text-sm text-muted-foreground hover:underline">
-          ← Zurück zu Produkte
-        </Link>
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-semibold">Produkt bearbeiten</h1>
-        <div className="flex items-center gap-3">
-          <StatusBadge status={produkt.status} />
-          <LoeschenButton id={produkt.id} name={produkt.name ?? ""} />
-        </div>
-      </div>
+      <Seitentitel titel="Produkt bearbeiten" kontext={<Link href="/produkte" className="underline">← Zurück zu Produkte</Link>}
+        aktion={<><StatusBadge status={produkt.status} /><LoeschenButton id={produkt.id} name={produkt.name ?? ""} /></>} />
 
       <EditorBereiche published={istVeroeffentlicht} publication={publication} daten={<>
       <details className="space-y-2 rounded-lg border p-4 text-sm">

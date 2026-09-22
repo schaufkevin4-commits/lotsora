@@ -1,5 +1,7 @@
 "use client";
 
+import { Zugangsseite } from "@/components/layout/zugangsseite";
+
 import { useActionState } from "react";
 import Link from "next/link";
 import { registrieren, type AuthState } from "../actions";
@@ -14,8 +16,8 @@ export default function RegistrierenPage() {
   const [state, formAction, pending] = useActionState(registrieren, initial);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-semibold">Konto erstellen</h1>
+    <Zugangsseite titel="Konto erstellen">
+
       <form action={formAction} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
           <Label htmlFor="company_name">Firmenname</Label>
@@ -41,6 +43,6 @@ export default function RegistrierenPage() {
       <p className="text-sm text-muted-foreground">
         Konto vorhanden? <Link href="/login" className="underline">Anmelden</Link>
       </p>
-    </main>
+    </Zugangsseite>
   );
 }

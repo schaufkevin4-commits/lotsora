@@ -1,5 +1,7 @@
 "use client";
 
+import { Zugangsseite } from "@/components/layout/zugangsseite";
+
 import { useActionState } from "react";
 import Link from "next/link";
 import { anmelden, type AuthState } from "../actions";
@@ -14,8 +16,8 @@ export function LoginFormular({ bestaetigungFehlgeschlagen }: { bestaetigungFehl
   const [state, formAction, pending] = useActionState(anmelden, initial);
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-sm flex-col justify-center gap-6 p-6">
-      <h1 className="text-2xl font-semibold">Anmelden</h1>
+    <Zugangsseite titel="Anmelden">
+
       {bestaetigungFehlgeschlagen && <Alert variant="destructive"><AlertDescription>Der Bestätigungslink ist ungültig, abgelaufen oder wurde bereits verwendet. Für ein neues Passwort fordere bitte einen neuen Link über „Passwort vergessen?“ an.</AlertDescription></Alert>}
       <form action={formAction} className="flex flex-col gap-4">
         <div className="flex flex-col gap-2">
@@ -35,10 +37,10 @@ export function LoginFormular({ bestaetigungFehlgeschlagen }: { bestaetigungFehl
           {pending ? "Wird angemeldet …" : "Anmelden"}
         </Button>
       </form>
-      <div className="flex justify-between text-sm text-muted-foreground">
+      <div className="flex flex-wrap justify-between gap-3 text-sm text-muted-foreground">
         <Link href="/passwort-vergessen" className="underline">Passwort vergessen?</Link>
         <Link href="/registrieren" className="underline">Neu hier? Konto erstellen</Link>
       </div>
-    </main>
+    </Zugangsseite>
   );
 }

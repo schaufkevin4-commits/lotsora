@@ -1,3 +1,3 @@
 export default function FirmaLaedt() {
-  return <main className="mx-auto max-w-2xl px-4 py-8"><p role="status">Firmenzugang wird geprüft …</p></main>;
+  return <div className="max-w-2xl rounded-lg border p-4"><p role="status">Firmenzugang wird geprüft …</p></div>;
 }

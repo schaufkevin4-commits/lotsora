@@ -1,16 +1,18 @@
 # Übergabe nach dem lokalen Gate
 
-## Aktueller Einstieg: Struktur vor finaler Optik
+## Aktueller Einstieg: einheitliche Struktur und Wettbewerb
 
-Kevin hat am 22.09. ausdrücklich bestätigt: zuerst Übersicht/Bedienung,
-endgültiges Erscheinungsbild später. Erster konkreter Aufbau am Produkteditor
-umgesetzt: Produktdaten, Dateien und Veröffentlichung als getrennte Bereiche;
-Zusatzangaben aufklappbar, öffentlicher Stand bleibt sichtbar.
-[Nachweise und nächster Schritt](P2-6-STRUKTUR-2026-09-22.md).
-141 Unit- und 11 Produktions-HTTP-Tests sowie Lint/Typen/Build bestanden.
-Desktop, 390/320 Pixel, Tastatur, Eingabeerhalt und geführter Ablauf geprüft.
-Ersten Aufbau gemeinsam beurteilen, danach Produktübersicht/Dashboard übertragen.
-P2-6 bleibt offen; finale Gestaltung ist ein späterer eigener Schritt.
+Kevins Folgeauftrag zur Konkurrenz und einheitlichen Übersicht über alle Seiten
+ist lokal umgesetzt. Gemeinsame Navigation und Seitenköpfe, fokussiertes Dashboard,
+Suche/Statusfilter, aufklappbare Profil-/Teamdetails, einheitliche Zugangsseiten
+und Inhaltsnavigation im öffentlichen Pass. [Umfang, Wettbewerbsquellen und
+Nachweise](P2-6-SEITEN-UND-WETTBEWERB-2026-09-22.md).
+141 Unit- und 11 Produktions-HTTP-Tests, Lint/Typen/Build bestanden;
+Desktop und 320 Pixel, Suche/Sortierung, Speicherung eingeklappter Profilfelder,
+Vorschau/öffentlicher Stand und Tastatursprung geprüft.
+Als Nächstes den gesamten Aufbau beurteilen, danach finale Optik abstimmen und
+umsetzen. Die Wettbewerbsrichtung für kleine Textilfirmen ist eine Hypothese,
+noch kein gemessener Vorteil. P2-6 bleibt offen; P2-5/Regression/Kundenabnahme folgen.
 LP-002 Phase 6, 27/40, Tag 28 offen. Brain-KI synchronisieren, kein Lotsora-Push.
 
 ## Vorheriger Abschluss: P2-4
