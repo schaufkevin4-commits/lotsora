@@ -6,11 +6,13 @@ import type { Nachhaltigkeit } from "@/lib/services/products";
 // Nutzung & Kreislauf (product_sustainability, 1:1). Alles optional.
 export function KreislaufAbschnitt({
   nachhaltigkeit,
+  offen = false,
 }: {
   nachhaltigkeit: Nachhaltigkeit | null;
+  offen?: boolean;
 }) {
   return (
-    <details open className="space-y-4 rounded-lg border p-5">
+    <details open={offen} className="space-y-4 rounded-lg border p-5">
       <summary className="cursor-pointer font-medium">Nutzung &amp; Kreislauf</summary>
       <div>
         <p className="text-sm text-muted-foreground">

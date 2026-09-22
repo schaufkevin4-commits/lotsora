@@ -3,6 +3,7 @@
 
 import { startTransition, useLayoutEffect, useRef, useState } from "react";
 import { useEditor } from "./EditorProvider";
+import { zeigeEditorBereich } from "./EditorBereiche";
 import { MaterialAbschnitt } from "./MaterialAbschnitt";
 import { ProduktdetailsAbschnitt } from "./ProduktdetailsAbschnitt";
 import { PflegeAbschnitt } from "./PflegeAbschnitt";
@@ -74,7 +75,7 @@ export function ProduktFormular({
       onSubmit={(event) => { event.preventDefault(); startTransition(() => editor.save()); }}
       className="space-y-5"
     >
-      {produkt.status === "veroeffentlicht" && <Alert><AlertDescription>Sie bearbeiten den Entwurf. Automatisches Speichern verändert den veröffentlichten Pass nicht. Übernehmen Sie Änderungen anschließend mit „Veröffentlichung aktualisieren“.</AlertDescription></Alert>}
+      <p className="text-sm text-muted-foreground">Änderungen werden automatisch im Entwurf gespeichert. Mit * markierte Angaben sind für die Veröffentlichung nötig.</p>
       {step !== null && <div className="space-y-3 rounded-lg border p-4">
         <p className="font-medium">Schritt {step + 1} von {steps.length}: {steps[step]}</p>
         <p className="text-sm text-muted-foreground">Zuerst die Basis ausfüllen, danach optionale Angaben ergänzen. Am Ende Dokumente und Vorschau prüfen.</p>
@@ -144,19 +145,19 @@ export function ProduktFormular({
       </details>
       </div>
 
-      <div hidden={step !== null && step !== 1}><MaterialAbschnitt materialien={materialien} onStructureChange={editor.change} /></div>
+      <div hidden={step !== null && step !== 1}><MaterialAbschnitt offen={step === 1} materialien={materialien} onStructureChange={editor.change} /></div>
 
-      <div hidden={step !== null && step !== 2}><ProduktdetailsAbschnitt textildaten={textildaten} /></div>
+      <div hidden={step !== null && step !== 2}><ProduktdetailsAbschnitt offen={step === 2} textildaten={textildaten} /></div>
 
-      <div hidden={step !== null && step !== 3}><PflegeAbschnitt textildaten={textildaten} /></div>
+      <div hidden={step !== null && step !== 3}><PflegeAbschnitt offen={step === 3} textildaten={textildaten} /></div>
 
-      <div hidden={step !== null && step !== 4}><KreislaufAbschnitt nachhaltigkeit={nachhaltigkeit} /></div>
+      <div hidden={step !== null && step !== 4}><KreislaufAbschnitt offen={step === 4} nachhaltigkeit={nachhaltigkeit} /></div>
 
       {step !== null && <div className="flex flex-wrap justify-between gap-3">
         <Button type="button" variant="outline" disabled={step === 0} onClick={() => changeStep(step - 1)}>Zurück</Button>
         <Button className="h-auto min-h-9 whitespace-normal text-left" type="button" variant="outline" onClick={() => {
           if (step < steps.length - 1) changeStep(step + 1);
-          else changeStep(null);
+          else { zeigeEditorBereich("dateien"); changeStep(null); }
         }}>{step < steps.length - 1 ? "Weiter" : "Weiter zu Dokumenten und Vorschau"}</Button>
       </div>}
       </fieldset>

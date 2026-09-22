@@ -1,6 +1,19 @@
 # Übergabe nach dem lokalen Gate
 
-## Aktueller Abschluss: P2-4
+## Aktueller Einstieg: Struktur vor finaler Optik
+
+Kevin hat am 22.09. ausdrücklich bestätigt: zuerst Übersicht/Bedienung,
+endgültiges Erscheinungsbild später. Erster konkreter Aufbau am Produkteditor
+umgesetzt: Produktdaten, Dateien und Veröffentlichung als getrennte Bereiche;
+Zusatzangaben aufklappbar, öffentlicher Stand bleibt sichtbar.
+[Nachweise und nächster Schritt](P2-6-STRUKTUR-2026-09-22.md).
+141 Unit- und 11 Produktions-HTTP-Tests sowie Lint/Typen/Build bestanden.
+Desktop, 390/320 Pixel, Tastatur, Eingabeerhalt und geführter Ablauf geprüft.
+Ersten Aufbau gemeinsam beurteilen, danach Produktübersicht/Dashboard übertragen.
+P2-6 bleibt offen; finale Gestaltung ist ein späterer eigener Schritt.
+LP-002 Phase 6, 27/40, Tag 28 offen. Brain-KI synchronisieren, kein Lotsora-Push.
+
+## Vorheriger Abschluss: P2-4
 
 Nach „starte mit der nächsten aufgabe“ sind private Entwürfe und vollständige
 öffentliche Stände getrennt. Bewusste Aktualisierung umfasst Formular, Bild,

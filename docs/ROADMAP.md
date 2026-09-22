@@ -1,5 +1,11 @@
 # Lotsora: ergänzender Arbeitsplan nach der Architekturanalyse
 
+**Neuester Einstieg 22.09.:** Kevin hat Struktur/Bedienung zuerst und finale
+Optik später bestätigt. Der erste Strukturentwurf am Produkteditor ist umgesetzt
+und geprüft; [Nachweis und nächster Schritt](P2-6-STRUKTUR-2026-09-22.md).
+Ersten Aufbau gemeinsam beurteilen, danach Produktübersicht/Dashboard übertragen.
+P2-6 bleibt offen; die endgültige Gestaltung folgt als eigener späterer Schritt.
+
 **Aktueller Einstieg 22.09.:** Lokales Gate und P2-1 bis P2-3 sind bestätigt.
 P2-4 ist lokal technisch umgesetzt und live geprüft: private Entwürfe,
 bewusste vollständige Freigabe, stabile QR-Links und Dateiaufbewahrung.

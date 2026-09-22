@@ -5,9 +5,9 @@ import type { Textildaten } from "@/lib/services/products";
 
 // Pflege (product_textile_data, 1:1 — dieselbe Zeile wie „Herkunft & Produktdetails").
 // Unkontrollierte Felder mit defaultValue; Service + Action stehen bereits.
-export function PflegeAbschnitt({ textildaten }: { textildaten: Textildaten | null }) {
+export function PflegeAbschnitt({ textildaten, offen = false }: { textildaten: Textildaten | null; offen?: boolean }) {
   return (
-    <details open className="space-y-4 rounded-lg border p-5">
+    <details open={offen} className="space-y-4 rounded-lg border p-5">
       <summary className="cursor-pointer font-medium">Pflege</summary>
       <div>
         <p className="text-sm text-muted-foreground">

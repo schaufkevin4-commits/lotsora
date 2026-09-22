@@ -28,7 +28,7 @@ function zuProzent(wert: string): number {
   return Number.isFinite(n) ? n : 0;
 }
 
-export function MaterialAbschnitt({ materialien, onStructureChange }: { materialien: Material[]; onStructureChange: () => void }) {
+export function MaterialAbschnitt({ materialien, onStructureChange, offen = false }: { materialien: Material[]; onStructureChange: () => void; offen?: boolean }) {
   const [structure, setStructure] = useState(0);
   const prefix = useId();
   const focusId = useRef<string | null>(null);
@@ -74,7 +74,7 @@ export function MaterialAbschnitt({ materialien, onStructureChange }: { material
       : "text-sm text-muted-foreground";
 
   return (
-    <details open className="space-y-4 rounded-lg border p-5">
+    <details open={offen} className="space-y-4 rounded-lg border p-5">
       <summary className="cursor-pointer font-medium">Material</summary>
       <div>
         <p className="text-sm text-muted-foreground">

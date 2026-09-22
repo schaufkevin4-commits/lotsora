@@ -6,11 +6,13 @@ import type { Textildaten } from "@/lib/services/products";
 // Herkunft / Produktdetails (product_textile_data, 1:1). Alles optional.
 export function ProduktdetailsAbschnitt({
   textildaten,
+  offen = false,
 }: {
   textildaten: Textildaten | null;
+  offen?: boolean;
 }) {
   return (
-    <details open className="space-y-4 rounded-lg border p-5">
+    <details open={offen} className="space-y-4 rounded-lg border p-5">
       <summary className="cursor-pointer font-medium">Herkunft &amp; Produktdetails</summary>
       <div>
         <p className="text-sm text-muted-foreground">

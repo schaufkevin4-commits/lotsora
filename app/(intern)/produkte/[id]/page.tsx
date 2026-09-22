@@ -19,6 +19,7 @@ import { VeroeffentlichenAbschnitt } from "./VeroeffentlichenAbschnitt";
 import { buildPassUrl, generateQrSvg } from "@/lib/qr";
 import { QrCodeAbschnitt } from "./QrCodeAbschnitt";
 import { EditorProvider } from "./EditorProvider";
+import { EditorBereiche } from "./EditorBereiche";
 import { datenluecken } from "@/lib/services/completeness";
 
 export const metadata = { title: "Produkt bearbeiten | lotsora" };
@@ -70,12 +71,14 @@ export default async function ProduktEditorSeite({
         </div>
       </div>
 
-      <aside className="space-y-1 rounded-lg border p-4 text-sm" aria-label="Datenvollständigkeit">
-        <p className="font-medium">Gespeicherte Angaben: {luecken.label}</p>
+      <EditorBereiche published={istVeroeffentlicht} publication={publication} daten={<>
+      <details className="space-y-2 rounded-lg border p-4 text-sm">
+        <summary className="cursor-pointer font-medium">Gespeicherte Angaben: {luecken.label}</summary>
         {luecken.required.length > 0 && <p>Pflichtangaben fehlen: {luecken.required.join(", ")}.</p>}
         {luecken.optional.length > 0 && <p>Optional ergänzen: {luecken.optional.join(", ")}.</p>}
         <p className="text-muted-foreground">Orientierung zu Pflichtangaben, Material, Herkunft, Pflege und Kreislauf. Keine fachliche Prüfung. Optionale Lücken verhindern die Veröffentlichung nicht.</p>
-      </aside>
+      </details>
+      {luecken.required.length > 0 && <p className="text-sm text-muted-foreground">Für die Veröffentlichung noch ergänzen: {luecken.required.join(", ")}.</p>}
 
       <ProduktFormular
         guided={(await searchParams).neu === "1"}
@@ -84,11 +87,15 @@ export default async function ProduktEditorSeite({
         textildaten={textildaten}
         nachhaltigkeit={nachhaltigkeit}
       />
-
+      </>} dateien={<>
+      <div className="space-y-1">
+        <h2 className="font-semibold">Bild und Dokumente</h2>
+        <p className="text-sm text-muted-foreground">Dateien ergänzen und Dokumente für den nächsten öffentlichen Stand auswählen.</p>
+      </div>
       <FileCleanupPanel operations={offeneDateivorgaenge} />
       <ProductImage productId={id} path={produkt.image_url} url={produkt.image_url ? await erzeugeSignierteUrl(supabase, produkt.image_url) : null} />
       <div id="dokumente"><DokumenteAbschnitt productId={id} dokumente={dokumente} /></div>
-
+      </>} veroeffentlichung={<>
       <VeroeffentlichenAbschnitt
         productId={produkt.id}
         status={produkt.status}
@@ -98,6 +105,7 @@ export default async function ProduktEditorSeite({
       />
 
       <QrCodeAbschnitt svg={qrSvg} passUrl={passUrl} />
+      </>} />
     </div>
     </EditorProvider>
   );
