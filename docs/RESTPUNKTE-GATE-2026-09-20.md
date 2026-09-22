@@ -1,5 +1,7 @@
 # Verbindliche Restpunkte bis zur Gate-Freigabe
 
+**Einordnung 22.09.2026:** [LP-002-Abgleich und Zuordnung zu Phase 6](UEBERGABE-NACH-GATE-2026-09-20.md#lp-002-abgleich-am-22092026). Die aktuellen Tabellenstatus gelten; ältere Problembeschreibungen unten dokumentieren teils den Stand vor Umsetzung. P2-1 ist abgenommen. Bei P2-4 ist durch A4 die Richtung bereits entschieden; offen sind Vorziehung vor den ersten Kunden und genauer Umfang. Im anschließenden Auftrag wurde P2-2 lokal umgesetzt und geprüft; abschließende Nutzerabnahme offen. [Nachweis](P2-2-UMSETZUNG-2026-09-22.md).
+
 Datum: 20.09.2026. Prüfstand der zwei unabhängigen Prüfungen (Claude, Codex):
 `bbf80930a778d2ee46e9c76e94e2f89a74105a3d` (`main`). Umsetzung auf dem neuen Branch
 `codex/gate-restpunkte`, ausgehend von diesem Stand.
@@ -39,9 +41,9 @@ Belege ohne Commitangabe beziehen sich auf diesen Branch. `T` steht für
 | P1-4 | Fehlende/fremde Löschziele verständlich melden (A6) | P1 | vor lokalem Gate | Umgesetzt; Service-/Action- und Cleanup-Tests grün | `lib/services/products.ts:277`; `lib/services/documents.ts:180`; `tests/integration/gate-actions.test.ts:158` |
 | P1-5 | Tote Firmen-Policies entfernen; Widerrufszeitpunkt erhalten (A5/A7a) | P1 | vor lokalem Gate | Umgesetzt; Katalog-/Action-Tests grün | `supabase/migrations/20260920180000_gate_restpunkte.sql:8`; `tests/integration/gate-actions.test.ts:89,184` |
 | P2-1 | Konto-/Firmenlöschung für alleinigen Verantwortlichen (A1) | P2 | vor erstem Kunden | Umgesetzt, geprüft und nach Live-Vorführung durch Kevin abgenommen; Sicherung auf main beauftragt | `P2-1-UMSETZUNG-2026-09-20.md`; Cloud-Betrieb bleibt P3 |
-| P2-2 | Weg für mitgliedschaftslose Konten (A2) | P2 | vor erstem Kunden | Offen; Entscheidung Kevin | `app/(intern)/layout.tsx:34`; `T:54–66`; `tests/integration/teams.test.ts:128–129` |
+| P2-2 | Weg für mitgliedschaftslose Konten (A2) | P2 | vor erstem Kunden | Selbstbedienung von Kevin beauftragt; lokal umgesetzt und technisch geprüft, finale Nutzerabnahme offen | [Umsetzung und Prüfungen](P2-2-UMSETZUNG-2026-09-22.md); `app/firma/neu`; `20260922120000_firma_neuanlage.sql` |
 | P2-3 | Reichweite des Versionsschutzes (A7b/N2) | P2 | vor erstem Kunden | Offen; Entscheidung Kevin | `supabase/migrations/20260916120000_editor_konfliktschutz.sql:41–82` |
-| P2-4 | Getrennte Veröffentlichungsstände (D5) | P2 | vor erstem Kunden | Offen; Produktentscheidung Kevin | `lib/editor-save.ts:29`; `app/(intern)/produkte/[id]/VeroeffentlichenAbschnitt.tsx:41,57` |
+| P2-4 | Getrennte Veröffentlichungsstände (D5) | P2 | vor erstem Kunden Zeitpunkt/Umfang klären; gemäß A4 spätestens vor kontrollierten Importen | Richtung durch A4 beschlossen; Vorziehung vor ersten Kunden und Umfang offen | `ARCHITEKTURBESCHLUSS-2026-09-20.md`, A4; `app/(intern)/produkte/[id]/VeroeffentlichenAbschnitt.tsx:41,57` |
 | P2-5 | Physischer QR-Druckscan und echte Screenreader-Stichprobe | P2 | vor erstem Kunden | Offen; manuelle Nachweise fehlen | `docs/N8-RESTABNAHME-2026-09-20.md:7–19`; neuer Arbeitsauftrag, Teil 3 |
 | P2-6 | Eigener Designblock für das gesamte Frontend | P2 | vor erstem Kundentest | Beauftragt zu planen; Designrichtung und visuelle Abnahme offen | Aktueller Folgeauftrag; Umfang und Abnahme in `UEBERGABE-NACH-GATE-2026-09-20.md` |
 | P3-1 | Voll-Apply auf garantiert leere Instanz (C2) | P3 | vor Cloud-Livegang | Offen; jetzt ausdrücklich nicht ausgeführt | `scripts/integration.mjs:78–87,129–131` |
@@ -108,7 +110,9 @@ und meldet danach eine nicht mehr offene Einladung. Der Action-Test prüft Best�
 ersten Widerruf, abgewiesene Wiederholung, unveränderten Zeitpunkt und gesperrten Beitritt.
 Tabellen-/RPC-Signaturen ändern sich nicht; eine Typenneuerzeugung ist nicht nötig.
 
-**P2-1:** Ein alleiniger Firmenverantwortlicher kann weder Verantwortung übergeben noch
+**P2-1 – historische Problembeschreibung vor der inzwischen abgenommenen Umsetzung:**
+Aktueller Stand und Nachweise: [P2-1-UMSETZUNG-2026-09-20.md](P2-1-UMSETZUNG-2026-09-20.md).
+Ein alleiniger Firmenverantwortlicher kann weder Verantwortung übergeben noch
 sein Konto oder seine Firma im vorgesehenen Produktablauf löschen. Erfolgreiche
 Mitarbeiterlöschung und rohe SQL-Testbereinigung lösen diesen Normalfall eines
 KMU-Erstkunden nicht. Kevin muss zwischen Selbstbedienung und dokumentiertem
@@ -118,11 +122,13 @@ muss dauerhaft bestehen bleiben. Kein solcher Ablauf wurde jetzt implementiert.
 Nachweis vor Kunde: alleiniger Verantwortlicher, gemeinsame Daten, Dateibereinigung,
 fehlende Fremdrechte und dauerhaft nicht recycelbare QR-IDs.
 
-**P2-2:** Ein entferntes Mitglied besitzt weiter sein Konto, kann aber selbst keine
-Firma gründen. Eine neue Einladung ermöglicht den Beitritt; die E-Mail ist nicht
-verloren. Entscheidung Kevin: „Eigene Firma anlegen“ oder klarer Supportweg.
-Nachweis: entferntes Konto erhält ohne technische Handarbeit des Kunden einen
-erklärten Weg zurück; eine erneute Einladung funktioniert bereits im Teamtest.
+**P2-2:** Kevin hat am 22.09. die Selbstbedienung mit zwei verständlichen Wegen
+beauftragt. Entfernte Mitglieder oder erhaltene Konten nach Firmenlöschung können
+bewusst einen neuen leeren Firmenbereich anlegen; Einladung zur bestehenden Firma
+bleibt der zweite Weg. Mitgliedschaft, Bestätigung und Löschstatus werden in der
+DB geprüft; wiederholte Anfragen erzeugen keine zweite Firma. [Umsetzung und 13
+neue Integrationsfälle](P2-2-UMSETZUNG-2026-09-22.md). Technisch geprüft und live
+vorgeführt; abschließende Nutzerabnahme nicht vorweggenommen.
 
 **P2-3:** Ältere Speicher-/Veröffentlichungs-RPCs und direkte Tabellenupdates verlangen
 keine erwartete Editorversion. Die aktuelle Editoroberfläche nutzt die geprüften RPCs;
@@ -135,7 +141,10 @@ Schreibwege mit konkurrierenden, veralteten Ständen prüfen.
 **P2-4:** Gespeicherte Änderungen veröffentlichter Produkte sind sofort öffentlich;
 1.200 ms ist der Autosave-Debounce, kein fester periodischer Speicherzyklus. Die UI
 weist darauf hin. Dies ist ein Produktrisiko, kein nachgewiesener Codefehler.
-Kevin entscheidet über Beibehaltung oder getrennte Entwurfs-/Veröffentlichungsstände.
+Durch A4 ist die Trennung von Entwurfs-/Veröffentlichungsständen bereits als Richtung
+beschlossen, spätestens vor kontrollierten Importen. Kevin entscheidet noch über
+die Vorziehung vor den ersten Kunden und den konkreten Umfang; die grundlegende
+Richtung wird nicht erneut zur Wahl gestellt.
 Nachweis: verständlicher Ablauf und genau der beschlossene öffentliche Datenstand.
 
 **P2-5:** Bildschirm-/Dateidekodierung belegt keinen gedruckten QR-Code. Vor Kunde

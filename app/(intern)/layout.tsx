@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { abmelden } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
+import { FirmenEinstieg } from "@/components/firma/firmen-einstieg";
 
 export default async function InternLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -31,7 +32,7 @@ export default async function InternLayout({ children }: { children: React.React
         </form>
       </header>
       <main id="hauptinhalt" tabIndex={-1} className="mx-auto max-w-4xl p-4 sm:p-6">
-        {firma ? children : <div className="space-y-3"><h1 className="text-2xl font-semibold">Keine Firmenzugehörigkeit</h1><p>Dein Konto gehört aktuell zu keiner Firma. Öffne eine gültige Teameinladung oder wende dich an den Firmenverantwortlichen.</p><p><Link href="/konto" className="underline">Konto verwalten oder Löschvorgang fortsetzen</Link></p></div>}
+        {firma ? children : <><h1 className="sr-only">Firmenzugang wählen</h1><FirmenEinstieg /></>}
       </main>
     </div>
   );

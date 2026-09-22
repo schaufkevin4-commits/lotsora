@@ -552,12 +552,17 @@ export type Database = {
           token: string
         }[]
       }
+      create_own_company: {
+        Args: { p_name: string; p_request_id: string }
+        Returns: string
+      }
       deletion_job_batch: { Args: { p_job_id: string }; Returns: Json }
       finish_file_cleanup: {
         Args: { p_error_code?: string; p_operation_id: string }
         Returns: boolean
       }
       generate_product_public_id: { Args: never; Returns: string }
+      get_company_entry_state: { Args: never; Returns: string }
       hersteller_hat_veroeffentlichtes_produkt: {
         Args: { p_manufacturer: string }
         Returns: boolean

@@ -44,6 +44,18 @@ export async function createFixtures() {
     }
     // Firmen bewusst vor Konten abbauen: ein Verantwortlicher darf nicht
     // versehentlich mitsamt gemeinsamem Firmenbestand gelöscht werden.
+    // P2-2 kann mit vorhandenen Testkonten neue Firmen anlegen. Auch bei einer
+    // fehlgeschlagenen Assertion diese ausschließlich fixture-eigenen Firmen erfassen.
+    if (users.length) {
+      if (users.some(id => !/^[a-f0-9-]{36}$/.test(id))) throw new Error("Ungültige Testkonto-ID.");
+      // Auch SELECT ist für service_role hier absichtlich nicht freigegeben.
+      const owned = await sql(`select id from public.manufacturers where user_id in (${users.map(id => `'${id}'`).join(",")});`);
+      if (owned.code !== 0) errors.push("Neu angelegte Testfirmen konnten nicht ermittelt werden.");
+      for (const id of owned.output.trim().split(/\s+/).filter(Boolean)) {
+        if (!/^[a-f0-9-]{36}$/.test(id)) throw new Error("Ungültige Testfirmen-ID.");
+        if (!companies.includes(id)) companies.push(id);
+      }
+    }
     if (companies.length) {
       if (companies.some(id => !/^[a-f0-9-]{36}$/.test(id))) throw new Error("Ungültige Testfirmen-ID.");
       // service_role erhält keine zusätzlichen Firmen-Löschrechte nur für Tests.

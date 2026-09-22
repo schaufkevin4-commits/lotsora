@@ -6,6 +6,7 @@ import { getDeletionPreview } from "@/lib/services/account-deletion";
 import { abmelden } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { Loeschbereich } from "./Loeschbereich";
+import { FirmenEinstieg } from "@/components/firma/firmen-einstieg";
 
 export default async function KontoPage() {
   const client = await createClient();
@@ -19,7 +20,7 @@ export default async function KontoPage() {
   return <main className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6">
     <div className="flex flex-wrap items-center justify-between gap-4"><Link href="/profil" className="text-sm underline">Zurück zum Profil</Link><form action={abmelden}><Button variant="ghost" size="sm">Abmelden</Button></form></div>
     <div><h1 className="text-2xl font-semibold">Konto &amp; Firmenlöschung</h1><p className="mt-2 break-all text-muted-foreground">Angemeldet als {user.email}</p></div>
-    {!company && !jobs.data && <section className="space-y-2 rounded-lg border p-4"><h2 className="font-semibold">Keine Firmenzugehörigkeit</h2><p>Dein Konto hat keinen Zugriff auf Firmendaten. Du kannst eine gültige Teameinladung öffnen oder dein persönliches Konto unten löschen.</p></section>}
+    {!company && !jobs.data && <FirmenEinstieg />}
     <Loeschbereich preview={preview} isOwner={isOwner} initial={jobs.data ? { jobId: jobs.data.id, deleteSelf: jobs.data.delete_self, companyDeleted: jobs.data.company_id !== null } : undefined} />
   </main>;
 }
