@@ -1,3 +1,4 @@
+import { saveFixtureProduct, publishFixtureProduct } from "./product-write";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import sharp from "sharp";
 import { createFixtures, pdfBytes, type Fixtures } from "./fixtures";
@@ -40,7 +41,7 @@ async function state(id: string) {
 describe("B5/N7: privater Direktupload und bestätigter Abschluss", () => {
   it("blockiert ungeprüfte Direktbindung als Dokument und Produktbild", async () => {
     const p = await product(); const op = await upload(p.id);
-    expect((await fixture.a.client.from("products").update({ image_url: op.file_path }).eq("id", p.id)).error?.code).toBe("23514");
+    expect((await fixture.a.client.from("products").update({ image_url: op.file_path }).eq("id", p.id)).error?.code).toBe("42501");
     expect((await fixture.a.client.from("documents").insert({ product_id: p.id, name: "Ungeprüft", file_path: op.file_path })).error?.code).toBe("23514");
     expect((await fixture.anon.storage.from(DOKUMENTE_BUCKET).download(op.file_path)).error).not.toBeNull();
     expect((await fixture.a.client.rpc("mark_file_validated", { p_operation_id: op.id, p_owner_id: fixture.a.userId })).error?.code).toBe("42501");
@@ -125,12 +126,12 @@ describe("B5/N7: privater Direktupload und bestätigter Abschluss", () => {
     const p = await product(); const op = await upload(p.id);
     await completeImageUpload(fixture.a.client, fixture.verifier, op.id, null);
     expect((await fixture.anon.storage.from(DOKUMENTE_BUCKET).createSignedUrl(op.file_path, 60)).error).not.toBeNull();
-    expect((await fixture.a.client.rpc("publish_product", { p_product_id: p.id })).error).toBeNull();
+    expect((await publishFixtureProduct(fixture.a.client, p.id, true)).error).toBeNull();
     const pass = await getOeffentlicherPass(fixture.anon, p.public_id);
     expect(pass?.produkt.image_url).toContain(`/p/${p.public_id}/bild?stand=`);
     expect((await fixture.anon.storage.from(DOKUMENTE_BUCKET).download(op.file_path)).error).toBeNull();
     expect((await fixture.b.client.storage.from(DOKUMENTE_BUCKET).download(op.file_path)).error).toBeNull();
-    expect((await fixture.a.client.rpc("withdraw_product", { p_product_id: p.id })).error).toBeNull();
+    expect((await publishFixtureProduct(fixture.a.client, p.id, false)).error).toBeNull();
     expect((await fixture.anon.storage.from(DOKUMENTE_BUCKET).download(op.file_path)).error).not.toBeNull();
     expect((await deleteProdukt(fixture.a.client, p.id)).complete).toBe(true);
     expect((await state(op.id)).state).toBe("deleted");
@@ -147,16 +148,16 @@ describe("N7: Artikelnummer bleibt optional, intern und atomar", () => {
   it("speichert führende Nullen und rollt alle Formularbereiche bei Fehler zurück", async () => {
     const p = await product();
     const args = { p_product_id: p.id, p_name: "Geändert", p_description: "Beschreibung", p_category: "Textil", p_brand: "Marke", p_expected_status: "entwurf" as const, p_materials: [{ material_name: "Baumwolle", percentage: 100 }], p_textile_data: { color: "Rot" }, p_sustainability: { repair_notes: "Neu" }, p_article_number: "00123-A" };
-    expect((await fixture.a.client.rpc("save_product_with_article", args)).error).toBeNull();
+    expect((await saveFixtureProduct(fixture.a.client, p.id, args)).error).toBeNull();
     expect((await getProdukt(fixture.a.client, p.id))?.article_number).toBe("00123-A");
     const tables = async () => Promise.all([fixture.a.client.from("products").select().eq("id", p.id), fixture.a.client.from("product_materials").select().eq("product_id", p.id), fixture.a.client.from("product_textile_data").select().eq("product_id", p.id), fixture.a.client.from("product_sustainability").select().eq("product_id", p.id)]).then(rows => rows.map(r => r.data));
     const before = await tables();
-    expect((await fixture.a.client.rpc("save_product_with_article", { ...args, p_name: "Fehler", p_article_number: "X".repeat(121), p_textile_data: { color: "Blau" }, p_sustainability: { repair_notes: "Fehler" }, p_materials: [] })).error?.code).toBe("23514");
+    expect((await saveFixtureProduct(fixture.a.client, p.id, { ...args, p_name: "Fehler", p_article_number: "X".repeat(121), p_textile_data: { color: "Blau" }, p_sustainability: { repair_notes: "Fehler" }, p_materials: [] })).error?.code).toBe("23514");
     expect(await tables()).toEqual(before);
-    expect((await fixture.a.client.rpc("publish_product", { p_product_id: p.id })).error).toBeNull();
+    expect((await publishFixtureProduct(fixture.a.client, p.id, true)).error).toBeNull();
     expect((await fixture.anon.from("products").select("article_number").eq("id", p.id)).error?.code).toBe("42501");
     expect(JSON.stringify(await getOeffentlicherPass(fixture.anon, p.public_id))).not.toContain("00123-A");
-    expect((await fixture.a.client.rpc("save_product_with_article", { ...args, p_expected_status: "veroeffentlicht", p_article_number: "  " })).error).toBeNull();
+    expect((await saveFixtureProduct(fixture.a.client, p.id, { ...args, p_expected_status: "veroeffentlicht", p_article_number: "  " })).error).toBeNull();
     expect((await getProdukt(fixture.a.client, p.id))?.article_number).toBeNull();
   });
 });

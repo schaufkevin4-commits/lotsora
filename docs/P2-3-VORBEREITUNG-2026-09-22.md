@@ -1,8 +1,10 @@
 # P2-3 – Reichweite des Versionsschutzes
 
 Stand: 22.09.2026, geprüft auf lokaler Lotsora-Basis `69e4c7c`.
-Status: Schreibwege inventarisiert, Entscheidung zum Umfang bei Kevin angefragt.
-Keine Änderung an DB-Rechten, RPCs oder Migrationen aus dieser Vorbereitung.
+Status: historische Vorbereitung; mit „passt machen wir weiter“ fortgeführt.
+Der empfohlene Umfang wurde anschließend lokal umgesetzt und geprüft:
+[aktueller Abschluss](P2-3-UMSETZUNG-2026-09-22.md).
+Die folgenden offenen Formulierungen beschreiben den damaligen Planungsstand.
 
 ## Konkretes Problem und Empfehlung
 
@@ -107,4 +109,3 @@ Kevin sagte anschließend zur Erklärung „top dann nächster schritt“.
 Der Arbeitsfokus geht damit zu P2-3; die Passwortfrage war eine Lücke der
 bereitgestellten Testanmeldung, keine passwortlose Firmenregistrierung.
 LP-002 Phase 6, formal 27/40 und Tag 28 offen bleiben unverändert.
-

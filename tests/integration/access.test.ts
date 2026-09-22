@@ -1,3 +1,4 @@
+import { publishFixtureProduct } from "./product-write";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { getOeffentlicherPass, getProdukt, getVorschauPass } from "@/lib/services/products";
 import { DOKUMENTE_BUCKET } from "@/lib/services/documents";
@@ -32,8 +33,7 @@ describe("Echte Mandantentrennung auf lotsora-integration", () => {
     expect(await getVorschauPass(fixture.b.client, fixture.a.published.id)).toBeNull();
     const changed = await fixture.b.client.from("products").update({ name: "Fremdänderung" })
       .eq("id", fixture.a.published.id).select("id");
-    expect(changed.error).toBeNull();
-    expect(changed.data).toEqual([]);
+    expect(changed.error?.code).toBe("42501");
   });
 
   it("anon sieht den veröffentlichten Pass, keine Entwürfe und keine internen Spalten", async () => {
@@ -117,16 +117,14 @@ describe("Echte Mandantentrennung auf lotsora-integration", () => {
   });
 
   it("Rücknahme sperrt neue öffentliche Pass- und Dateiabrufe", async () => {
-    const { error } = await fixture.a.client.from("products").update({ status: "entwurf" })
-      .eq("id", fixture.a.published.id);
+    const { error } = await publishFixtureProduct(fixture.a.client, fixture.a.published.id, false);
     expect(error).toBeNull();
     try {
       expect(await getOeffentlicherPass(fixture.anon, fixture.a.published.public_id)).toBeNull();
       const file = await fixture.anon.storage.from(DOKUMENTE_BUCKET).download(fixture.a.publicDoc.file_path!);
       expect(file.error).not.toBeNull();
     } finally {
-      const restored = await fixture.a.client.from("products").update({ status: "veroeffentlicht" })
-        .eq("id", fixture.a.published.id);
+      const restored = await publishFixtureProduct(fixture.a.client, fixture.a.published.id, true);
       if (restored.error) throw restored.error;
     }
   });

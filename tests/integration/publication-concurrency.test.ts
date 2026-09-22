@@ -1,3 +1,4 @@
+import { saveFixtureProduct, publishFixtureProduct } from "./product-write";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
@@ -16,6 +17,11 @@ async function product() {
   return data;
 }
 
+// Nur der SQL-Testharness darf interne Trigger-Invarianten direkt ausüben.
+// Normale API-Sessions erhalten diese Rolle nicht (product-write-boundary.test.ts).
+function asInternalWriter(id: string, isolation = "read committed") {
+  return asManufacturer(id, isolation) + "set local role lotsora_product_writer; select current_user;";
+}
 function saveSql(id: string, expected = "entwurf", name = "Neuer Name") {
   return `select public.save_product('${id}', '${name}', 'Neue Beschreibung', 'Textil', 'Neue Marke', '${expected}',
     '[{"material_name":"Leinen","percentage":90}]', '{"color":"Rot"}', '{"repair_notes":"Neue Notiz"}');`;
@@ -40,16 +46,16 @@ async function blocked(applicationName: string) {
   }, { timeout: 4_000, interval: 50 });
 }
 
-describe("B4: echte konkurrierende Transaktionen mit Herstellerrechten", () => {
+describe("B4: interne Trigger-Invarianten unter konkurrierenden Transaktionen", () => {
   it.each(["read committed", "repeatable read"])("konkurrierende Material-Inserts überschreiten 100 nicht (%s)", async (isolation) => {
     const p = await product();
     const first = sqlSession();
     const second = sqlSession();
     const label = `b4_${randomUUID()}`;
     try {
-      const actor = await first.query(asManufacturer(fixture.a.company.user_id));
-      expect(actor).toContain(`authenticated:${fixture.a.company.user_id}`);
-      await second.query(asManufacturer(fixture.a.company.user_id, isolation));
+      const actor = await first.query(asInternalWriter(fixture.a.company.user_id));
+      expect(actor).toContain("lotsora_product_writer");
+      await second.query(asInternalWriter(fixture.a.company.user_id, isolation));
       await first.query(`insert into public.product_materials(product_id, material_name, percentage) values ('${p.id}', 'A', 60);`);
       second.end(`set application_name = '${label}'; insert into public.product_materials(product_id, material_name, percentage) values ('${p.id}', 'B', 50); commit;`);
       await blocked(label);
@@ -69,9 +75,9 @@ describe("B4: echte konkurrierende Transaktionen mit Herstellerrechten", () => {
     const second = sqlSession();
     const label = `b4_${randomUUID()}`;
     try {
-      await first.query(`${asManufacturer(fixture.a.company.user_id)}
+      await first.query(`${asInternalWriter(fixture.a.company.user_id)}
         select public.replace_product_materials('${p.id}', '[{"material_name":"A","percentage":60}]');`);
-      second.end(`${asManufacturer(fixture.a.company.user_id)} set application_name = '${label}';
+      second.end(`${asInternalWriter(fixture.a.company.user_id)} set application_name = '${label}';
         select public.replace_product_materials('${p.id}', '[{"material_name":"B","percentage":70}]'); commit;`);
       await blocked(label);
       first.end("commit;");
@@ -87,8 +93,8 @@ describe("B4: echte konkurrierende Transaktionen mit Herstellerrechten", () => {
     const second = sqlSession();
     const label = `b4_${randomUUID()}`;
     try {
-      await first.query(`${asManufacturer(fixture.a.company.user_id)} ${saveSql(p.id, "entwurf", "")}`);
-      second.end(`${asManufacturer(fixture.a.company.user_id)} set application_name = '${label}'; select public.publish_product('${p.id}'); commit;`);
+      await first.query(`${asInternalWriter(fixture.a.company.user_id)} ${saveSql(p.id, "entwurf", "")}`);
+      second.end(`${asInternalWriter(fixture.a.company.user_id)} set application_name = '${label}'; select public.publish_product('${p.id}'); commit;`);
       await blocked(label);
       first.end("commit;");
       expect((await first.done).code).toBe(0);
@@ -101,13 +107,13 @@ describe("B4: echte konkurrierende Transaktionen mit Herstellerrechten", () => {
 
   it.each(["publish", "withdraw"])("Speichern weist einen inzwischen geänderten Status ab (%s)", async (operation) => {
     const p = await product();
-    if (operation === "withdraw") expect((await fixture.a.client.rpc("publish_product", { p_product_id: p.id })).error).toBeNull();
+    if (operation === "withdraw") expect((await publishFixtureProduct(fixture.a.client, p.id, true)).error).toBeNull();
     const first = sqlSession();
     const second = sqlSession();
     const label = `b4_${randomUUID()}`;
     try {
-      await first.query(`${asManufacturer(fixture.a.company.user_id)} select public.${operation}_product('${p.id}');`);
-      second.end(`${asManufacturer(fixture.a.company.user_id)} set application_name = '${label}'; ${saveSql(p.id, operation === "withdraw" ? "veroeffentlicht" : "entwurf")} commit;`);
+      await first.query(`${asInternalWriter(fixture.a.company.user_id)} select public.${operation}_product('${p.id}');`);
+      second.end(`${asInternalWriter(fixture.a.company.user_id)} set application_name = '${label}'; ${saveSql(p.id, operation === "withdraw" ? "veroeffentlicht" : "entwurf")} commit;`);
       await blocked(label);
       first.end("commit;");
       expect((await first.done).code).toBe(0);
@@ -122,7 +128,7 @@ describe("B4: echte konkurrierende Transaktionen mit Herstellerrechten", () => {
 describe("B4: atomare Speicherung und gültige Zwischenstände", () => {
   it("später Fehler in Tabelle vier rollt alle vier Formularbereiche zurück", async () => {
     const p = await product();
-    expect((await sql(`${asManufacturer(fixture.a.company.user_id)} ${saveSql(p.id)} commit;`)).code).toBe(0);
+    expect((await sql(`${asInternalWriter(fixture.a.company.user_id)} ${saveSql(p.id)} commit;`)).code).toBe(0);
     const before = await snapshot(p.id);
     // Fehler ausschließlich am synthetischen Produkt, immer im finally entfernen.
     const trigger = `b4_fail_${randomUUID().replaceAll("-", "")}`;
@@ -131,7 +137,7 @@ describe("B4: atomare Speicherung und gültige Zwischenstände", () => {
         if new.product_id = '${p.id}'::uuid then raise exception 'B4 absichtlich später Testfehler' using errcode = '23514'; end if; return new; end $$;
         create trigger ${trigger} before insert or update on public.product_sustainability for each row execute function private.${trigger}();`);
       expect(setup.code).toBe(0);
-      const response = await fixture.a.client.rpc("save_product", {
+      const response = await saveFixtureProduct(fixture.a.client, p.id, {
         p_product_id: p.id, p_expected_status: "entwurf", p_name: "Muss zurückrollen", p_description: "Neu", p_category: "Anders", p_brand: "Anders",
         p_materials: [{ material_name: "Wolle", percentage: 75 }], p_textile_data: { color: "Grün" }, p_sustainability: { repair_notes: "Muss zurückrollen" },
       });
@@ -145,7 +151,7 @@ describe("B4: atomare Speicherung und gültige Zwischenstände", () => {
 
   it("Umverteilen und Löschen sind bei gültiger Endsumme möglich", async () => {
     const p = await product();
-    const result = await sql(`${asManufacturer(fixture.a.company.user_id)}
+    const result = await sql(`${asInternalWriter(fixture.a.company.user_id)}
       insert into public.product_materials(product_id, material_name, percentage) values ('${p.id}', 'A', 60), ('${p.id}', 'B', 40);
       update public.product_materials set percentage = 70 where product_id = '${p.id}' and material_name = 'A';
       update public.product_materials set percentage = 30 where product_id = '${p.id}' and material_name = 'B'; commit;`);
@@ -157,7 +163,7 @@ describe("B4: atomare Speicherung und gültige Zwischenstände", () => {
   it("eine ungültige Endsumme rollt auch bereits gespeicherte Formularbereiche zurück", async () => {
     const p = await product();
     const before = await snapshot(p.id);
-    const result = await sql(`${asManufacturer(fixture.a.company.user_id)} ${saveSql(p.id)}
+    const result = await sql(`${asInternalWriter(fixture.a.company.user_id)} ${saveSql(p.id)}
       insert into public.product_materials(product_id, material_name, percentage) values ('${p.id}', 'Zusatz', 20); commit;`);
     expect(result.code).not.toBe(0);
     expect(result.output).toContain("product_materials_total_limit");
@@ -187,6 +193,6 @@ describe("B4: Migration bei ungültigen Altbeständen", () => {
     expect(result.code).not.toBe(0);
     expect(result.output).toContain(invalid === "Pflichtfelder" ? "products_published_required_fields" : invalid === "Materialsumme" ? "Bestehende Materialsumme" : "contains null values");
     expect(await snapshot(p.id)).toEqual(before);
-    expect((await fixture.a.client.from("products").update({ name: "", status: "veroeffentlicht" }).eq("id", p.id)).error?.code).toBe("23514");
+    expect((await fixture.a.client.from("products").update({ name: "", status: "veroeffentlicht" }).eq("id", p.id)).error?.code).toBe("42501");
   });
 });

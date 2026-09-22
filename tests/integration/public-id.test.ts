@@ -15,7 +15,7 @@ test("öffentliche ID wird trotz Clientvorgabe erzeugt und bleibt unveränderlic
   expect(product.public_id).toMatch(/^[1-9A-HJ-NP-Za-km-z]{12}$/);
   expect(product.public_id).not.toBe("Client-Wunsch");
   for (const public_id of [f.a.published.public_id, null]) {
-    expect((await f.a.client.from("products").update({ public_id: public_id! }).eq("id", product.id)).error?.code).toBe("22023");
+    expect((await f.a.client.from("products").update({ public_id: public_id! }).eq("id", product.id)).error?.code).toBe("42501");
   }
   expect((await f.a.client.from("products").select("public_id").eq("id", product.id).single()).data?.public_id).toBe(product.public_id);
 });

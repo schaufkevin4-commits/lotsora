@@ -6,6 +6,7 @@ import { DOKUMENTE_BUCKET, setzeDokumentSichtbarkeit } from "@/lib/services/docu
 import { ladeDokumentHoch } from "@/lib/services/upload-completion";
 import { PDFDocument } from "pdf-lib";
 import { sql } from "./sql";
+import { saveFixtureProduct } from "./product-write";
 
 export async function pdfBytes() {
   const pdf = await PDFDocument.create(); pdf.addPage([100, 100]);
@@ -118,11 +119,13 @@ export async function createFixtures() {
         article_number: "INTERN-001",
       }).select().single();
       if (error) throw error;
-      const { error: materialError } = await client.from("product_materials").insert({
-        product_id: data.id, material_name: "Baumwolle", percentage: 100,
+      const { error: materialError } = await saveFixtureProduct(client, data.id, {
+        p_materials: [{ material_name: "Baumwolle", percentage: 100 }],
       });
       if (materialError) throw materialError;
-      return data;
+      const refreshed = await client.from("products").select().eq("id", data.id).single();
+      if (refreshed.error) throw refreshed.error;
+      return refreshed.data;
     }
 
     const published = await product("veroeffentlicht");

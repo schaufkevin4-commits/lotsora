@@ -1,3 +1,4 @@
+import { saveFixtureProduct, publishFixtureProduct } from "./product-write";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import sharp from "sharp";
 import { createFixtures, testConfig, type Fixtures } from "./fixtures";
@@ -15,10 +16,8 @@ beforeAll(async () => {
   const config = testConfig();
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", config.url);
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY", config.anonKey);
-  for (const response of await Promise.all([
-    f.a.client.from("product_textile_data").insert({ product_id: f.a.published.id, origin_country: "DE", color: "Blau", size: "M", care_instructions: "Lüften", wash_instructions: "30 Grad" }),
-    f.a.client.from("product_sustainability").insert({ product_id: f.a.published.id, recycling_notes: "Trennen", repair_notes: "Nähen", disposal_notes: "Sammeln", reusable_materials: "Baumwolle" }),
-  ])) if (response.error) throw response.error;
+  const details = await saveFixtureProduct(f.a.client, f.a.published.id, { p_textile_data: { origin_country: "DE", color: "Blau", size: "M", care_instructions: "Lüften", wash_instructions: "30 Grad" }, p_sustainability: { recycling_notes: "Trennen", repair_notes: "Nähen", disposal_notes: "Sammeln", reusable_materials: "Baumwolle" } });
+    if (details.error) throw details.error;
   await image(null);
 });
 afterAll(async () => {
@@ -45,7 +44,7 @@ async function signed(documentId?: string, seconds = 300) {
   return result.url;
 }
 async function status(publish: boolean) {
-  const response = await f.a.client.rpc(publish ? "publish_product" : "withdraw_product", { p_product_id: f.a.published.id });
+  const response = await publishFixtureProduct(f.a.client, f.a.published.id, publish);
   if (response.error) throw response.error;
 }
 
@@ -65,8 +64,7 @@ describe("N3: öffentliche Aktualität und erneuerbare Dateien", () => {
   });
   it("neue Anfragen sehen Produkt-, Detail-, Hersteller- und Dokumentänderungen", async () => {
     for (const result of await Promise.all([
-      f.a.client.from("products").update({ name: "N3 neuer Name", description: "N3 neue Beschreibung" }).eq("id", f.a.published.id),
-      f.a.client.from("product_textile_data").update({ color: "Grün" }).eq("product_id", f.a.published.id),
+      saveFixtureProduct(f.a.client, f.a.published.id, { p_name: "N3 neuer Name", p_description: "N3 neue Beschreibung", p_textile_data: { origin_country: "DE", color: "Grün", size: "M", care_instructions: "Lüften", wash_instructions: "30 Grad" } }),
       f.a.client.from("manufacturers").update({ company_name: "N3 neue Firma" }).eq("id", f.a.company.id),
       f.a.client.from("documents").update({ name: "N3 neues Dokument" }).eq("id", f.a.publicDoc.id),
     ])) expect(result.error).toBeNull();

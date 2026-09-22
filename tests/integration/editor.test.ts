@@ -1,3 +1,4 @@
+import { saveFixtureProduct } from "./product-write";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { createFixtures, type Fixtures } from "./fixtures";
@@ -27,13 +28,11 @@ describe("N9: Formularversion unter echter Produktsperre", () => {
     expect(second.error).toBeNull();
     expect((await fixture.a.client.from("product_materials").select().eq("product_id", p.id)).data).toEqual([]);
   });
-  it.each(["product_materials", "product_textile_data", "product_sustainability"] as const)("erkennt direkte Änderung an %s", async (table) => {
+  it.each(["product_materials", "product_textile_data", "product_sustainability"] as const)("erkennt zwischenzeitliche Änderung an %s", async (table) => {
     const p = await product();
-    const mutation = table === "product_materials"
-      ? await fixture.a.client.from(table).insert({ product_id: p.id, material_name: "Seide", percentage: 50 })
-      : table === "product_textile_data"
-        ? await fixture.a.client.from(table).insert({ product_id: p.id, color: "Rot" })
-        : await fixture.a.client.from(table).insert({ product_id: p.id, repair_notes: "Geändert" });
+    const changes = table === "product_materials" ? { p_materials: [{ material_name: "Seide", percentage: 50 }] }
+      : table === "product_textile_data" ? { p_textile_data: { color: "Rot" } } : { p_sustainability: { repair_notes: "Geändert" } };
+    const mutation = await saveFixtureProduct(fixture.a.client, p.id, changes);
     expect(mutation.error).toBeNull();
     expect((await fixture.a.client.rpc("save_product_checked", args(p.id, p.editor_version))).error?.code).toBe("40001");
     expect((await fixture.a.client.rpc("set_product_publication_checked", { p_product_id: p.id, p_expected_version: p.editor_version, p_publish: true })).error?.code).toBe("40001");

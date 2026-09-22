@@ -1,3 +1,4 @@
+import { saveFixtureProduct } from "./product-write";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { createFixtures, pdfBytes, type Fixtures } from "./fixtures";
 import { completeDocumentUpload } from "@/lib/services/upload-completion";
@@ -38,9 +39,9 @@ describe("Firmenteams", () => {
     expect((await member.client.from("products").select("id")).data?.map(p => p.id).sort()).toEqual([f.a.published.id, f.a.draft.id].sort());
     expect((await member.client.from("documents").select("id").eq("id", f.a.internalDoc.id)).data).toHaveLength(1);
     expect((await member.client.storage.from("produkt-dokumente").download(f.a.internalDoc.file_path!)).error).toBeNull();
-    expect((await member.client.from("products").update({ name: "Gemeinsam bearbeitet" }).eq("id", f.a.draft.id)).error).toBeNull();
+    expect((await saveFixtureProduct(member.client, f.a.draft.id, { p_name: "Gemeinsam bearbeitet" })).error).toBeNull();
     expect((await f.a.client.from("products").select("name").eq("id", f.a.draft.id).single()).data?.name).toBe("Gemeinsam bearbeitet");
-    expect((await member.client.from("products").update({ name: "Fremde Änderung" }).eq("id", f.b.draft.id).select()).data).toEqual([]);
+    expect((await member.client.from("products").update({ name: "Fremde Änderung" }).eq("id", f.b.draft.id).select()).error?.code).toBe("42501");
     expect((await member.client.rpc("reserve_file_upload", { p_product_id: f.b.draft.id, p_file_name: "test.pdf", p_purpose: "document" })).error?.code).toBe("42501");
     expect((await member.client.storage.from("produkt-dokumente").download(f.b.internalDoc.file_path!)).error).not.toBeNull();
     expect((await member.client.from("manufacturers").update({ company_name: "Unberechtigt" }).eq("id", f.a.company.id).select()).data).toEqual([]);
@@ -123,7 +124,7 @@ describe("Firmenteams", () => {
     expect((await member.client.from("products").select()).data).toEqual([]);
     expect((await member.client.from("file_operations").select()).data).toEqual([]);
     expect((await member.client.storage.from("produkt-dokumente").download(f.a.internalDoc.file_path!)).error).not.toBeNull();
-    expect((await member.client.from("products").update({ name: "Nach Entzug" }).eq("id", f.a.draft.id).select()).data).toEqual([]);
+    expect((await member.client.from("products").update({ name: "Nach Entzug" }).eq("id", f.a.draft.id).select()).error?.code).toBe("42501");
     expect((await member.client.rpc("accept_company_invitation", { p_token: invitation.token })).error?.code).toBe("22023");
     const reinvite = await invite(member.email);
     expect((await member.client.rpc("accept_company_invitation", { p_token: reinvite.token })).error).toBeNull();

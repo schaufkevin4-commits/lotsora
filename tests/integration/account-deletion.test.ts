@@ -1,3 +1,4 @@
+import { fixtureSaveArgs, saveFixtureProduct } from "./product-write";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { spawnSync } from "node:child_process";
 import { createFixtures, testConfig, type Fixtures, type TestCookie } from "./fixtures";
@@ -93,7 +94,7 @@ describe("P2-1: bestätigte Firmenlöschung", () => {
     const args={p_actor_id:f.a.userId,p_company_id:f.a.company.id,p_fingerprint:before.fingerprint,p_delete_members:true,p_delete_self:false};
     expect((await f.verifier.rpc("start_company_deletion",args)).error?.code).toBe("40001");
     const current = await getDeletionPreview(f.a.client,f.a.company.id);
-    await f.a.client.from("products").update({name:"Zwischenzeitlich geändert"}).eq("id",f.a.draft.id);
+    expect((await saveFixtureProduct(f.a.client,f.a.draft.id,{p_name:"Zwischenzeitlich geändert"})).error).toBeNull();
     expect((await f.verifier.rpc("start_company_deletion",{...args,p_fingerprint:current.fingerprint})).error?.code).toBe("40001");
     expect((await f.verifier.from("deletion_jobs").select().eq("company_id",f.a.company.id)).data).toEqual([]);
   });
@@ -128,14 +129,15 @@ describe("P2-1: bestätigte Firmenlöschung", () => {
   });
   it("lässt einen parallel bereits wartenden Produkt-Write nach dem Löschcommit nicht mehr durch", async () => {
     const p=await getDeletionPreview(f.a.client,f.a.company.id);
+    const saveArgs=await fixtureSaveArgs(f.a.client,f.a.draft.id);
     const session=sqlSession();
     try {
       const output=await session.query(`begin; set local role service_role; select public.start_company_deletion('${f.a.userId}','${f.a.company.id}','${p.fingerprint}',false,false);`);
       const id=output.match(/[a-f0-9]{8}-[a-f0-9-]{27}/)?.[0]; if(id) jobIds.push(id);
-      const change=Promise.resolve(f.a.client.from("products").update({name:"Zu spät"}).eq("id",f.a.draft.id).select());
-      await vi.waitFor(async()=>{const locks=await sql("select count(*) from pg_stat_activity where wait_event_type='Lock' and query ilike '%products%' and pid<>pg_backend_pid();");expect(Number(locks.output.trim())).toBeGreaterThan(0);},{timeout:4000});
+      const change=Promise.resolve(f.a.client.rpc("save_product_checked",{...saveArgs,p_name:"Zu spät"}));
+      await vi.waitFor(async()=>{const locks=await sql("select count(*) from pg_stat_activity where wait_event_type='Lock' and query ilike '%save_product_checked%' and pid<>pg_backend_pid();");expect(Number(locks.output.trim())).toBeGreaterThan(0);},{timeout:4000});
       session.end("commit;");expect((await session.done).code).toBe(0);
-      const result=await change;expect(result.error || result.data?.length===0).toBeTruthy();
+      const result=await change;expect(result.error).not.toBeNull();
       const job=await f.verifier.from("deletion_jobs").select("id").eq("company_id",f.a.company.id).single();
       expect(await runDeletionJob(f.verifier,job.data!.id)).toEqual({complete:true,failed:false});
     } finally {session.end("rollback;");await session.done;}

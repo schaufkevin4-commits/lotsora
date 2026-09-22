@@ -232,39 +232,7 @@ export async function createProdukt(supabase: DB): Promise<Product> {
   return data;
 }
 
-// Basisfelder speichern.
-export async function updateProdukt(
-  supabase: DB,
-  id: string,
-  patch: ProductUpdate,
-): Promise<Product> {
-  const { data, error } = await supabase
-    .from("products")
-    .update(patch)
-    .eq("id", id)
-    .select()
-    .single();
-  if (error) throw error;
-  return data;
-}
-
-// Prüfung und Statuswechsel erfolgen unter derselben DB-Produktsperre.
-export async function veroeffentlicheProdukt(
-  supabase: DB,
-  id: string,
-): Promise<VeroeffentlichenErgebnis> {
-  const { error } = await supabase.rpc("publish_product", { p_product_id: id });
-  if (!error) return { ok: true, reasons: [] };
-  if (error.code === "42501") return { ok: false, reasons: ["Produkt nicht gefunden oder Zugriff verweigert."] };
-  if (error.code === "23514") return { ok: false, reasons: ["Bitte Pflichtfelder und Materialanteile prüfen."] };
-  throw error;
-}
-
-export async function zieheProduktZurueck(supabase: DB, id: string): Promise<void> {
-  const { error } = await supabase.rpc("withdraw_product", { p_product_id: id });
-  if (error) throw error;
-}
-
+// Statuswechsel prüft die geladene Formularversion unter derselben DB-Produktsperre.
 export async function setzeProduktVeroeffentlichung(supabase: DB, id: string, expectedVersion: number, publish: boolean): Promise<number> {
   const { data, error } = await supabase.rpc("set_product_publication_checked", {
     p_product_id: id, p_expected_version: expectedVersion, p_publish: publish,
@@ -297,33 +265,6 @@ export async function getMaterialien(supabase: DB, productId: string): Promise<M
   return data ?? [];
 }
 
-// Materialien eines Produkts atomar ersetzen. Die RPC-Funktion validiert zusätzlich
-// in der DB und führt Löschen + Einfügen als eine Transaktion unter RLS aus.
-export async function saveMaterialien(
-  supabase: DB,
-  productId: string,
-  materials: MaterialInput[],
-): Promise<void> {
-  // Leere Zeilen (ohne Namen) verwerfen, Namen säubern.
-  const bereinigt = materials
-    .map((m) => ({ materialName: m.materialName.trim(), percentage: m.percentage }))
-    .filter((m) => m.materialName.length > 0);
-
-  const validierungsfehler = validateMaterialShares(bereinigt);
-  if (validierungsfehler) {
-    throw new Error(validierungsfehler);
-  }
-
-  const { error } = await supabase.rpc("replace_product_materials", {
-    p_product_id: productId,
-    p_materials: bereinigt.map((m) => ({
-      material_name: m.materialName,
-      percentage: m.percentage,
-    })),
-  });
-  if (error) throw error;
-}
-
 // --- Textildaten: Datenzugriff (product_textile_data, 1:1) -------------------
 // Eine Zeile pro Produkt (product_id ist Primärschlüssel). Sie hält die
 // Produktdetails (Herkunft/Farbe/Größe) UND die Pflegehinweise. RLS (PP-017)
@@ -351,45 +292,6 @@ export async function getTextildaten(
     .maybeSingle();
   if (error) throw error;
   return data;
-}
-
-// Textildaten speichern (Upsert der ganzen 1:1-Zeile).
-// Sind ALLE Felder leer, wird keine leere Zeile angelegt bzw. eine vorhandene
-// entfernt — die Tabelle bleibt sauber.
-export async function saveTextildaten(
-  supabase: DB,
-  productId: string,
-  daten: TextileInput,
-): Promise<void> {
-  const zeile = {
-    product_id: productId,
-    origin_country: daten.originCountry,
-    color: daten.color,
-    size: daten.size,
-    care_instructions: daten.careInstructions,
-    wash_instructions: daten.washInstructions,
-  };
-
-  const allesLeer =
-    !zeile.origin_country &&
-    !zeile.color &&
-    !zeile.size &&
-    !zeile.care_instructions &&
-    !zeile.wash_instructions;
-
-  if (allesLeer) {
-    const { error } = await supabase
-      .from("product_textile_data")
-      .delete()
-      .eq("product_id", productId);
-    if (error) throw error;
-    return;
-  }
-
-  const { error } = await supabase
-    .from("product_textile_data")
-    .upsert(zeile, { onConflict: "product_id" });
-  if (error) throw error;
 }
 
 // --- Nutzung & Kreislauf: Datenzugriff (product_sustainability, 1:1) ---------
@@ -420,45 +322,9 @@ export async function getNachhaltigkeit(
   return data;
 }
 
-// Nachhaltigkeitsdaten speichern (Upsert der ganzen 1:1-Zeile).
-// Sind ALLE Felder leer, wird keine leere Zeile angelegt bzw. eine vorhandene
-// entfernt — die Tabelle bleibt sauber.
-export async function saveNachhaltigkeit(
-  supabase: DB,
-  productId: string,
-  daten: NachhaltigkeitInput,
-): Promise<void> {
-  const zeile = {
-    product_id: productId,
-    recycling_notes: daten.recyclingNotes,
-    repair_notes: daten.repairNotes,
-    disposal_notes: daten.disposalNotes,
-    reusable_materials: daten.reusableMaterials,
-  };
-
-  const allesLeer =
-    !zeile.recycling_notes &&
-    !zeile.repair_notes &&
-    !zeile.disposal_notes &&
-    !zeile.reusable_materials;
-
-  if (allesLeer) {
-    const { error } = await supabase
-      .from("product_sustainability")
-      .delete()
-      .eq("product_id", productId);
-    if (error) throw error;
-    return;
-  }
-
-  const { error } = await supabase
-    .from("product_sustainability")
-    .upsert(zeile, { onConflict: "product_id" });
-  if (error) throw error;
-}
-
 // Das vollständige Produktformular in genau einer DB-Transaktion speichern.
-// Die DB erzwingt die Fachregeln; expectedStatus schützt vor konkurrierenden Statuswechseln.
+// Die DB erzwingt die Fachregeln; expectedVersion schützt vor veralteten Formularen,
+// expectedStatus bestätigt zusätzlich den geladenen Veröffentlichungszustand.
 export async function saveProdukt(
   supabase: DB,
   productId: string,

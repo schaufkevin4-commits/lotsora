@@ -1,6 +1,20 @@
 # Übergabe nach dem lokalen Gate
 
-## Fortsetzung: Passworthinweis und P2-3
+## Aktueller Abschluss: P2-3
+
+Nach „passt machen wir weiter“ wurde der empfohlene Umfang umgesetzt:
+Versionspflicht für Produktformular und Status, ältere direkte Schreibwege
+gesperrt. 148 Unit-, 144 Integrations- und 11 HTTP-Tests grün; Typen, Lint und
+Build bestätigt. Zwei Editor-Tabs zeigen den Konflikt bei erhaltener Eingabe.
+[Umfang, Nachweise und Vorbereitung P2-4](P2-3-UMSETZUNG-2026-09-22.md).
+P2-2 und Kontoseiten-Vereinfachung sind durch die Fortsetzungen bestätigt;
+P2-3 technisch abgeschlossen, separate Nutzerabnahme dieses Stands offen.
+Brain-KI wird im selben Abschluss nachgeführt; Lotsora nicht gepusht.
+LP-002 Phase 6, 27/40, Tag 28 offen.
+
+## Vorherige Fortsetzung: Passworthinweis und P2-3
+
+Historischer Zwischenstand; durch den aktuellen Abschluss oben ersetzt.
 
 **Neuester UI-Nachtrag:** Auf Kevins Rückmeldung zur Textmenge wurde die
 Kontoverwaltung in Auswahl und gezielte Bestätigung geteilt. Datenübersicht ist

@@ -1,3 +1,4 @@
+import { saveFixtureProduct, publishFixtureProduct } from "./product-write";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createServer, request as httpRequest, type Server } from "node:http";
 import { spawn, type ChildProcess } from "node:child_process";
@@ -27,10 +28,8 @@ describe.skipIf(process.env.LOTSORA_TEST_HTTP !== "1")("N3 im echten Next-Produk
   beforeAll(async () => {
     testConfig();
     f = await createFixtures();
-    for (const result of await Promise.all([
-      f.a.client.from("product_textile_data").insert({ product_id: f.a.published.id, color: "N3-Blau", wash_instructions: "N3-Waschen" }),
-      f.a.client.from("product_sustainability").insert({ product_id: f.a.published.id, reusable_materials: "N3-Wiederverwenden" }),
-    ])) if (result.error) throw result.error;
+    const details = await saveFixtureProduct(f.a.client, f.a.published.id, { p_textile_data: { color: "N3-Blau", wash_instructions: "N3-Waschen" }, p_sustainability: { reusable_materials: "N3-Wiederverwenden" } });
+    if (details.error) throw details.error;
     const reserved = await f.a.client.rpc("reserve_file_upload", { p_product_id: f.a.published.id, p_file_name: "n3-http.png", p_purpose: "image" });
     if (reserved.error) throw reserved.error;
     imagePath = reserved.data.file_path;
@@ -217,15 +216,15 @@ describe.skipIf(process.env.LOTSORA_TEST_HTTP !== "1")("N3 im echten Next-Produk
     }
   });
   it("frische Seite und Metadaten nach Änderung, Rücknahme und Wiederveröffentlichung", async () => {
-    expect((await f.a.client.from("products").update({ name: "HTTP-Neuer-Name", description: "HTTP-Neue-Beschreibung" }).eq("id", f.a.published.id)).error).toBeNull();
+    expect((await saveFixtureProduct(f.a.client, f.a.published.id, { p_name: "HTTP-Neuer-Name", p_description: "HTTP-Neue-Beschreibung" })).error).toBeNull();
     let content = await page();
     expect(content.html).toContain("<title>HTTP-Neuer-Name – Produktpass | lotsora</title>");
     expect(content.html).toContain('content="HTTP-Neue-Beschreibung"');
-    expect((await f.a.client.rpc("withdraw_product", { p_product_id: f.a.published.id })).error).toBeNull();
+    expect((await publishFixtureProduct(f.a.client, f.a.published.id, false)).error).toBeNull();
     try {
       content = await page(); expect(content.html).toContain("Produktpass nicht verfügbar");
       expect(content.html).not.toContain("HTTP-Neuer-Name");
-    } finally { expect((await f.a.client.rpc("publish_product", { p_product_id: f.a.published.id })).error).toBeNull(); }
+    } finally { expect((await publishFixtureProduct(f.a.client, f.a.published.id, true)).error).toBeNull(); }
     expect((await page()).html).toContain("HTTP-Neuer-Name");
   });
   it("alte Seitenlinks prüfen beim Öffnen erneut; Redirects und Fehler sind no-store", async () => {
@@ -269,7 +268,7 @@ describe.skipIf(process.env.LOTSORA_TEST_HTTP !== "1")("N3 im echten Next-Produk
     const pending = page();
     try {
       await read;
-      expect((await f.a.client.rpc("withdraw_product", { p_product_id: f.a.published.id })).error).toBeNull();
+      expect((await publishFixtureProduct(f.a.client, f.a.published.id, false)).error).toBeNull();
       release();
       const { html } = await pending;
       // Keine Snapshot-Zusage: die vor Rücknahme gelesenen Basisdaten können
@@ -281,7 +280,7 @@ describe.skipIf(process.env.LOTSORA_TEST_HTTP !== "1")("N3 im echten Next-Produk
     } finally {
       release(); heldRead = undefined;
       await pending;
-      expect((await f.a.client.rpc("publish_product", { p_product_id: f.a.published.id })).error).toBeNull();
+      expect((await publishFixtureProduct(f.a.client, f.a.published.id, true)).error).toBeNull();
     }
   });
 });
