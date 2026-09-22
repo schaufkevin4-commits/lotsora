@@ -2,6 +2,12 @@
 
 ## Fortsetzung: Passworthinweis und P2-3
 
+**Neuester UI-Nachtrag:** Auf Kevins Rückmeldung zur Textmenge wurde die
+Kontoverwaltung in Auswahl und gezielte Bestätigung geteilt. Datenübersicht ist
+aufklappbar; endgültige Folgen und erforderliche Kontoauswahlen bleiben sichtbar.
+11 Löschtests, Lint, TypeScript und Build bestanden; Desktop-/Mobil- und
+Tastaturprüfung durchgeführt. [Umfang und Nachweis](KONTO-UX-2026-09-22.md).
+
 Nach Kevins „top dann nächster schritt“ wurde der Passworthinweis in beiden
 Löschformularen präzisiert und „Passwort vergessen?“ ergänzt. Gezieltes ESLint,
 TypeScript und Browsernavigation zur Rücksetzseite bestanden.

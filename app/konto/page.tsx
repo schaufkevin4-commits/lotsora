@@ -19,7 +19,7 @@ export default async function KontoPage() {
   const preview = isOwner && !jobs.data ? await getDeletionPreview(client, company!.id) : null;
   return <main className="mx-auto max-w-3xl space-y-6 px-4 py-8 sm:px-6">
     <div className="flex flex-wrap items-center justify-between gap-4"><Link href="/profil" className="text-sm underline">Zurück zum Profil</Link><form action={abmelden}><Button variant="ghost" size="sm">Abmelden</Button></form></div>
-    <div><h1 className="text-2xl font-semibold">Konto &amp; Firmenlöschung</h1><p className="mt-2 break-all text-muted-foreground">Angemeldet als {user.email}</p></div>
+    <div><h1 className="text-2xl font-semibold">Konto verwalten</h1><p className="mt-2 break-all text-sm text-muted-foreground">{user.email}</p></div>
     {!company && !jobs.data && <FirmenEinstieg />}
     <Loeschbereich preview={preview} isOwner={isOwner} initial={jobs.data ? { jobId: jobs.data.id, deleteSelf: jobs.data.delete_self, companyDeleted: jobs.data.company_id !== null } : undefined} />
   </main>;
