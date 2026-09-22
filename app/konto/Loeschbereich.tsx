@@ -56,7 +56,11 @@ export function Loeschbereich({ preview, initial, isOwner }: { preview: Deletion
           <label className="flex items-start gap-3"><input className="mt-1 size-4 shrink-0" type="radio" name="delete_self" value="no" required disabled={pending} /><span>Nein, mein persönliches Konto behalten.</span></label>
         </fieldset>
         <label className="block space-y-2"><span>Zur Bestätigung den Firmennamen eingeben: <strong>{preview.companyName}</strong></span><Input name="company_name" required autoComplete="off" disabled={pending} /></label>
-        <label className="block space-y-2"><span>Dein aktuelles Passwort</span><Input name="password" type="password" required autoComplete="current-password" disabled={pending} /></label>
+        <div className="space-y-2">
+          <label className="block space-y-2"><span>Passwort deines Benutzerkontos</span><Input name="password" type="password" required autoComplete="current-password" aria-describedby="firma-passwort-hilfe" disabled={pending} /></label>
+          <p id="firma-passwort-hilfe" className="text-sm text-muted-foreground">Verwende dasselbe Passwort wie bei deiner Anmeldung. Es bleibt auch beim Anlegen einer neuen Firma gültig.</p>
+          <Link href="/passwort-vergessen" className="text-sm underline">Passwort vergessen?</Link>
+        </div>
         <label className="flex items-start gap-3"><input className="mt-1 size-4 shrink-0" type="checkbox" name="understood" value="yes" required disabled={pending} /><span>Ich habe benötigte Daten gesichert, die betroffenen Mitarbeiter und Kontoauswahlen geprüft und verstanden, dass die Löschung endgültig ist.</span></label>
         <div className="flex flex-wrap items-center gap-4"><Button variant="destructive" disabled={pending}>{pending ? "Löschung wird gestartet …" : "Firma jetzt endgültig löschen"}</Button><Link href="/profil" className="underline">Abbrechen und zurück</Link></div>
       </form>
@@ -66,7 +70,11 @@ export function Loeschbereich({ preview, initial, isOwner }: { preview: Deletion
         <p>Deine Anmeldung und eine bestehende Firmenmitgliedschaft werden entfernt. Gemeinsame Produkte, Dokumente und andere Konten bleiben erhalten.</p>
         <input type="hidden" name="intent" value="account" />
         <label className="block space-y-2"><span>Zur Bestätigung KONTO LÖSCHEN eingeben</span><Input name="confirmation" required autoComplete="off" disabled={pending} /></label>
-        <label className="block space-y-2"><span>Dein aktuelles Passwort</span><Input name="password" type="password" required autoComplete="current-password" disabled={pending} /></label>
+        <div className="space-y-2">
+          <label className="block space-y-2"><span>Passwort deines Benutzerkontos</span><Input name="password" type="password" required autoComplete="current-password" aria-describedby="konto-passwort-hilfe" disabled={pending} /></label>
+          <p id="konto-passwort-hilfe" className="text-sm text-muted-foreground">Verwende dasselbe Passwort wie bei deiner Anmeldung. Es bleibt auch beim Anlegen einer neuen Firma gültig.</p>
+          <Link href="/passwort-vergessen" className="text-sm underline">Passwort vergessen?</Link>
+        </div>
         <label className="flex items-start gap-3"><input className="mt-1 size-4 shrink-0" name="understood" type="checkbox" value="yes" required disabled={pending} /><span>Benötigte Daten sind gesichert. Ich möchte mein Konto endgültig löschen.</span></label>
         <Button variant="destructive" disabled={pending}>{pending ? "Löschung wird gestartet …" : "Mein Konto endgültig löschen"}</Button>
       </form>}

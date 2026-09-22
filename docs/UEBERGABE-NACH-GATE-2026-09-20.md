@@ -1,5 +1,15 @@
 # Übergabe nach dem lokalen Gate
 
+## Fortsetzung: Passworthinweis und P2-3
+
+Nach Kevins „top dann nächster schritt“ wurde der Passworthinweis in beiden
+Löschformularen präzisiert und „Passwort vergessen?“ ergänzt. Gezieltes ESLint,
+TypeScript und Browsernavigation zur Rücksetzseite bestanden.
+Der Arbeitsfokus geht zu P2-3: [Schreibwege, konkrete Empfehlung und Prüfplan](P2-3-VORBEREITUNG-2026-09-22.md).
+Die Entscheidung zum Schutz sämtlicher Schreibwege für Produktformular und
+Veröffentlichungsstatus ist angefragt; noch keine DB-/RPC-Änderung für P2-3.
+Brain-KI wird mit diesem Stand im selben Abschluss synchronisiert.
+
 ## Aktuelle Umsetzung am 22.09.2026
 
 P2-2 wurde nach Kevins „machen wir so“ lokal umgesetzt und live im Browser
