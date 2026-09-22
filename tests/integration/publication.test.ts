@@ -1,4 +1,4 @@
-import { fixtureSaveArgs, saveFixtureProduct, publishFixtureProduct } from "./product-write";
+import { fixtureSaveArgs, saveFixtureProduct, publishFixtureProduct, fixturePublicationToken } from "./product-write";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { createFixtures, type Fixtures } from "./fixtures";
@@ -11,10 +11,11 @@ afterAll(async () => { await fixture?.cleanup(); });
 
 async function product(status: "entwurf" | "veroeffentlicht" = "entwurf") {
   const { data, error } = await fixture.a.client.from("products").insert({
-    manufacturer_id: fixture.a.company.id, name: "B4-Shirt", description: "Testprodukt", category: "Textil", status,
+    manufacturer_id: fixture.a.company.id, name: "B4-Shirt", description: "Testprodukt", category: "Textil", status:"entwurf",
   }).select().single();
   if (error) throw error;
-  return data;
+  if(status==="veroeffentlicht") expect((await publishFixtureProduct(fixture.a.client,data.id,true)).error).toBeNull();
+  return (await getProdukt(fixture.a.client,data.id))!;
 }
 
 function saveArgs(id: string, overrides: Partial<Database["public"]["Functions"]["save_product"]["Args"]> = {}) {
@@ -43,13 +44,14 @@ describe("P2-3: direkte Schreibwege gesperrt, Fachregeln bleiben erhalten", () =
     expect(result.error?.code).toBe("23514");
   });
 
-  it.each(["name", "description", "category"] as const)("veröffentlichtes Produkt verliert %s nicht", async (field) => {
+  it.each(["name", "description", "category"] as const)("unvollständiger Entwurf ändert veröffentlichtes %s nicht", async (field) => {
     const p = await product("veroeffentlicht");
     const patch: Database["public"]["Tables"]["products"]["Update"] = { [field]: "" };
     const result = await fixture.a.client.from("products").update(patch).eq("id", p.id);
     expect(result.error?.code).toBe("42501");
-    expect((await saveFixtureProduct(fixture.a.client, p.id, { [`p_${field}`]: "" })).error?.code).toBe("23514");
-    expect((await getProdukt(fixture.a.client, p.id))?.[field]).toBe(p[field]);
+    expect((await saveFixtureProduct(fixture.a.client, p.id, { [`p_${field}`]: "" })).error).toBeNull();
+    expect((await getProdukt(fixture.a.client, p.id))?.[field]).toBe("");
+    expect((await publishFixtureProduct(fixture.a.client,p.id,true)).error?.code).toBe("23514");
   });
 
   it("direkte Material-Inserts können zusammen nicht mehr als 100 ergeben", async () => {
@@ -113,14 +115,15 @@ describe("B4: RPC, Rundung und Statusvertrag", () => {
     expect((await saveFixtureProduct(fixture.a.client, p.id, saveArgs(p.id, { p_expected_status: "veroeffentlicht" }))).error?.code).toBe("40001");
   });
 
-  it("unvollständiger Pass bleibt privat; veröffentlichter Pass behält Pflichtfelder beim RPC-Speichern", async () => {
+  it("unvollständiger Pass bleibt privat; unvollständige Bearbeitung kann nicht neu veröffentlicht werden", async () => {
     const p = await product();
     expect((await saveFixtureProduct(fixture.a.client, p.id, { p_name: "" })).error).toBeNull();
-    await expect(setzeProduktVeroeffentlichung(fixture.a.client, p.id, (await fixtureSaveArgs(fixture.a.client,p.id)).p_expected_version, true)).rejects.toMatchObject({code:"23514"});
+    await expect(setzeProduktVeroeffentlichung(fixture.a.client, p.id, (await fixtureSaveArgs(fixture.a.client,p.id)).p_expected_version, true, await fixturePublicationToken(fixture.a.client,p.id))).rejects.toMatchObject({code:"23514"});
     expect((await getProdukt(fixture.a.client, p.id))?.status).toBe("unvollstaendig");
     const q = await product("veroeffentlicht");
-    expect((await saveFixtureProduct(fixture.a.client, q.id, saveArgs(q.id, { p_expected_status: "veroeffentlicht", p_description: "" }))).error?.code).toBe("23514");
-    expect((await getProdukt(fixture.a.client, q.id))?.description).toBe(q.description);
+    expect((await saveFixtureProduct(fixture.a.client, q.id, saveArgs(q.id, { p_expected_status: "veroeffentlicht", p_description: "" }))).error).toBeNull();
+    expect((await publishFixtureProduct(fixture.a.client,q.id,true)).error?.code).toBe("23514");
+    expect((await getProdukt(fixture.a.client, q.id))?.description).toBe("");
     expect((await saveFixtureProduct(fixture.a.client, q.id, saveArgs(q.id, { p_expected_status: "veroeffentlicht" }))).error).toBeNull();
     expect((await getProdukt(fixture.a.client, q.id))?.status).toBe("veroeffentlicht");
   });

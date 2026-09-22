@@ -74,7 +74,7 @@ export function ProduktFormular({
       onSubmit={(event) => { event.preventDefault(); startTransition(() => editor.save()); }}
       className="space-y-5"
     >
-      {produkt.status === "veroeffentlicht" && <Alert><AlertDescription>Dieses Produkt ist öffentlich. Änderungen werden automatisch gespeichert und können dadurch im öffentlichen Pass erscheinen.</AlertDescription></Alert>}
+      {produkt.status === "veroeffentlicht" && <Alert><AlertDescription>Sie bearbeiten den Entwurf. Automatisches Speichern verändert den veröffentlichten Pass nicht. Übernehmen Sie Änderungen anschließend mit „Veröffentlichung aktualisieren“.</AlertDescription></Alert>}
       {step !== null && <div className="space-y-3 rounded-lg border p-4">
         <p className="font-medium">Schritt {step + 1} von {steps.length}: {steps[step]}</p>
         <p className="text-sm text-muted-foreground">Zuerst die Basis ausfüllen, danach optionale Angaben ergänzen. Am Ende Dokumente und Vorschau prüfen.</p>

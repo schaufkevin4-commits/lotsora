@@ -55,7 +55,7 @@ function SichtbarkeitButton({
       <div className="text-right">
         <form action={formAction}>
           <Button type="submit" variant="outline" size="sm" disabled={pending}>
-            {pending ? "Wird geändert …" : "Freigabe aufheben"}
+            {pending ? "Wird geändert …" : "Aus Auswahl nehmen"}
           </Button>
         </form>
         {state.error && (
@@ -69,12 +69,12 @@ function SichtbarkeitButton({
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          Freigeben
+          Auswählen
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Dokument öffentlich freigeben?</DialogTitle>
+          <DialogTitle>Dokument für Veröffentlichung auswählen?</DialogTitle>
           <DialogDescription>{FREIGABE_WARNUNG}</DialogDescription>
         </DialogHeader>
         {state.error && (
@@ -90,7 +90,7 @@ function SichtbarkeitButton({
           </DialogClose>
           <form action={formAction}>
             <Button type="submit" disabled={pending}>
-              {pending ? "Wird freigegeben …" : "Öffentlich freigeben"}
+              {pending ? "Wird ausgewählt …" : "Für Veröffentlichung auswählen"}
             </Button>
           </form>
         </DialogFooter>
@@ -163,7 +163,7 @@ export function DokumenteAbschnitt({
         <h2 className="font-medium">Dokumente</h2>
         <p className="text-sm text-muted-foreground">
           Zertifikate, Prüfberichte, Datenblätter … Neue Dokumente sind zunächst
-          nur intern sichtbar und können bewusst freigegeben werden.
+          nur intern sichtbar. Wählen Sie Dokumente für die nächste Veröffentlichung aus.
         </p>
       </div>
 
@@ -243,7 +243,7 @@ export function DokumenteAbschnitt({
                   <Badge
                     variant={d.visibility === "oeffentlich" ? "default" : "secondary"}
                   >
-                    {d.visibility === "oeffentlich" ? "öffentlich" : "intern"}
+                    {d.visibility === "oeffentlich" ? "zur Veröffentlichung ausgewählt" : "intern"}
                   </Badge>
                 </div>
                 <p className="truncate text-sm text-muted-foreground">

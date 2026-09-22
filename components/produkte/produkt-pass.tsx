@@ -215,7 +215,7 @@ export function ProduktPass({
 
         <footer className="space-y-3 border-t pt-6 text-xs text-muted-foreground">
           <div className="space-y-0.5">
-            <p>Produktdaten zuletzt gespeichert: {datum}</p>
+            <p>{vorschau ? "Entwurf zuletzt gespeichert" : "Zuletzt veröffentlicht"}: {datum}</p>
             <p>Pass-ID: {produkt.public_id}</p>
           </div>
           <p>{DISCLAIMER}</p>

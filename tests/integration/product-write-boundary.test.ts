@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { createFixtures, type Fixtures } from "./fixtures";
-import { fixtureSaveArgs, saveFixtureProduct } from "./product-write";
+import { fixtureSaveArgs, saveFixtureProduct, fixturePublicationToken } from "./product-write";
 import { asManufacturer, sql, sqlSession } from "./sql";
 
 let f: Fixtures;
@@ -29,7 +29,7 @@ describe("P2-3: ausschließliche versionierte Formular- und Statusschreibwege", 
       select bool_and(relowner <> 'lotsora_product_writer'::regrole and relrowsecurity) from pg_class
       where oid in ('public.products'::regclass,'public.product_materials'::regclass,'public.product_textile_data'::regclass,'public.product_sustainability'::regclass);
       select bool_and(prosecdef and proowner='lotsora_product_writer'::regrole and not has_function_privilege('anon',oid,'EXECUTE'))
-      from pg_proc where pronamespace='public'::regnamespace and proname in ('save_product_checked','set_product_publication_checked','set_product_image');
+      from pg_proc where pronamespace='public'::regnamespace and proname in ('save_product_checked','publish_product_revision','set_product_image');
       select not has_function_privilege('authenticated','private.lock_product_editor(uuid)','EXECUTE');`);
     expect(result.code,result.output).toBe(0); expect(result.output.trim().split(/\r?\n/)).toEqual(["t","t","t","t"]);
   });
@@ -73,8 +73,8 @@ describe("P2-3: ausschließliche versionierte Formular- und Statusschreibwege", 
   it("fehlende Versionsbestätigung oder Veröffentlichungsauswahl ändert nichts", async () => {
     const args=await fixtureSaveArgs(f.a.client,f.a.draft.id);
     expect((await f.a.client.rpc("save_product_checked",{...args,p_expected_version:null!})).error?.code).toBe("40001");
-    expect((await f.a.client.rpc("set_product_publication_checked",{p_product_id:args.p_product_id,p_expected_version:null!,p_publish:true})).error?.code).toBe("40001");
-    expect((await f.a.client.rpc("set_product_publication_checked",{p_product_id:args.p_product_id,p_expected_version:args.p_expected_version,p_publish:null!})).error?.code).toBe("22023");
+    expect((await f.a.client.rpc("publish_product_revision",{p_expected_token: await fixturePublicationToken(f.a.client,f.a.draft.id),p_product_id:args.p_product_id,p_expected_version:null!,p_publish:true})).error?.code).toBe("40001");
+    expect((await f.a.client.rpc("publish_product_revision",{p_expected_token: await fixturePublicationToken(f.a.client,f.a.draft.id),p_product_id:args.p_product_id,p_expected_version:args.p_expected_version,p_publish:null!})).error?.code).toBe("22023");
     expect(await fixtureSaveArgs(f.a.client,f.a.draft.id)).toEqual(args);
   });
   it.each(["read committed","repeatable read"])("bereits laufende Sitzung verliert bei gleichzeitigem Mitgliedsentzug die Schreibrechte (%s)", async isolation => {
@@ -111,7 +111,7 @@ describe("P2-3: ausschließliche versionierte Formular- und Statusschreibwege", 
     const latest = await fixtureSaveArgs(f.a.client,f.a.draft.id);
     expect(latest.p_expected_status).toBe(before.p_expected_status);
     expect((await f.a.client.rpc("save_product_checked",{...before,p_name:"Veraltet"})).error?.code).toBe("40001");
-    expect((await f.a.client.rpc("set_product_publication_checked",{p_product_id:before.p_product_id,p_expected_version:before.p_expected_version,p_publish:true})).error?.code).toBe("40001");
+    expect((await f.a.client.rpc("publish_product_revision",{p_expected_token: await fixturePublicationToken(f.a.client,f.a.draft.id),p_product_id:before.p_product_id,p_expected_version:before.p_expected_version,p_publish:true})).error?.code).toBe("40001");
     expect(await fixtureSaveArgs(f.a.client,f.a.draft.id)).toEqual(latest);
   });
 });

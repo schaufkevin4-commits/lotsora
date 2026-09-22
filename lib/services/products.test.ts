@@ -264,14 +264,10 @@ describe("getOeffentlicherPass (N1)", () => {
   });
 
   it("sucht gültige Links über public_id statt über die interne UUID", async () => {
-    const maybeSingle = vi.fn().mockResolvedValue({ data: null, error: null });
-    const eq = vi.fn().mockReturnValue({ maybeSingle });
-    const select = vi.fn().mockReturnValue({ eq });
-    const from = vi.fn().mockReturnValue({ select });
-    const supabase = { from } as unknown as Parameters<typeof getOeffentlicherPass>[0];
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: null });
+    const supabase = { rpc } as unknown as Parameters<typeof getOeffentlicherPass>[0];
 
     await expect(getOeffentlicherPass(supabase, "7Kf3mQ9xT2Wp")).resolves.toBeNull();
-    expect(from).toHaveBeenCalledWith("products");
-    expect(eq).toHaveBeenCalledWith("public_id", "7Kf3mQ9xT2Wp");
+    expect(rpc).toHaveBeenCalledWith("get_published_product_pass", { p_public_id: "7Kf3mQ9xT2Wp" });
   });
 });

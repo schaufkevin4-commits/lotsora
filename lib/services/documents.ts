@@ -16,10 +16,9 @@ type DB = SupabaseClient<Database>;
 export type Dokument = Database["public"]["Tables"]["documents"]["Row"];
 export type DokumentSichtbarkeit = Dokument["visibility"];
 
-// Wortlaut aus PP-013 E7. Als gemeinsame Konstante bleibt die Fachregel an
-// einer Stelle und kann von Dialog und Tests verwendet werden.
+// Warnung aus PP-013 E7, ergänzt um die bewusste Gesamtfreigabe aus P2-4.
 export const FREIGABE_WARNUNG =
-  "Bitte prüfen Sie das Dokument vor der Freigabe auf personenbezogene Daten – zum Beispiel Ansprechpartner-Namen, Unterschriften und E-Mail-Adressen (häufig in Zertifikaten und Prüfberichten). Öffentlich freigegebene Dokumente sind für jeden über den QR-Code sichtbar.";
+  "Bitte prüfen Sie das Dokument vor der Freigabe auf personenbezogene Daten – zum Beispiel Ansprechpartner-Namen, Unterschriften und E-Mail-Adressen (häufig in Zertifikaten und Prüfberichten). Ausgewählte Dokumente werden erst mit der nächsten Veröffentlichung für jeden über den QR-Code sichtbar. Bereits veröffentlichte Dokumente bleiben bis zur Aktualisierung oder Rücknahme des Passes sichtbar.";
 
 // Privater Storage-Bucket (siehe Migration dokumente_storage). Nicht öffentlich.
 export const DOKUMENTE_BUCKET = "produkt-dokumente";

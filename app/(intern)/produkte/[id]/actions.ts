@@ -3,11 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { bereinigeProduktdateien } from "@/lib/services/file-cleanup";
 import { LoeschzielFehler } from "@/lib/services/delete-error";
 import {
   getProdukt,
   deleteProdukt,
-  canPublish,
   validateMaterialShares,
   saveProdukt,
   setzeProduktVeroeffentlichung,
@@ -87,18 +87,7 @@ export async function produktSpeichern(
       return { ok: false, error: "Produkt nicht gefunden." };
     }
 
-    // PP-011: Veröffentlichte Produkte dürfen beim späteren Bearbeiten keine
-    // Pflichtfelder verlieren. Dasselbe zentrale Gate wie beim Veröffentlichen
-    // verhindert damit einen inkonsistenten öffentlich sichtbaren Zustand.
-    if (aktuell.status === "veroeffentlicht") {
-      const publishCheck = canPublish(basis, materialien);
-      if (!publishCheck.ok) {
-        return {
-          ok: false,
-          error: `Veröffentlichtes Produkt kann so nicht gespeichert werden: ${publishCheck.reasons.join(" ")}`,
-        };
-      }
-    }
+    // Autosave ändert ausschließlich den privaten Arbeitsstand.
 
     version = await saveProdukt(
       supabase,
@@ -135,12 +124,12 @@ export async function produktLoeschen(id: string, _previous: ProduktFormState, _
   redirect("/produkte");
 }
 
-export async function produktVeroeffentlichung(id: string, expectedVersion: number, publish: boolean): Promise<ProduktFormState> {
+export async function produktVeroeffentlichung(id: string, expectedVersion: number, publish: boolean, expectedToken: string): Promise<ProduktFormState> {
   const supabase = await createClient();
   let version: number;
   try {
     if (!Number.isSafeInteger(expectedVersion) || expectedVersion < 0) return { ok: false, error: "Ungültiger Speicherstand. Bitte neu laden.", conflict: true };
-    version = await setzeProduktVeroeffentlichung(supabase, id, expectedVersion, publish);
+    version = await setzeProduktVeroeffentlichung(supabase, id, expectedVersion, publish, expectedToken);
   } catch (error) {
     const code = error && typeof error === "object" && "code" in error ? error.code : null;
     if (code === "40001" || code === "40P01") return { ok: false, conflict: true, error: "Das Produkt wurde inzwischen geändert. Bitte neu laden und vor der Veröffentlichung erneut prüfen." };
@@ -148,6 +137,8 @@ export async function produktVeroeffentlichung(id: string, expectedVersion: numb
     return { ok: false, error: "Statuswechsel konnte nicht bestätigt werden. Bitte neu laden und den Status prüfen." };
   }
 
+  // Freigabe bleibt gültig, auch wenn das nachgelagerte Aufräumen wiederholt werden muss.
+  await bereinigeProduktdateien(supabase, id);
   revalidatePath(`/produkte/${id}`);
   revalidatePath("/produkte");
   revalidatePath("/dashboard");

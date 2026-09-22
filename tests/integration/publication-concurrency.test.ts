@@ -184,7 +184,7 @@ describe("B4: Migration bei ungültigen Altbeständen", () => {
     // Transaktion simuliert den Zustand vor B4. ON_ERROR_STOP schließt bei der
     // erwarteten Verletzung die Session; PostgreSQL rollt auch das Setup zurück.
     const result = await sql(`begin;
-      alter table public.products drop constraint products_published_required_fields;
+      alter table public.products drop constraint if exists products_published_required_fields;
       alter table public.product_materials drop constraint product_materials_name_not_blank, alter column percentage drop not null;
       drop trigger product_materials_total_limit on public.product_materials;
       ${badData}

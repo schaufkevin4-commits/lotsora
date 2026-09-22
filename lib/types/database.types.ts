@@ -563,6 +563,18 @@ export type Database = {
       }
       generate_product_public_id: { Args: never; Returns: string }
       get_company_entry_state: { Args: never; Returns: string }
+      get_product_publication_review: {
+        Args: { p_product_id: string }
+        Returns: Json
+      }
+      get_published_file_path: {
+        Args: { p_document_id?: string; p_public_id: string }
+        Returns: string
+      }
+      get_published_product_pass: {
+        Args: { p_public_id: string }
+        Returns: Json
+      }
       hersteller_hat_veroeffentlichtes_produkt: {
         Args: { p_manufacturer: string }
         Returns: boolean
@@ -570,6 +582,7 @@ export type Database = {
       is_company_member: { Args: { p_company_id: string }; Returns: boolean }
       is_company_owner: { Args: { p_company_id: string }; Returns: boolean }
       is_public_product_image: { Args: { p_path: string }; Returns: boolean }
+      is_published_product_file: { Args: { p_path: string }; Returns: boolean }
       list_company_members: {
         Args: never
         Returns: {
@@ -589,6 +602,15 @@ export type Database = {
         Returns: boolean
       }
       publish_product: { Args: { p_product_id: string }; Returns: undefined }
+      publish_product_revision: {
+        Args: {
+          p_expected_token: string
+          p_expected_version: number
+          p_product_id: string
+          p_publish: boolean
+        }
+        Returns: number
+      }
       remove_company_member: { Args: { p_user_id: string }; Returns: undefined }
       replace_product_materials: {
         Args: { p_materials: Json; p_product_id: string }

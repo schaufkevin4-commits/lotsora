@@ -6,7 +6,7 @@ import { DOKUMENTE_BUCKET, setzeDokumentSichtbarkeit } from "@/lib/services/docu
 import { ladeDokumentHoch } from "@/lib/services/upload-completion";
 import { PDFDocument } from "pdf-lib";
 import { sql } from "./sql";
-import { saveFixtureProduct } from "./product-write";
+import { saveFixtureProduct, publishFixtureProduct } from "./product-write";
 
 export async function pdfBytes() {
   const pdf = await PDFDocument.create(); pdf.addPage([100, 100]);
@@ -115,7 +115,7 @@ export async function createFixtures() {
     async function product(status: "entwurf" | "veroeffentlicht") {
       const { data, error } = await client.from("products").insert({
         manufacturer_id: companyId, name: `Test-Shirt ${label} ${status}`,
-        description: "Synthetische Testdaten", category: "T-Shirt", status,
+        description: "Synthetische Testdaten", category: "T-Shirt", status: "entwurf",
         article_number: "INTERN-001",
       }).select().single();
       if (error) throw error;
@@ -143,7 +143,10 @@ export async function createFixtures() {
     const internalDoc = await document(published.id, "intern");
     const publicDoc = await document(published.id, "oeffentlich");
     const draftDoc = await document(draft.id, "oeffentlich");
-    return { client, company, email, password, userId: account.user.id, published, draft, internalDoc, publicDoc, draftDoc, cookies: () => cookies };
+    const released=await publishFixtureProduct(client,published.id,true);
+    if(released.error) throw released.error;
+    const currentPublished=(await client.from("products").select().eq("id",published.id).single()).data!;
+    return { client, company, email, password, userId: account.user.id, published:currentPublished, draft, internalDoc, publicDoc, draftDoc, cookies: () => cookies };
   }
 
   async function invitedUser() {

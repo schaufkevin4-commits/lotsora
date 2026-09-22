@@ -32,6 +32,7 @@ export default async function ProfilPage() {
           <p className="text-sm text-muted-foreground">Das Firmenprofil wird vom Firmenverantwortlichen verwaltet. Produkte und Dokumente bearbeitet ihr gemeinsam.</p>
         </div>
       )}
+      <p className="text-sm text-muted-foreground">Geänderte Firmenangaben erscheinen in bestehenden öffentlichen Pässen, sobald du beim jeweiligen Produkt „Veröffentlichung aktualisieren“ auswählst.</p>
       <div className="space-y-2 rounded-md border p-4">
         <h2 className="font-semibold">Konto und Firma verwalten</h2>
         <p className="text-sm text-muted-foreground">Persönliches Konto löschen oder als Verantwortlicher die Firma mit getrennten Kontoentscheidungen auflösen.</p>

@@ -9,12 +9,10 @@ import type { Database } from "@/lib/types/database.types";
 import { LoeschzielFehler } from "@/lib/services/delete-error";
 import { bereinigeProduktdateien, type LoeschErgebnis } from "@/lib/services/file-cleanup";
 import { isValidPublicId } from "@/lib/public-id";
-import { oeffentlicherBildpfad } from "@/lib/public-file-paths";
 import { getMeinHersteller } from "@/lib/services/manufacturers";
 import {
   erzeugeSignierteUrl,
   getDokumenteMitUrl,
-  getOeffentlicheDokumenteMitUrl,
   type OeffentlichesDokument,
 } from "@/lib/services/documents";
 
@@ -233,8 +231,9 @@ export async function createProdukt(supabase: DB): Promise<Product> {
 }
 
 // Statuswechsel prüft die geladene Formularversion unter derselben DB-Produktsperre.
-export async function setzeProduktVeroeffentlichung(supabase: DB, id: string, expectedVersion: number, publish: boolean): Promise<number> {
-  const { data, error } = await supabase.rpc("set_product_publication_checked", {
+export async function setzeProduktVeroeffentlichung(supabase: DB, id: string, expectedVersion: number, publish: boolean, expectedToken: string): Promise<number> {
+  const { data, error } = await supabase.rpc("publish_product_revision", {
+    p_expected_token: expectedToken,
     p_product_id: id, p_expected_version: expectedVersion, p_publish: publish,
   });
   if (error) throw error;
@@ -435,46 +434,15 @@ export async function getOeffentlicherPass(
   // PostgreSQL sie erst als UUID interpretieren und mit 22P02 abbrechen kann.
   if (!isValidPublicId(publicId)) return null;
 
-  const { data: produkt, error } = await supabase
-    .from("products")
-    .select(
-      "id, public_id, name, description, category, brand, image_url, updated_at, manufacturer_id, status",
-    )
-    .eq("public_id", publicId)
-    .maybeSingle();
+  const { data, error } = await supabase.rpc("get_published_product_pass", { p_public_id: publicId });
   if (error) throw error;
-  if (!produkt || produkt.status !== "veroeffentlicht") return null;
-
-  const [hersteller, materialien, textildaten, nachhaltigkeit, dokumente] =
-    await Promise.all([
-      getOeffentlicherHersteller(supabase, produkt.manufacturer_id),
-      supabase.from("product_materials").select("id, material_name, percentage")
-        .eq("product_id", produkt.id).order("created_at", { ascending: true }).throwOnError(),
-      supabase.from("product_textile_data")
-        .select("origin_country, color, size, care_instructions, wash_instructions")
-        .eq("product_id", produkt.id).maybeSingle().throwOnError(),
-      supabase.from("product_sustainability")
-        .select("recycling_notes, repair_notes, disposal_notes, reusable_materials")
-        .eq("product_id", produkt.id).maybeSingle().throwOnError(),
-      getOeffentlicheDokumenteMitUrl(supabase, produkt.id),
-    ]);
-
-  return {
-    produkt: {
-      public_id: produkt.public_id,
-      name: produkt.name,
-      description: produkt.description,
-      category: produkt.category,
-      brand: produkt.brand,
-      image_url: produkt.image_url ? oeffentlicherBildpfad(produkt.public_id, produkt.updated_at) : null,
-      updated_at: produkt.updated_at,
-    },
-    hersteller,
-    materialien: materialien.data ?? [],
-    textildaten: textildaten.data,
-    nachhaltigkeit: nachhaltigkeit.data,
-    dokumente,
-  };
+  return data ? data as unknown as OeffentlicherPass : null;
+}
+export type PublicationReview = { token: string; published_at: string | null; has_changes: boolean };
+export async function getPublicationReview(supabase: DB, productId: string): Promise<PublicationReview> {
+  const { data, error } = await supabase.rpc("get_product_publication_review", { p_product_id: productId });
+  if (error) throw error;
+  return data as unknown as PublicationReview;
 }
 // Vorschau-Pass für den eingeloggten Hersteller (PP-019 E4): zeigt, wie die
 // öffentliche Seite aussieht – auch im Entwurf. Nutzt die Eigentümer-Lesepfade

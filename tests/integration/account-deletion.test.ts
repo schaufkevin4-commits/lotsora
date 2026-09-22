@@ -7,6 +7,7 @@ import { runDeletionJob } from "@/lib/services/deletion-runner";
 import * as deletionRunner from "@/lib/services/deletion-runner";
 import { getOeffentlicherPass } from "@/lib/services/products";
 import { getPublicFile } from "@/lib/services/public-files";
+import { loescheDokument } from "@/lib/services/documents";
 import { deletionAction } from "@/app/konto/actions";
 import { sql, sqlSession } from "./sql";
 
@@ -60,6 +61,9 @@ describe("P2-1: bestätigte Firmenlöschung", () => {
     const m = await member();
     const invitationUser = await f.invitedUser();
     const invitation = await f.a.client.rpc("create_company_invitation", { p_email: invitationUser.email });
+    // Auch nur noch durch den öffentlichen Stand gehaltene Dateien gehören zur Firma.
+    expect(await loescheDokument(f.a.client,f.a.publicDoc.id)).toEqual({complete:true});
+    expect((await getPublicFile(f.anon,f.a.published.public_id,f.a.publicDoc.id)).status).toBe("available");
     const id = await start(removeMembers,removeSelf);
     expect((await f.a.client.from("products").select("id")).data).toEqual([]);
     expect((await m.client.from("products").select("id")).data).toEqual([]);

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import {
   getEditorStand,
+  getPublicationReview,
   getMissingRequiredFields,
   checkMaterialShares,
 } from "@/lib/services/products";
@@ -37,6 +38,7 @@ export default async function ProduktEditorSeite({
   if (!stand) notFound();
   const { produkt, materialien, textildaten, nachhaltigkeit } = stand;
   const dokumente = await getDokumenteMitUrl(supabase, id);
+  const publication = await getPublicationReview(supabase,id);
   const materialInputs = materialien.map((material) => ({
     materialName: material.material_name,
     percentage: Number(material.percentage),
@@ -90,6 +92,7 @@ export default async function ProduktEditorSeite({
       <VeroeffentlichenAbschnitt
         productId={produkt.id}
         status={produkt.status}
+        publication={publication}
         fehlendePflichtfelder={fehlendePflichtfelder}
         materialSumme={materialSumme}
       />

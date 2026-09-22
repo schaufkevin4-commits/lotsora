@@ -12,7 +12,7 @@ export function ProductImage({ productId, path, url }: { productId: string; path
   const [removed, remove, removing] = useActionState(async () => produktbildEntfernen(productId, path!), { ok: false, error: null });
   return <section className="space-y-4 rounded-lg border p-5">
     <h2 className="font-medium">Produktbild</h2>
-    <p className="text-sm text-muted-foreground">JPEG, PNG oder WebP, maximal 10 MiB und 25 Megapixel. Das Bild erscheint nach Veröffentlichung im Produktpass.</p>
+    <p className="text-sm text-muted-foreground">JPEG, PNG oder WebP, maximal 10 MiB und 25 Megapixel. Bildwechsel ändern zunächst den Entwurf. Das bisherige öffentliche Bild bleibt bis zur nächsten Veröffentlichung erhalten.</p>
     {url && <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={url} alt="Aktuelles Produktbild" className="h-48 w-48 rounded-lg object-contain" />

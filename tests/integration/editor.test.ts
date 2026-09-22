@@ -1,4 +1,4 @@
-import { saveFixtureProduct } from "./product-write";
+import { saveFixtureProduct, fixturePublicationToken } from "./product-write";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
 import { createFixtures, type Fixtures } from "./fixtures";
@@ -35,21 +35,21 @@ describe("N9: Formularversion unter echter Produktsperre", () => {
     const mutation = await saveFixtureProduct(fixture.a.client, p.id, changes);
     expect(mutation.error).toBeNull();
     expect((await fixture.a.client.rpc("save_product_checked", args(p.id, p.editor_version))).error?.code).toBe("40001");
-    expect((await fixture.a.client.rpc("set_product_publication_checked", { p_product_id: p.id, p_expected_version: p.editor_version, p_publish: true })).error?.code).toBe("40001");
+    expect((await fixture.a.client.rpc("publish_product_revision", { p_expected_token: await fixturePublicationToken(fixture.a.client,p.id), p_product_id: p.id, p_expected_version: p.editor_version, p_publish: true })).error?.code).toBe("40001");
   });
   it("weist fremde und anonyme Save-/Statuswechsel zurück", async () => {
     const p = await product();
     for (const client of [fixture.b.client, fixture.anon]) {
       expect((await client.rpc("save_product_checked", args(p.id, p.editor_version))).error?.code).toBe("42501");
-      expect((await client.rpc("set_product_publication_checked", { p_product_id: p.id, p_expected_version: p.editor_version, p_publish: true })).error?.code).toBe("42501");
+      expect((await client.rpc("publish_product_revision", { p_expected_token: await fixturePublicationToken(fixture.a.client,p.id), p_product_id: p.id, p_expected_version: p.editor_version, p_publish: true })).error?.code).toBe("42501");
     }
   });
   it("veröffentlicht nur die geprüfte Version und führt Rücknahme mit neuer Version aus", async () => {
     const p = await product();
-    const published = await fixture.a.client.rpc("set_product_publication_checked", { p_product_id: p.id, p_expected_version: p.editor_version, p_publish: true });
+    const published = await fixture.a.client.rpc("publish_product_revision", { p_expected_token: await fixturePublicationToken(fixture.a.client,p.id), p_product_id: p.id, p_expected_version: p.editor_version, p_publish: true });
     expect(published.error).toBeNull();
     expect((await fixture.a.client.rpc("save_product_checked", args(p.id, p.editor_version))).error?.code).toBe("40001");
-    const withdrawn = await fixture.a.client.rpc("set_product_publication_checked", { p_product_id: p.id, p_expected_version: published.data!, p_publish: false });
+    const withdrawn = await fixture.a.client.rpc("publish_product_revision", { p_expected_token: await fixturePublicationToken(fixture.a.client,p.id), p_product_id: p.id, p_expected_version: published.data!, p_publish: false });
     expect(withdrawn.error).toBeNull(); expect(withdrawn.data).toBeGreaterThan(published.data!);
   });
   it("rollt auch das Bearbeitungstoken bei einem letzten Validierungsfehler zurück", async () => {

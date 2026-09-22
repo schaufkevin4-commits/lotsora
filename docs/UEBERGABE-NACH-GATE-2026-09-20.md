@@ -1,6 +1,22 @@
 # Übergabe nach dem lokalen Gate
 
-## Aktueller Abschluss: P2-3
+## Aktueller Abschluss: P2-4
+
+Nach „starte mit der nächsten aufgabe“ sind private Entwürfe und vollständige
+öffentliche Stände getrennt. Bewusste Aktualisierung umfasst Formular, Bild,
+Dokumentauswahl und Firmenangaben; bisher benötigte Dateien bleiben erhalten.
+141 Unit-, 154 Integrations- und 11 HTTP-Fälle bestanden; Lint, Typen, Build
+und Browservergleich vor/nach Freigabe grün.
+[Umsetzung, Grenzen und nächster Einstieg](P2-4-UMSETZUNG-2026-09-22.md).
+P2-3 durch Fortsetzung bestätigt; neue P2-4-Nutzerabnahme offen.
+Als Nächstes P2-6: Designrichtung und übersichtlichere Darstellung vorbereiten,
+danach Umsetzung über alle Seiten/Zustände; P2-5 manuell nach UI-Änderungen.
+Brain-KI wird im selben Abschluss synchronisiert; Lotsora nur lokal gesichert.
+LP-002 Phase 6, formal 27/40, Tag 28 offen.
+
+## Vorheriger Abschluss: P2-3
+
+Historischer Zwischenstand; durch den aktuellen Abschluss oben ersetzt.
 
 Nach „passt machen wir weiter“ wurde der empfohlene Umfang umgesetzt:
 Versionspflicht für Produktformular und Status, ältere direkte Schreibwege

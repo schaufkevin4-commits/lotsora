@@ -1,3 +1,4 @@
+import { publishFixtureProduct } from "./product-write";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { randomUUID } from "node:crypto";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
@@ -25,7 +26,7 @@ afterAll(async () => {
 
 async function product() {
   const { data, error } = await fixture.a.client.from("products").insert({
-    manufacturer_id: fixture.a.company.id, name: "Löschtest", description: "Synthetisch", category: "Textil", status: "veroeffentlicht",
+    manufacturer_id: fixture.a.company.id, name: "Löschtest", description: "Synthetisch", category: "Textil", status: "entwurf",
   }).select().single();
   if (error) throw error;
   return data;
@@ -102,6 +103,7 @@ describe("B3: Dokument- und Produktlöschung mit wiederholbarer Dateibereinigung
 
   it("Produktlöschung erhält Dateirechte und reservierte öffentliche ID bis zur Bereinigung", async () => {
     const p = await product(); const a = await document(p.id); const b = await document(p.id);
+    expect((await publishFixtureProduct(fixture.a.client, p.id, true)).error).toBeNull();
     const reserved = await fixture.a.client.rpc("reserve_document_upload", { p_product_id: p.id, p_file_name: "abbruch.pdf" });
     expect(reserved.error).toBeNull();
     expect(await deleteProdukt(storageFault(fixture.a.client, "remove"), p.id)).toEqual({ complete: false });

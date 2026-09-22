@@ -8,6 +8,7 @@ import { getPublicFile } from "@/lib/services/public-files";
 import { createPublicClient } from "@/lib/supabase/public";
 import { completeImageUpload } from "@/lib/services/upload-completion";
 import { DOKUMENTE_BUCKET } from "@/lib/services/documents";
+import { bereinigeProduktdateien } from "@/lib/services/file-cleanup";
 
 let f: Fixtures;
 const images: string[] = [];
@@ -19,6 +20,7 @@ beforeAll(async () => {
   const details = await saveFixtureProduct(f.a.client, f.a.published.id, { p_textile_data: { origin_country: "DE", color: "Blau", size: "M", care_instructions: "Lüften", wash_instructions: "30 Grad" }, p_sustainability: { recycling_notes: "Trennen", repair_notes: "Nähen", disposal_notes: "Sammeln", reusable_materials: "Baumwolle" } });
     if (details.error) throw details.error;
   await image(null);
+  await status(true);
 });
 afterAll(async () => {
   vi.unstubAllEnvs();
@@ -62,12 +64,15 @@ describe("N3: öffentliche Aktualität und erneuerbare Dateien", () => {
     expect(checked.code).toBe(0); expect(checked.output.trim()).toBe("t");
     expect((await f.anon.from("products").select("editor_version")).error).not.toBeNull();
   });
-  it("neue Anfragen sehen Produkt-, Detail-, Hersteller- und Dokumentänderungen", async () => {
+  it("neue Anfragen sehen Änderungen erst nach ausdrücklicher Veröffentlichung", async () => {
+    const previous = await getOeffentlicherPass(createPublicClient(), f.a.published.public_id);
     for (const result of await Promise.all([
       saveFixtureProduct(f.a.client, f.a.published.id, { p_name: "N3 neuer Name", p_description: "N3 neue Beschreibung", p_textile_data: { origin_country: "DE", color: "Grün", size: "M", care_instructions: "Lüften", wash_instructions: "30 Grad" } }),
       f.a.client.from("manufacturers").update({ company_name: "N3 neue Firma" }).eq("id", f.a.company.id),
       f.a.client.from("documents").update({ name: "N3 neues Dokument" }).eq("id", f.a.publicDoc.id),
     ])) expect(result.error).toBeNull();
+    expect(await getOeffentlicherPass(createPublicClient(), f.a.published.public_id)).toEqual(previous);
+    await status(true);
     const pass = await getOeffentlicherPass(createPublicClient(), f.a.published.public_id);
     expect(pass?.produkt.name).toBe("N3 neuer Name"); expect(pass?.textildaten?.color).toBe("Grün");
     expect(pass?.hersteller?.company_name).toBe("N3 neue Firma"); expect(pass?.dokumente[0].name).toBe("N3 neues Dokument");
@@ -95,6 +100,8 @@ describe("N3: öffentliche Aktualität und erneuerbare Dateien", () => {
   it("interne, fremde und gelöschte Dokumente können nicht erneuert werden", async () => {
     for (const id of [f.a.internalDoc.id, f.a.draftDoc.id, f.b.publicDoc.id]) expect(await getPublicFile(createPublicClient(), f.a.published.public_id, id)).toEqual({ status: "unavailable" });
     expect((await f.a.client.from("documents").update({ visibility: "intern" }).eq("id", f.a.publicDoc.id)).error).toBeNull();
+    expect((await getPublicFile(createPublicClient(), f.a.published.public_id, f.a.publicDoc.id)).status).toBe("available");
+    await status(true);
     expect(await getPublicFile(createPublicClient(), f.a.published.public_id, f.a.publicDoc.id)).toEqual({ status: "unavailable" });
     expect((await getOeffentlicherPass(createPublicClient(), f.a.published.public_id))?.dokumente).toEqual([]);
     expect((await f.a.client.from("documents").delete().eq("id", f.a.publicDoc.id)).error).toBeNull();
@@ -104,11 +111,16 @@ describe("N3: öffentliche Aktualität und erneuerbare Dateien", () => {
     const oldSource = (await getOeffentlicherPass(createPublicClient(), f.a.published.public_id))?.produkt.image_url;
     const oldUrl = await signed(); const old = await (await fetch(oldUrl)).arrayBuffer();
     const current = await image(images[0]);
+    expect((await getOeffentlicherPass(createPublicClient(), f.a.published.public_id))?.produkt.image_url).toBe(oldSource);
+    await status(true);
+    expect(await bereinigeProduktdateien(f.a.client, f.a.published.id)).toEqual({ complete: true });
     expect((await getOeffentlicherPass(createPublicClient(), f.a.published.public_id))?.produkt.image_url).not.toBe(oldSource);
     const next = await (await fetch(await signed())).arrayBuffer();
     expect(Buffer.from(old).equals(Buffer.from(next))).toBe(false);
     expect((await fetch(oldUrl, { cache: "no-store" })).ok).toBe(false);
     expect((await f.a.client.rpc("set_product_image", { p_product_id: f.a.published.id, p_expected_path: current, p_new_path: null! })).error).toBeNull();
+    expect((await getPublicFile(createPublicClient(), f.a.published.public_id)).status).toBe("available");
+    await status(true);
     expect(await getPublicFile(createPublicClient(), f.a.published.public_id)).toEqual({ status: "unavailable" });
     expect((await getOeffentlicherPass(createPublicClient(), f.a.published.public_id))?.produkt.image_url).toBeNull();
   });

@@ -1,5 +1,14 @@
 # Lotsora: ergänzender Arbeitsplan nach der Architekturanalyse
 
+**Aktueller Einstieg 22.09.:** Lokales Gate und P2-1 bis P2-3 sind bestätigt.
+P2-4 ist lokal technisch umgesetzt und live geprüft: private Entwürfe,
+bewusste vollständige Freigabe, stabile QR-Links und Dateiaufbewahrung.
+[Nachweise und Grenzen](P2-4-UMSETZUNG-2026-09-22.md).
+Als Nächstes P2-6-Designrichtung und Informationsdichte vorbereiten; danach
+P2-5-Druck/Screenreader, Regression/CI und Kundenabnahme. LP-002 bleibt
+Masterplan, Phase 6, formal 27/40, Tag 28 offen. Ältere Einstiegsangaben
+unten sind historisch. Kein Lotsora-Push oder Cloud-Rollout.
+
 **Restabnahme 20.09.:** Neue QR-Originaldownloads erfolgreich dekodiert; Zoom-/Sprachausgabe-Stichprobe und Bildschirm-Handyscan von Kevin bestätigt. [Ergebnisse](N8-RESTABNAHME-2026-09-20.md). Nächster Schritt ist die ausdrückliche lokale Gate-Entscheidung. Ausdruck-/Handyscan in festgelegter Etikettengröße bleibt spätestens vor Kundeneinsatz offen. Frühere Warteangaben unten sind historisch.
 
 **Gesamtcheck 20.09.:** Technische Suite und sichtbarer Produktablauf auf dem Teammodell bestanden; Auth-Mailvertrag und Cookie-Host-Weiterleitung korrigiert. [Systemcheck und Gate-Vorlage](SYSTEMCHECK-2026-09-20.md). Nächster Einstieg: gebündelte manuelle Restabnahme (neue QR-Dateien, Screenreader, öffentlicher Zoom; Druckscan spätestens vor Kundeneinsatz), danach ausdrückliche Gate-Entscheidung. Kein weiterer großer Baublock vor diesem Schritt. Frühere Einstiegsangaben unten sind historisch.

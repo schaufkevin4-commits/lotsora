@@ -22,19 +22,12 @@ export async function getPublicFile(
     return { status: "unavailable" };
   }
   try {
-    const product = await supabase.from("products").select("id, status, image_url")
-      .eq("public_id", publicId).maybeSingle();
-    if (product.error) throw product.error;
-    if (product.data?.status !== "veroeffentlicht") return { status: "unavailable" };
-    let path = product.data.image_url;
-    if (documentId !== undefined) {
-      const document = await supabase.from("documents").select("file_path")
-        .eq("id", documentId).eq("product_id", product.data.id)
-        .eq("visibility", "oeffentlich").maybeSingle();
-      if (document.error) throw document.error;
-      path = document.data?.file_path ?? null;
-    }
-    if (!path || !path.startsWith(`${product.data.id}/`)) return { status: "unavailable" };
+    const reference = await supabase.rpc("get_published_file_path", {
+      p_public_id: publicId, ...(documentId ? { p_document_id: documentId } : {}),
+    });
+    if (reference.error) throw reference.error;
+    const path = reference.data;
+    if (!path) return { status: "unavailable" };
     // Storage prüft die aktuelle Freigabe beim Signieren erneut über RLS.
     const signed = await supabase.storage.from(DOKUMENTE_BUCKET).createSignedUrl(path, seconds);
     if (signed.error || !signed.data?.signedUrl) return { status: "error" };

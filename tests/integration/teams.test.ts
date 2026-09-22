@@ -1,4 +1,4 @@
-import { saveFixtureProduct } from "./product-write";
+import { saveFixtureProduct, fixturePublicationToken } from "./product-write";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { createFixtures, pdfBytes, type Fixtures } from "./fixtures";
 import { completeDocumentUpload } from "@/lib/services/upload-completion";
@@ -89,13 +89,13 @@ describe("Firmenteams", () => {
     expect(results.filter(result => !result.error)).toHaveLength(1);
     expect(results.find(result => result.error)?.error?.code).toBe("40001");
     const version = results.find(result => !result.error)!.data!;
-    const published = await member.client.rpc("set_product_publication_checked", {
+    const published = await member.client.rpc("publish_product_revision", { p_expected_token: await fixturePublicationToken(f.a.client,product.id),
       p_product_id: product.id, p_expected_version: version, p_publish: true,
     });
     expect(published.error).toBeNull();
     expect((await f.a.client.rpc("remove_company_member", { p_user_id: member.userId })).error).toBeNull();
     expect((await member.client.rpc("save_product_checked", { ...args, p_expected_version: published.data!, p_expected_status: "veroeffentlicht" })).error?.code).toBe("42501");
-    expect((await member.client.rpc("set_product_publication_checked", { p_product_id: product.id, p_expected_version: published.data!, p_publish: false })).error?.code).toBe("42501");
+    expect((await member.client.rpc("publish_product_revision", { p_expected_token: await fixturePublicationToken(f.a.client,product.id), p_product_id: product.id, p_expected_version: published.data!, p_publish: false })).error?.code).toBe("42501");
     expect((await f.a.client.from("products").select("name,status").eq("id", product.id).single()).data).toEqual({ name: "Gemeinsam gespeichert", status: "veroeffentlicht" });
   });
 
