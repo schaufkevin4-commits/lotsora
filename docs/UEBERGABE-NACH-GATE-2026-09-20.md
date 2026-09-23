@@ -1,5 +1,8 @@
 # Übergabe nach dem lokalen Gate
 
+**Tagesabschluss 22.09., nachgetragen am 23.09.2026:** Kevin hat die Übernahme und den Push des geprüften Stands nach main beauftragt. [Abschluss, Nachweise und Wiedereinstieg](TAGESABSCHLUSS-2026-09-22.md). Die sieben lokalen Arbeitscommits einschließlich P2-2/P2-3/P2-4 und gemeinsamer P2-6-Struktur werden damit gesichert; ältere Hinweise „kein Push“ unten beschreiben den Stand vor diesem Auftrag. Testreste bereinigt und isolierte Testinstanz gestoppt, kein DB-Reset/Cloud-Apply. Kevin arbeitet vorübergehend am Brain-KI-Cockpit weiter. Nächster Lotsora-Einstieg: Gesamtaufbau beurteilen, danach finale Gestaltung. Nutzer-/Kundenabnahmen und Tag 28 bleiben offen.
+
+
 ## Aktueller Einstieg: einheitliche Struktur und Wettbewerb
 
 Kevins Folgeauftrag zur Konkurrenz und einheitlichen Übersicht über alle Seiten

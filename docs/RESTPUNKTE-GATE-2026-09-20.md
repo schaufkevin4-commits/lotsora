@@ -1,5 +1,8 @@
 # Verbindliche Restpunkte bis zur Gate-Freigabe
 
+**Tagesabschluss 22.09., nachgetragen am 23.09.2026:** Kevin hat die Übernahme und den Push des geprüften Stands nach main beauftragt. [Abschluss, Nachweise und Wiedereinstieg](TAGESABSCHLUSS-2026-09-22.md). Die sieben lokalen Arbeitscommits einschließlich P2-2/P2-3/P2-4 und gemeinsamer P2-6-Struktur werden damit gesichert; ältere Hinweise „kein Push“ unten beschreiben den Stand vor diesem Auftrag. Testreste bereinigt und isolierte Testinstanz gestoppt, kein DB-Reset/Cloud-Apply. Kevin arbeitet vorübergehend am Brain-KI-Cockpit weiter. Nächster Lotsora-Einstieg: Gesamtaufbau beurteilen, danach finale Gestaltung. Nutzer-/Kundenabnahmen und Tag 28 bleiben offen.
+
+
 **Einordnung 22.09.2026:** [LP-002-Abgleich und Zuordnung zu Phase 6](UEBERGABE-NACH-GATE-2026-09-20.md#lp-002-abgleich-am-22092026). Die aktuellen Tabellenstatus gelten; ältere Problembeschreibungen unten sind historisch. P2-1 bis P2-3 sind nach den bestätigten Fortsetzungen abgenommen. P2-4 ist jetzt vor Kundentest im vollständigen Passumfang lokal umgesetzt und technisch/live geprüft; Nutzerabnahme des neuen Stands offen. [Nachweis](P2-4-UMSETZUNG-2026-09-22.md). P2-6-Struktur inzwischen über die Seitenfamilien umgesetzt; Nutzerbeurteilung und finale Optik offen.
 
 Datum: 20.09.2026. Prüfstand der zwei unabhängigen Prüfungen (Claude, Codex):
