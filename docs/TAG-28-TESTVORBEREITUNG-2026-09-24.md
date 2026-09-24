@@ -1,6 +1,6 @@
 # Lotsora – Tag 28: Testdaten und Soll-Ergebnisse
 
-**Aktueller Einstieg 24.09.2026:** Praktischer Lotsora-Aufbau, keine automatischen Quiz-/Lernpakete. Tag 28 Testvorbereitung abgeschlossen: sechs Produkte, zwei Firmen, sechs Rollen, 26 Soll-Szenarien; 13 Katalogprüfungen bestanden. Die 26 Abläufe wurden noch nicht ausgeführt. Fortschritt 28/40 (70 %). Nächster Schritt Tag 29: Fehleranalyse/Stabilisierung und Regression/CI; danach abgestimmtes Design, erneute UI-/QR-/Screenreader-Prüfungen und ausdrückliches Tag-30-Gate. Keine Kunden-/Cloud-Freigabe, kein Push/Deploy. Ältere Einstiegsangaben unten sind historisch.
+**Aktueller Einstieg 24.09.2026:** Praktischer Lotsora-Aufbau, keine automatischen Quiz-/Lernpakete. Tag 28 Testvorbereitung abgeschlossen: sechs Produkte, zwei Firmen, sechs Rollen, 26 Soll-Szenarien; 13 Katalogprüfungen bestanden. Die 26 Abläufe wurden noch nicht ausgeführt. Fortschritt 28/40 (70 %). Nächster Schritt Tag 29: Fehleranalyse/Stabilisierung und Regression/CI; danach abgestimmtes Design, erneute UI-/QR-/Screenreader-Prüfungen und ausdrückliches Tag-30-Gate. Tagesabschluss: Kevin hat am 24.09.2026 die Übernahme und den Push nach main ausdrücklich beauftragt. Tag 29 wird auf morgen verschoben; heute keine weitere Umsetzung. 141 Unit-Tests und ESLint bestanden. Kein DB-Apply oder neues Kunden-/Cloud-Gate. Ältere Einstiegsangaben unten sind historisch.
 
 Stand: 24.09.2026. LP-002, Phase 6 „Test & Stabilisierung“.
 
