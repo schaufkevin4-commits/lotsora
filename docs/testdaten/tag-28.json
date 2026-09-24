@@ -1,0 +1,561 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-09-24",
+  "lesson": "LP-002 Tag 28",
+  "purpose": "Synthetischer Soll-Datenkatalog; keine bereits eingespielten Daten und kein Importformat der App.",
+  "environment": {
+    "api": "http://127.0.0.1:55321",
+    "project": "lotsora-integration",
+    "realCustomerData": false,
+    "databaseReset": false
+  },
+  "companies": [
+    {
+      "id": "A",
+      "companyName": "TEST – Nordfaden Textil",
+      "country": "DE",
+      "website": "https://nordfaden.example.invalid",
+      "privateMarker": "TAG28-INTERN-FIRMA-A"
+    },
+    {
+      "id": "B",
+      "companyName": "TEST – Fadenwerk Textil",
+      "country": "DE",
+      "website": "https://fadenwerk.example.invalid",
+      "privateMarker": "TAG28-INTERN-FIRMA-B"
+    }
+  ],
+  "roles": [
+    {
+      "id": "ownerA",
+      "company": "A",
+      "role": "owner"
+    },
+    {
+      "id": "memberA",
+      "company": "A",
+      "role": "member"
+    },
+    {
+      "id": "ownerB",
+      "company": "B",
+      "role": "owner"
+    },
+    {
+      "id": "removedA",
+      "company": null,
+      "role": "removed_member",
+      "previousCompany": "A"
+    },
+    {
+      "id": "noCompany",
+      "company": null,
+      "role": "confirmed_user_without_company"
+    },
+    {
+      "id": "anon",
+      "company": null,
+      "role": "anonymous"
+    }
+  ],
+  "products": [
+    {
+      "id": "A01",
+      "company": "A",
+      "name": "Basic Shirt",
+      "description": "Gerade geschnittenes Kurzarmshirt für den Alltag.",
+      "category": "T-Shirt",
+      "articleNumber": "000128",
+      "materials": [
+        {
+          "materialName": "Baumwolle",
+          "percentage": 100
+        }
+      ],
+      "initialStatus": "entwurf",
+      "expected": {
+        "missing": [],
+        "materialSum": 100,
+        "materialWarning": false,
+        "publishable": true
+      }
+    },
+    {
+      "id": "A02",
+      "company": "A",
+      "name": "Hoodie Alltag 80/20",
+      "description": "Langarm-Hoodie mit Kapuze und Kängurutasche.",
+      "category": "Hoodie",
+      "articleNumber": "000129",
+      "materials": [
+        {
+          "materialName": "Baumwolle",
+          "percentage": 80
+        },
+        {
+          "materialName": "Polyester",
+          "percentage": 20
+        }
+      ],
+      "initialStatus": "veroeffentlicht",
+      "files": [
+        "F01",
+        "F02",
+        "F03"
+      ],
+      "expected": {
+        "missing": [],
+        "materialSum": 100,
+        "materialWarning": false,
+        "publishable": true
+      }
+    },
+    {
+      "id": "A03",
+      "company": "A",
+      "name": "Leinenbluse",
+      "description": "   ",
+      "category": "Bluse",
+      "articleNumber": "000130",
+      "materials": [
+        {
+          "materialName": "Leinen",
+          "percentage": 100
+        }
+      ],
+      "initialStatus": "unvollstaendig",
+      "expected": {
+        "missing": [
+          "Produktbeschreibung"
+        ],
+        "materialSum": 100,
+        "materialWarning": false,
+        "publishable": false
+      }
+    },
+    {
+      "id": "A04",
+      "company": "A",
+      "name": "Wollschal",
+      "description": "Gewebter Schal mit Fransen; Materialangabe noch nicht vollständig.",
+      "category": "Schal",
+      "articleNumber": "000131",
+      "materials": [
+        {
+          "materialName": "Wolle",
+          "percentage": 90
+        }
+      ],
+      "initialStatus": "entwurf",
+      "expected": {
+        "missing": [],
+        "materialSum": 90,
+        "materialWarning": true,
+        "publishable": true
+      }
+    },
+    {
+      "id": "A05",
+      "company": "A",
+      "name": "Hoodie Alltag 70/30",
+      "description": "Eigenes physisches Modell mit geänderter Materialzusammensetzung.",
+      "category": "Hoodie",
+      "articleNumber": "000132",
+      "materials": [
+        {
+          "materialName": "Baumwolle",
+          "percentage": 70
+        },
+        {
+          "materialName": "Polyester",
+          "percentage": 30
+        }
+      ],
+      "initialStatus": "entwurf",
+      "expected": {
+        "missing": [],
+        "materialSum": 100,
+        "materialWarning": false,
+        "publishable": true
+      }
+    },
+    {
+      "id": "B01",
+      "company": "B",
+      "name": "Basic Shirt",
+      "description": "Eigenständiges Produkt von Firma B mit gleichem Namen.",
+      "category": "T-Shirt",
+      "articleNumber": "000128",
+      "materials": [
+        {
+          "materialName": "Baumwolle",
+          "percentage": 100
+        }
+      ],
+      "initialStatus": "veroeffentlicht",
+      "expected": {
+        "missing": [],
+        "materialSum": 100,
+        "materialWarning": false,
+        "publishable": true
+      }
+    }
+  ],
+  "files": [
+    {
+      "id": "F01",
+      "name": "TEST-Pflegehinweise.pdf",
+      "type": "application/pdf",
+      "scope": "released_document",
+      "content": "Synthetische Pflegehinweise, kein Zertifikat."
+    },
+    {
+      "id": "F02",
+      "name": "TEST-Kalkulation-intern.pdf",
+      "type": "application/pdf",
+      "scope": "internal_document",
+      "privateMarker": "TAG28-INTERN-DOKUMENT"
+    },
+    {
+      "id": "F03",
+      "name": "TEST-Hoodie.png",
+      "type": "image/png",
+      "scope": "released_image",
+      "content": "Selbst erzeugtes Testbild ohne Personen oder Marken."
+    }
+  ],
+  "mutations": [
+    {
+      "id": "M01",
+      "baseProduct": "A01",
+      "materials": [
+        {
+          "materialName": "Baumwolle",
+          "percentage": 80
+        },
+        {
+          "materialName": "Polyester",
+          "percentage": 30
+        }
+      ],
+      "valid": false
+    },
+    {
+      "id": "M02",
+      "baseProduct": "A01",
+      "materials": [
+        {
+          "materialName": "Baumwolle",
+          "percentage": -1
+        }
+      ],
+      "valid": false
+    },
+    {
+      "id": "M03",
+      "baseProduct": "A01",
+      "materials": [
+        {
+          "materialName": "Baumwolle",
+          "percentage": 101
+        }
+      ],
+      "valid": false
+    },
+    {
+      "id": "M04",
+      "baseProduct": "A01",
+      "materials": [
+        {
+          "materialName": "Baumwolle",
+          "percentage": 100.004
+        }
+      ],
+      "valid": false
+    },
+    {
+      "id": "M05",
+      "baseProduct": "A01",
+      "materials": [
+        {
+          "materialName": "Baumwolle",
+          "percentage": 50.005
+        },
+        {
+          "materialName": "Polyester",
+          "percentage": 49.995
+        }
+      ],
+      "valid": false
+    },
+    {
+      "id": "M06",
+      "baseProduct": "A01",
+      "materials": [],
+      "valid": true
+    }
+  ],
+  "executionStatus": "planned_not_seeded",
+  "scenarios": [
+    {
+      "id": "T28-01",
+      "title": "Konto und Firma",
+      "role": "noCompany",
+      "product": "A01",
+      "action": "Bestätigtes Konto ohne Firma: leeren Zustand öffnen und eigene Firma einmal anlegen. Separat Einladung annehmen.",
+      "expected": "Beide vorgesehenen Einstiege funktionieren. Kein versehentliches Zweitunternehmen; wiederholtes Anlegen bleibt kontrolliert.",
+      "coverage": "company-entry.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-02",
+      "title": "Anlegen und Speichern",
+      "role": "ownerA",
+      "product": "A01",
+      "action": "Produkt mit führenden Nullen der Artikelnummer speichern, Seite neu laden.",
+      "expected": "Eingaben bleiben erhalten, Artikelnummer 000128 bleibt Text. Vollständiger Entwurf ist noch nicht öffentlich.",
+      "coverage": "uploads.test.ts;publication.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-03",
+      "title": "Fehlendes Pflichtfeld",
+      "role": "ownerA",
+      "product": "A03",
+      "action": "Unvollständige Beschreibung speichern, Veröffentlichung versuchen. Jeweils Name/Kategorie zusätzlich separat leer prüfen.",
+      "expected": "Privater unvollständiger Entwurf ist möglich; Veröffentlichung wird mit verständlichem Hinweis verhindert. Leerzeichen zählen als leer.",
+      "coverage": "publication.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-04",
+      "title": "Materialgrenzen",
+      "role": "ownerA",
+      "product": "A01",
+      "action": "M01–M05 jeweils in frischem Szenario anwenden; NaN/Infinity gesondert direkt an der Servicegrenze prüfen.",
+      "expected": "Ungültige Einzelwerte, Summe über 100 und Rundungsüberlauf werden abgewiesen; letzter gültiger gespeicherter Stand bleibt erhalten.",
+      "coverage": "publication.test.ts;publication-concurrency.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-05",
+      "title": "Materialhinweis",
+      "role": "ownerA",
+      "product": "A04",
+      "action": "90 Prozent anzeigen und Veröffentlichung prüfen; danach leere Materialliste M06 separat prüfen.",
+      "expected": "Unter 100 Prozent erscheint ein Hinweis, kein Veröffentlichungsverbot. Pflichtfelder bleiben unabhängig davon erforderlich.",
+      "coverage": "publication.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-06",
+      "title": "Firmentrennung",
+      "role": "ownerB",
+      "product": "A01",
+      "action": "Direkte Produkt-ID, Listenabfrage, Änderungs- und Löschversuch auf Firma A; Gegenrichtung separat.",
+      "expected": "Keine privaten Fremddaten und keine Fremdänderung; identische Namen/Artikelnummern schaffen keine Berechtigung.",
+      "coverage": "access.test.ts;teams.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-07",
+      "title": "Teamrollen",
+      "role": "memberA",
+      "product": "A02",
+      "action": "Eigenes Firmenprodukt bearbeiten und freigeben; Firmenprofil/Einladungen/Verantwortungswechsel versuchen.",
+      "expected": "Mitglied darf Produktarbeit; Owner-Verwaltung bleibt gesperrt. Keine nicht beschlossene Vieraugenpflicht erwarten.",
+      "coverage": "teams.test.ts;gate-actions.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-08",
+      "title": "Rechteentzug",
+      "role": "removedA",
+      "product": "A02",
+      "action": "Owner entfernt Mitglied; bestehende Sitzung versucht erneutes Laden, Speichern und Dateiabruf.",
+      "expected": "Neue Zugriffe gesperrt. Bereits angezeigte Inhalte werden nicht rückwirkend aus dem Browser gelöscht.",
+      "coverage": "teams.test.ts;product-write-boundary.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-09",
+      "title": "Dateiupload",
+      "role": "ownerA",
+      "product": "A02",
+      "action": "Gültige PDF/JPEG/PNG/WebP laden; echte Dateien mit 10 MiB und 10 MiB + 1 Byte sowie HTML mit PDF-Endung prüfen.",
+      "expected": "Erlaubter Inhalt bis einschließlich 10 MiB zulässig; Übergröße und falscher Inhalt abgelehnt. Als Produktbild nur Bildformate. Keine kaputten Verweise zurücklassen.",
+      "coverage": "uploads.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-10",
+      "title": "Öffentlicher Pass",
+      "role": "anon",
+      "product": "A02",
+      "action": "Pass und Metadaten ohne Sitzung, mit A- und B-Sitzung vergleichen. Interne Marker gezielt suchen.",
+      "expected": "Alle sehen denselben freigegebenen Stand. Keine interne Artikelnummer, Kontaktdaten, Adresse, Dokumentnotizen, Quell-URLs oder privaten Entwürfe. Leere optionale Abschnitte fehlen.",
+      "coverage": "public-http.test.ts;access.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-11",
+      "title": "Private Änderungen",
+      "role": "ownerA",
+      "product": "A02",
+      "action": "Beschreibung, Bild, Dokumentauswahl und öffentliche Firmenangaben privat ändern; anon parallel neu laden.",
+      "expected": "Privater Stand ändert sich; gesamter bisher freigegebener Pass bleibt unverändert, einschließlich Firma und Dateien.",
+      "coverage": "publication-revisions.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-12",
+      "title": "Bewusste Freigabe",
+      "role": "ownerA",
+      "product": "A02",
+      "action": "Aktuellen Entwurf samt Dateien prüfen und explizit veröffentlichen.",
+      "expected": "Pass übernimmt den neuen Gesamtstand atomar; öffentliche ID bleibt gleich. Kein historisches Versionsarchiv voraussetzen.",
+      "coverage": "publication-revisions.test.ts;public-http.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-13",
+      "title": "Unvollständiger neuer Entwurf",
+      "role": "ownerA",
+      "product": "A02",
+      "action": "Beim veröffentlichten Produkt privat Beschreibung leeren und speichern; erneut veröffentlichen versuchen.",
+      "expected": "Alter öffentlicher Stand bleibt vollständig erreichbar. Neue Freigabe wird blockiert, veröffentlichter Produktstatus fällt nicht automatisch zurück.",
+      "coverage": "publication-revisions.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-14",
+      "title": "Dateiersatz",
+      "role": "ownerA",
+      "product": "A02",
+      "action": "Freigegebenes Bild/Dokument privat ersetzen oder abwählen; alten öffentlichen Pass öffnen; danach neu freigeben.",
+      "expected": "Bis zur erneuten Freigabe bleiben benötigte alte Dateien nutzbar. Danach werden nicht mehr benötigte Dateien kontrolliert bereinigt.",
+      "coverage": "publication-revisions.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-15",
+      "title": "Zurückziehen und Wiederfreigeben",
+      "role": "ownerA",
+      "product": "A02",
+      "action": "Pass zurückziehen, neue Datei-Links anfordern, später wieder freigeben.",
+      "expected": "Pass wird nicht verfügbar; keine neuen freigegebenen Links. Bereits signierte Links können bis 300 Sekunden auslaufen. Wiederfreigabe nutzt gleiche ID.",
+      "coverage": "public-pass.test.ts;public-http.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-16",
+      "title": "Zwei Bearbeiter",
+      "role": "memberA",
+      "product": "A02",
+      "action": "A und Mitglied öffnen dieselbe Version. A speichert; Mitglied speichert alten Stand.",
+      "expected": "Veralteter Schreibversuch meldet Konflikt; neuere Daten bleiben erhalten. Nicht automatisch mit neuer Version erneut senden.",
+      "coverage": "editor.test.ts;product-write-boundary.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-17",
+      "title": "Freigabe während Änderung",
+      "role": "ownerA",
+      "product": "A02",
+      "action": "Freigabe prüfen; anschließend vor Bestätigung Firma/Dokument/Produkt in zweiter Sitzung ändern.",
+      "expected": "Veraltete Prüfung darf keinen ungeprüften neuen Gesamtstand freigeben; Aktualisieren und erneut prüfen erforderlich.",
+      "coverage": "publication-revisions.test.ts;publication-concurrency.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-18",
+      "title": "Teilfehler und Rollback",
+      "role": "ownerA",
+      "product": "A01",
+      "action": "Kontrollierten Fehler beim mehrteiligen Speichern auslösen.",
+      "expected": "Keine Mischung aus altem und neuem Produkt/Material/Textil/Nachhaltigkeitsstand; Versionsstand bleibt konsistent.",
+      "coverage": "editor.test.ts;publication-concurrency.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-19",
+      "title": "Öffentliche Identität",
+      "role": "ownerA",
+      "product": "A05",
+      "action": "A02 korrigieren, dann A05 als eigenes physisches Modell anlegen. B01 zusätzlich vergleichen.",
+      "expected": "Korrektur behält ID; neues Modell und fremdes gleichnamiges Produkt erhalten eigene IDs. Keine IDs aus Namen ableiten.",
+      "coverage": "public-id.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-20",
+      "title": "Produktlöschung",
+      "role": "ownerA",
+      "product": "A02",
+      "action": "In frischem Szenario Produkt löschen, öffentlich öffnen und neue Produkte anlegen.",
+      "expected": "Produkt/Pass nicht mehr nutzbar; zugehörige Dateien bereinigt. Alte öffentliche ID bleibt reserviert und wird nicht wiederverwendet.",
+      "coverage": "deletion.test.ts;public-id.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-21",
+      "title": "Bereinigungsfehler",
+      "role": "ownerA",
+      "product": "A02",
+      "action": "Storage-Löschung gezielt fehlschlagen lassen, danach Wiederholung zulassen.",
+      "expected": "Ausstehende Arbeit bleibt nachvollziehbar und wiederholbar; keine verlorenen Dateiverweise und kein falsches Alles-erledigt-Signal.",
+      "coverage": "deletion.test.ts;deletion-concurrency.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-22",
+      "title": "Konten und Verantwortung",
+      "role": "ownerA",
+      "product": "A02",
+      "action": "Mitglied löscht eigenes Konto; letzter Owner versucht Selbstlöschung/Übertragung; firmenloses Konto separat löschen.",
+      "expected": "Andere Firmenkonten bleiben unberührt, Firma wird nicht versehentlich verwaist. Vorgesehener Bestätigungs- und Verantwortungsablauf greift.",
+      "coverage": "account-deletion.test.ts;teams.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-23",
+      "title": "Anmeldung und Einladung",
+      "role": "noCompany",
+      "product": "A01",
+      "action": "Unbestätigten Zugang sowie ungültigen/abgelaufenen/benutzten Einladungslink testen; gültigen Link separat.",
+      "expected": "Geschützte Daten bleiben geschützt; gültiger lokaler Mailablauf funktioniert, ungültige Links geben verständliche Rückmeldung.",
+      "coverage": "public-http.test.ts;company-entry.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-24",
+      "title": "QR und echte Bedienprüfung",
+      "role": "anon",
+      "product": "A02",
+      "action": "Nach finalen UI-Änderungen QR herunterladen, physisch ausdrucken und per Handy scannen; echten Screenreader und Tastatur separat prüfen.",
+      "expected": "QR erreicht richtige öffentliche ID; Navigation, Beschriftungen und Status verständlich. Echte Geräte-/Screenreader-Nachweise dokumentieren.",
+      "coverage": "MANUELL: P2-5, nach Design",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-25",
+      "title": "Nicht verfügbar und Störung",
+      "role": "anon",
+      "product": "A03",
+      "action": "Privaten, unbekannten, zurückgezogenen Pass sowie gezielten DB-Timeout vergleichen.",
+      "expected": "Private Inhalte bleiben geheim. Nicht verfügbare Pässe werden neutral behandelt; temporäre technische Störung wird gemäß bestehendem HTTP-Vertrag behandelt.",
+      "coverage": "public-http.test.ts",
+      "status": "nicht ausgeführt"
+    },
+    {
+      "id": "T28-26",
+      "title": "MVP und Nutzenverständnis",
+      "role": "ownerA",
+      "product": "A01",
+      "action": "Anlegen → speichern → Daten/Dokumente verwalten → bewusst veröffentlichen → QR → öffentlichen Pass als zusammenhängenden Ablauf prüfen. Später Testkunde erklärt Nutzen.",
+      "expected": "Sechs MVP-Erfolgskriterien getrennt belegen. Technischer Durchlauf ersetzt kein tatsächliches Kundenverständnis. Gate erst Tag 30 ausdrücklich entscheiden.",
+      "coverage": "MANUELL: Tag 30/Kundentest; bestehende Fachtests als Teilnachweis",
+      "status": "nicht ausgeführt"
+    }
+  ]
+}
