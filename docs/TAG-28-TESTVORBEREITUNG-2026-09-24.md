@@ -1,8 +1,10 @@
 # Lotsora – Tag 28: Testdaten und Soll-Ergebnisse
 
+**Aktueller Einstieg 24.09.2026:** Praktischer Lotsora-Aufbau, keine automatischen Quiz-/Lernpakete. Tag 28 Testvorbereitung abgeschlossen: sechs Produkte, zwei Firmen, sechs Rollen, 26 Soll-Szenarien; 13 Katalogprüfungen bestanden. Die 26 Abläufe wurden noch nicht ausgeführt. Fortschritt 28/40 (70 %). Nächster Schritt Tag 29: Fehleranalyse/Stabilisierung und Regression/CI; danach abgestimmtes Design, erneute UI-/QR-/Screenreader-Prüfungen und ausdrückliches Tag-30-Gate. Keine Kunden-/Cloud-Freigabe, kein Push/Deploy. Ältere Einstiegsangaben unten sind historisch.
+
 Stand: 24.09.2026. LP-002, Phase 6 „Test & Stabilisierung“.
 
-**Status: Vorbereitung erstellt. Die 26 Ablaufprüfungen sind nicht ausgeführt.** Der Datenkatalog ist noch nicht in die App geladen. Er erweitert die fachliche Testvorbereitung; bestehende Tests decken Teilbereiche ab, beweisen aber nicht automatisch jeden hier beschriebenen Ablauf. Formeller Lernfortschritt bleibt 27/40; gemeinsame Bearbeitung und Quiz offen.
+**Status: Vorbereitung erstellt. Die 26 Ablaufprüfungen sind nicht ausgeführt.** Der Datenkatalog ist noch nicht in die App geladen. Er erweitert die fachliche Testvorbereitung; bestehende Tests decken Teilbereiche ab, beweisen aber nicht automatisch jeden hier beschriebenen Ablauf. Tag 28 ist als praktische Testvorbereitung abgeschlossen; 28/40 Arbeitsschritte (70 %).
 
 ## Ziel und Reihenfolge
 
@@ -84,4 +86,4 @@ Priorität: Zuerst Datenzugriff, öffentliche/privat getrennte Stände, Datenver
 
 Quellbasis: Lotsora ce5cbe3cb2eed5ab516deec7231ac97ddc37d515; lib/services/products.ts; tests/integration/fixtures.ts; tests/integration/product-write.ts; die genannten Tests; P2-4-Umsetzung und Architektur A1–A5 vom September 2026; Brain-KI LP-002 PLAN.md und PassPilot/MVP.md. Neuere Team-/Freigaberegeln gehen älteren pauschalen Verschiebungsvermerken vor; geschützte Beschlussdateien werden dadurch nicht umgeschrieben.
 
-Datenkatalog: [tag-28.json](testdaten/tag-28.json). Prüfung am 24.09.2026: 13 gezielte Katalogprüfungen bestanden (6 Produkte gegen die echten Pflichtfeld-, Status- und Materialfunktionen; 6 Materialmutationen; 1 Referenz-/Statusprüfung). Aufruf: `node node_modules/vitest/vitest.mjs run --config .local-tests/tag28-vitest.config.mts`. Die temporäre Prüfung verwendet lib/services/products.ts; kein Datenbankzugriff. Die 26 Ablaufprüfungen bleiben nicht ausgeführt. Kein neuer vollständiger Unit-/Integrations-/HTTP-Lauf. Frühere 141 Unit-/154 Integrations-/11 HTTP-Nachweise vom 22.09. sind historische Nachweise und kein Ergebnis eines heutigen Gesamtlaufs.
+Datenkatalog: [tag-28.json](testdaten/tag-28.json). Prüfung am 24.09.2026: 13 gezielte Katalogprüfungen bestanden (6 Produkte gegen die echten Pflichtfeld-, Status- und Materialfunktionen; 6 Materialmutationen; 1 Referenz-/Statusprüfung). Aufruf: `node node_modules/vitest/vitest.mjs run --config .local-tests/tag28-vitest.config.mts`. Die temporäre Prüfung verwendet lib/services/products.ts; kein Datenbankzugriff. Die 26 Ablaufprüfungen bleiben nicht ausgeführt. Anschließender Systemcheck: 141 Unit-Tests und ESLint bestanden (npm test; npm run lint). Kein neuer Integrations-/HTTP-/Browserlauf. Frühere 141 Unit-/154 Integrations-/11 HTTP-Nachweise vom 22.09. sind historische Nachweise und kein Ergebnis eines heutigen Gesamtlaufs.
